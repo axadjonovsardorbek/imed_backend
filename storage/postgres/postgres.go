@@ -1,0 +1,67 @@
+package postgres
+
+import (
+	"database/sql"
+	"fmt"
+
+	"imed/internal/config"
+	"imed/storage"
+
+	_ "github.com/lib/pq"
+)
+
+type Storage struct {
+	Db            *sql.DB
+	AdminS        storage.AdminI
+	BannerS       storage.BannerI
+	ContactS      storage.ContactI
+	CourseS       storage.CourseI
+	LessonS       storage.LessonI
+	ModuleS       storage.ModuleI
+	SourceS       storage.SourceI
+	SubjectS      storage.SubjectI
+	TeacherS      storage.TeacherI
+	NotificationS storage.NotificationI
+	UserS         storage.UserI
+}
+
+func NewPostgresStorage(config config.Config) (*Storage, error) {
+	conn := fmt.Sprintf("host=%s user=%s dbname=%s password=%s port=%d sslmode=disable",
+		config.DB_HOST, config.DB_USER, config.DB_NAME, config.DB_PASSWORD, config.DB_PORT)
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	admin := NewAdminRepo(db)
+	banner := NewBannerRepo(db)
+	contact := NewContactRepo(db)
+	course := NewCourseRepo(db)
+	lesson := NewLessonRepo(db)
+	module := NewModuleRepo(db)
+	source := NewSourceRepo(db)
+	subject := NewSubjectRepo(db)
+	teacher := NewTeacherRepo(db)
+	notification := NewNotificationRepo(db)
+	user := NewUserRepo(db)
+
+	return &Storage{
+		Db:            db,
+		AdminS:        admin,
+		BannerS:       banner,
+		ContactS:      contact,
+		CourseS:       course,
+		LessonS:       lesson,
+		ModuleS:       module,
+		SourceS:       source,
+		TeacherS:      teacher,
+		SubjectS:      subject,
+		NotificationS: notification,
+		UserS:         user,
+	}, nil
+}

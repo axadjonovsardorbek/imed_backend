@@ -1,0 +1,2627 @@
+basePath: /
+definitions:
+  models.AdminRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      login:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.BannerCreateBody:
+    properties:
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      image_url:
+        additionalProperties:
+          type: string
+        type: object
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.BannerList:
+    properties:
+      banners:
+        items:
+          $ref: '#/definitions/models.BannerRes'
+        type: array
+      count:
+        type: integer
+    type: object
+  models.BannerRes:
+    properties:
+      created_at:
+        type: string
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      id:
+        type: string
+      image_url:
+        additionalProperties:
+          type: string
+        type: object
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+      updated_at:
+        type: string
+    type: object
+  models.BannerUpdateBody:
+    properties:
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      image_url:
+        additionalProperties:
+          type: string
+        type: object
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.ChangePasswordBody:
+    properties:
+      confirm_password:
+        type: string
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
+  models.ContactCreateReq:
+    properties:
+      link_url:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.ContactList:
+    properties:
+      contacts:
+        items:
+          $ref: '#/definitions/models.ContactRes'
+        type: array
+      count:
+        type: integer
+    type: object
+  models.ContactRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      link_url:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.ContactUpdateBody:
+    properties:
+      link_url:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.CourseCreateBody:
+    properties:
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      image_url:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      price:
+        additionalProperties:
+          type: string
+        type: object
+      subject_id:
+        type: string
+      teacher_id:
+        type: string
+    type: object
+  models.CourseList:
+    properties:
+      count:
+        type: integer
+      courses:
+        items:
+          $ref: '#/definitions/models.CourseRes'
+        type: array
+    type: object
+  models.CourseRes:
+    properties:
+      created_at:
+        type: string
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      id:
+        type: string
+      image_url:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      price:
+        additionalProperties:
+          type: string
+        type: object
+      subject:
+        $ref: '#/definitions/models.SubjectRes'
+      teacher:
+        $ref: '#/definitions/models.TeacherRes'
+      updated_at:
+        type: string
+    type: object
+  models.CourseUpdateBody:
+    properties:
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      image_url:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      price:
+        additionalProperties:
+          type: string
+        type: object
+      subject_id:
+        type: string
+      teacher_id:
+        type: string
+    type: object
+  models.LessonCreateBody:
+    properties:
+      duration:
+        type: integer
+      module_id:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      type:
+        type: string
+    type: object
+  models.LessonList:
+    properties:
+      count:
+        type: integer
+      lessons:
+        items:
+          $ref: '#/definitions/models.LessonRes'
+        type: array
+    type: object
+  models.LessonRes:
+    properties:
+      created_at:
+        type: string
+      duration:
+        type: integer
+      id:
+        type: string
+      module:
+        $ref: '#/definitions/models.ModuleRes'
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.LessonUpdateBody:
+    properties:
+      duration:
+        type: integer
+      module_id:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      type:
+        type: string
+    type: object
+  models.LoginReq:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  models.ModuleCreateBody:
+    properties:
+      course_id:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+    type: object
+  models.ModuleList:
+    properties:
+      count:
+        type: integer
+      modules:
+        items:
+          $ref: '#/definitions/models.ModuleRes'
+        type: array
+    type: object
+  models.ModuleRes:
+    properties:
+      course:
+        $ref: '#/definitions/models.CourseRes'
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.ModuleUpdateBody:
+    properties:
+      course_id:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+    type: object
+  models.RefreshPassword:
+    properties:
+      password:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.RefreshPasswordReq:
+    properties:
+      role:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.SourceCreateBody:
+    properties:
+      lesson_id:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      type:
+        type: string
+      url:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.SourceList:
+    properties:
+      count:
+        type: integer
+      source:
+        items:
+          $ref: '#/definitions/models.SourceRes'
+        type: array
+    type: object
+  models.SourceRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      lesson:
+        $ref: '#/definitions/models.LessonRes'
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+      url:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.SourceUpdateBody:
+    properties:
+      lesson_id:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      type:
+        type: string
+      url:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.SubjectCreateBody:
+    properties:
+      image_url:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+    type: object
+  models.SubjectList:
+    properties:
+      count:
+        type: integer
+      subjects:
+        items:
+          $ref: '#/definitions/models.SubjectRes'
+        type: array
+    type: object
+  models.SubjectRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.SubjectUpdateBody:
+    properties:
+      image_url:
+        type: string
+      name:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+    type: object
+  models.TeacherCreateReq:
+    properties:
+      login:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.TeacherList:
+    properties:
+      count:
+        type: integer
+      teachers:
+        items:
+          $ref: '#/definitions/models.TeacherRes'
+        type: array
+    type: object
+  models.TeacherRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      login:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TeacherUpdateBody:
+    properties:
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.TokenRes:
+    properties:
+      access_token:
+        type: string
+      id:
+        type: string
+      refresh_token:
+        type: string
+      role:
+        type: string
+    type: object
+  models.UserCheckReq:
+    properties:
+      phone_number:
+        type: string
+    type: object
+  models.UserCourseCreateReq:
+    properties:
+      course_id:
+        type: string
+      ended_at:
+        type: string
+      started_at:
+        type: string
+      type:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.UserCourseList:
+    properties:
+      count:
+        type: integer
+      user_courses:
+        items:
+          $ref: '#/definitions/models.UserCourseRes'
+        type: array
+    type: object
+  models.UserCourseRes:
+    properties:
+      course:
+        $ref: '#/definitions/models.CourseRes'
+      created_at:
+        type: string
+      ended_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      started_at:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserRes'
+    type: object
+  models.UserCourseUpdateReq:
+    properties:
+      course_id:
+        type: string
+      ended_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      started_at:
+        type: string
+      type:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.UserList:
+    properties:
+      count:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/models.UserRes'
+        type: array
+    type: object
+  models.UserLoginReq:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.UserRes:
+    properties:
+      created_at:
+        type: string
+      fcm_token:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.UserUpdateBody:
+    properties:
+      fcm_token:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: API for Imed platform
+  title: Imed API
+  version: "1.0"
+paths:
+  /admin/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a admin by their ID
+      parameters:
+      - description: Admin ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AdminRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get admin by ID
+      tags:
+      - admin
+  /auth/admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate admin with login and password
+      parameters:
+      - description: Admin login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT tokens
+          schema:
+            $ref: '#/definitions/models.TokenRes'
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Login admin
+      tags:
+      - auth
+  /auth/password/change:
+    put:
+      consumes:
+      - application/json
+      description: Change password
+      parameters:
+      - description: Change password credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangePasswordBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - auth
+  /auth/password/refresh:
+    put:
+      consumes:
+      - application/json
+      description: Refresh password
+      parameters:
+      - description: Refresh password credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RefreshPassword'
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Refresh password
+      tags:
+      - user
+  /auth/user/check:
+    post:
+      consumes:
+      - application/json
+      description: Check user
+      parameters:
+      - description: User check credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCheckReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User exists or not
+          schema:
+            type: boolean
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Check user
+      tags:
+      - auth
+  /auth/user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with login and password
+      parameters:
+      - description: User login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT tokens
+          schema:
+            $ref: '#/definitions/models.TokenRes'
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Login user
+      tags:
+      - auth
+  /banner:
+    get:
+      consumes:
+      - application/json
+      description: Get all banner with optional filtering
+      parameters:
+      - description: Title
+        in: query
+        name: title
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BannerList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all banner
+      tags:
+      - banner
+    post:
+      consumes:
+      - application/json
+      description: Create a new banner with the provided details
+      parameters:
+      - description: Banner Details
+        in: body
+        name: banner
+        required: true
+        schema:
+          $ref: '#/definitions/models.BannerCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new banner
+      tags:
+      - banner
+  /banner/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a banner by their ID
+      parameters:
+      - description: Banner ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BannerRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get banner by ID
+      tags:
+      - banner
+  /banner/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete banner
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Banner deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete banner
+      tags:
+      - banner
+  /banner/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update banner
+      parameters:
+      - description: Banner ID
+        in: path
+        name: id
+        type: string
+      - description: Banner update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.BannerUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Banner updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update banner
+      tags:
+      - banner
+  /contact:
+    get:
+      consumes:
+      - application/json
+      description: Get all contact with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: PhoneNumber
+        in: query
+        name: phone_number
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ContactList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all contact
+      tags:
+      - contact
+    post:
+      consumes:
+      - application/json
+      description: Create a new contact with the provided details
+      parameters:
+      - description: Contact Details
+        in: body
+        name: contact
+        required: true
+        schema:
+          $ref: '#/definitions/models.ContactCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new contact
+      tags:
+      - contact
+  /contact/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a contact by their ID
+      parameters:
+      - description: Contact ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ContactRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get contact by ID
+      tags:
+      - contact
+  /contact/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete contact
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contact deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete contact
+      tags:
+      - contact
+  /contact/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update contact
+      parameters:
+      - description: Contact ID
+        in: path
+        name: id
+        type: string
+      - description: Contact update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.ContactUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contact updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update contact
+      tags:
+      - contact
+  /course:
+    get:
+      consumes:
+      - application/json
+      description: Get all course with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Subject ID
+        in: query
+        name: subject_id
+        type: string
+      - description: Teacher ID
+        in: query
+        name: teacher_id
+        type: string
+      - description: Is Public
+        in: query
+        name: is_public
+        type: boolean
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all course
+      tags:
+      - course
+    post:
+      consumes:
+      - application/json
+      description: Create a new course with the provided details
+      parameters:
+      - description: Course Details
+        in: body
+        name: course
+        required: true
+        schema:
+          $ref: '#/definitions/models.CourseCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new course
+      tags:
+      - course
+  /course/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a course by their ID
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get course by ID
+      tags:
+      - course
+  /course/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete course
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete course
+      tags:
+      - course
+  /course/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update course
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        type: string
+      - description: Course update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.CourseUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update course
+      tags:
+      - course
+  /course/permission:
+    get:
+      consumes:
+      - application/json
+      description: Get all user course with optional filtering
+      parameters:
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: Is Active
+        in: query
+        name: is_active
+        type: string
+      - description: User ID
+        in: query
+        name: user_id
+        type: string
+      - description: Course ID
+        in: query
+        name: course_id
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserCourseList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all user course
+      tags:
+      - course
+    post:
+      consumes:
+      - application/json
+      description: Buy a course with the provided details
+      parameters:
+      - description: Course Details
+        in: body
+        name: course
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCourseCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Buy a course
+      tags:
+      - course
+  /course/permission/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a course by their ID
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get course by ID
+      tags:
+      - course
+  /course/permission/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete course
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete course
+      tags:
+      - course
+  /course/permission{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update user course
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        type: string
+      - description: Course update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCourseUpdateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update user course
+      tags:
+      - course
+  /file-upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: File upload
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: File upload
+      tags:
+      - file-upload
+  /lesson:
+    get:
+      consumes:
+      - application/json
+      description: Get all lesson with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Module ID
+        in: query
+        name: module_id
+        type: string
+      - description: Type
+        enum:
+        - lesson
+        - test
+        in: query
+        name: type
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LessonList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all lesson
+      tags:
+      - lesson
+    post:
+      consumes:
+      - application/json
+      description: Create a new lesson with the provided details
+      parameters:
+      - description: Lesson Details
+        in: body
+        name: lesson
+        required: true
+        schema:
+          $ref: '#/definitions/models.LessonCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new lesson
+      tags:
+      - lesson
+  /lesson/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a lesson by their ID
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LessonRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get lesson by ID
+      tags:
+      - lesson
+  /lesson/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete lesson
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete lesson
+      tags:
+      - lesson
+  /lesson/{id}/end:
+    put:
+      consumes:
+      - application/json
+      description: End lesson
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson ended
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: End lesson
+      tags:
+      - lesson
+  /lesson/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update lesson
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        type: string
+      - description: Lesson update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LessonUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update lesson
+      tags:
+      - lesson
+  /module:
+    get:
+      consumes:
+      - application/json
+      description: Get all module with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Course ID
+        in: query
+        name: course_id
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all module
+      tags:
+      - module
+    post:
+      consumes:
+      - application/json
+      description: Create a new module with the provided details
+      parameters:
+      - description: Module Details
+        in: body
+        name: module
+        required: true
+        schema:
+          $ref: '#/definitions/models.ModuleCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new module
+      tags:
+      - module
+  /module/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a module by their ID
+      parameters:
+      - description: Module ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get module by ID
+      tags:
+      - module
+  /module/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete module
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Module deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete module
+      tags:
+      - module
+  /module/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update module
+      parameters:
+      - description: Module ID
+        in: path
+        name: id
+        type: string
+      - description: Module update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.ModuleUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Module updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update module
+      tags:
+      - module
+  /source:
+    get:
+      consumes:
+      - application/json
+      description: Get all source with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Lesson ID
+        in: query
+        name: lesson_id
+        type: string
+      - description: Type
+        enum:
+        - video
+        - document
+        - test
+        in: query
+        name: type
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SourceList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all source
+      tags:
+      - source
+    post:
+      consumes:
+      - application/json
+      description: Create a new source with the provided details
+      parameters:
+      - description: Source Details
+        in: body
+        name: source
+        required: true
+        schema:
+          $ref: '#/definitions/models.SourceCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new source
+      tags:
+      - source
+  /source/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a source by their ID
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SourceRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get source by ID
+      tags:
+      - source
+  /source/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete source
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Source deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete source
+      tags:
+      - source
+  /source/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update source
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        type: string
+      - description: Source update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.SourceUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Source updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update source
+      tags:
+      - source
+  /subject:
+    get:
+      consumes:
+      - application/json
+      description: Get all subject with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubjectList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all subject
+      tags:
+      - subject
+    post:
+      consumes:
+      - application/json
+      description: Create a new subject with the provided details
+      parameters:
+      - description: Subject Details
+        in: body
+        name: subject
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubjectCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new subject
+      tags:
+      - subject
+  /subject/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a subject by their ID
+      parameters:
+      - description: Subject ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubjectRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get subject by ID
+      tags:
+      - subject
+  /subject/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete subject
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subject deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete subject
+      tags:
+      - subject
+  /subject/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update subject
+      parameters:
+      - description: Subject ID
+        in: path
+        name: id
+        type: string
+      - description: Subject update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubjectUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subject updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update subject
+      tags:
+      - subject
+  /teacher:
+    get:
+      consumes:
+      - application/json
+      description: Get all teacher with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: PhoneNumber
+        in: query
+        name: phone_number
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TeacherList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all teacher
+      tags:
+      - teacher
+    post:
+      consumes:
+      - application/json
+      description: Create a new teacher with the provided details
+      parameters:
+      - description: Teacher Details
+        in: body
+        name: teacher
+        required: true
+        schema:
+          $ref: '#/definitions/models.TeacherCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new teacher
+      tags:
+      - teacher
+  /teacher/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a teacher by their ID
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TeacherRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get teacher by ID
+      tags:
+      - teacher
+  /teacher/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete teacher
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Teacher deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete teacher
+      tags:
+      - teacher
+  /teacher/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update teacher
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: id
+        type: string
+      - description: Teacher update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.TeacherUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Teacher updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update teacher
+      tags:
+      - teacher
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Get all user with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: PhoneNumber
+        in: query
+        name: phone_number
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all user
+      tags:
+      - user
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get an user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - user
+  /user/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - user
+  /user/delete/profile:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a profile
+      tags:
+      - profile
+  /user/get/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get user profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - profile
+  /user/update/profile:
+    put:
+      consumes:
+      - application/json
+      description: Update a user
+      parameters:
+      - description: User update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - profile
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

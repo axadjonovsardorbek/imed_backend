@@ -1,0 +1,171 @@
+package api
+
+import (
+	"log/slog"
+
+	"time"
+
+	"imed/api/handler"
+	mid "imed/api/middleware"
+
+	"github.com/casbin/casbin/v2"
+
+	_ "imed/api/docs"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+)
+
+// @title Imed API
+// @version 1.0
+// @description API for Imed platform
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+func NewApi(h *handler.Handler) *gin.Engine {
+	router := gin.Default()
+
+	enforcer, err := casbin.NewEnforcer("./api/casbin/model.conf", "./api/casbin/policy.csv")
+	if err != nil {
+		slog.Error("Error while creating enforcer: ", "err", err)
+	}
+
+	if enforcer == nil {
+		slog.Error("Enforcer is nil after initialization!")
+	} else {
+		slog.Info("Enforcer initialized successfully.")
+	}
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           24 * time.Hour,
+	}))
+
+	router.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	auth := router.Group("auth")
+	{
+		auth.POST("/admin/login", h.Login)
+		auth.POST("/user/check", h.CheckUser)
+		auth.POST("/user/login", h.LoginUser)
+	}
+
+	auth.PUT("/password/change", h.ChangePassword).Use(mid.NewAuth(enforcer))
+	auth.PUT("/password/refresh", h.RefreshPassword).Use(mid.NewAuth(enforcer))
+
+	user := router.Group("/user").Use(mid.NewAuth(enforcer))
+	{
+		user.GET("", h.GetAllUsers)
+		user.GET("/:id", h.GetByIdUser)
+		user.DELETE("/:id/delete", h.DeleteUser)
+		user.GET("/get/profile", h.GetProfileUser)
+		user.PUT("/update/profile", h.UpdateProfileUser)
+		user.DELETE("/delete/profile", h.DeleteProfileUser)
+	}
+
+	router.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer))
+
+	// user := auth.Group("/admin")
+	// // user := auth.Group("/admin").Use(mid.NewAuth(enforcer))
+	// {
+	// 	user.GET("/:id", h.GetByIdAdmin)
+	// }
+
+	banner := router.Group("/banner").Use(mid.NewAuth(enforcer))
+	{
+		banner.POST("", h.CreateBanner)
+		banner.GET("", h.GetAllBanners)
+		banner.GET("/:id", h.GetByIdBanner)
+		banner.PUT("/:id/update", h.UpdateBanner)
+		banner.DELETE("/:id/delete", h.DeleteBanner)
+	}
+
+	course := router.Group("/course").Use(mid.NewAuth(enforcer))
+	{
+		course.POST("", h.CreateCourse)
+		course.GET("", h.GetAllCourses)
+		course.GET("/:id", h.GetByIdCourse)
+		course.PUT("/:id/update", h.UpdateCourse)
+		course.DELETE("/:id/delete", h.DeleteCourse)
+		course.POST("/permission", h.BuyCourse)
+		course.GET("/permission/:id", h.UserCourse)
+		course.GET("/permission", h.UserCourses)
+		course.PUT("/permission/:id/update", h.UpdateUserCourse)
+		course.DELETE("/permission/:id/delete", h.DeleteUserCourse)
+	}
+
+	contact := router.Group("/contact").Use(mid.NewAuth(enforcer))
+	{
+		contact.POST("", h.CreateContact)
+		contact.GET("", h.GetAllContacts)
+		contact.GET("/:id", h.GetByIdContact)
+		contact.PUT("/:id/update", h.UpdateContact)
+		contact.DELETE("/:id/delete", h.DeleteContact)
+	}
+
+	lesson := router.Group("/lesson").Use(mid.NewAuth(enforcer))
+	{
+		lesson.POST("", h.CreateLesson)
+		lesson.GET("", h.GetAllLessons)
+		lesson.GET("/:id", h.GetByIdLesson)
+		lesson.PUT("/:id/update", h.UpdateLesson)
+		lesson.DELETE("/:id/delete", h.DeleteLesson)
+		lesson.PUT("/:id/end", h.EndLesson)
+	}
+
+	module := router.Group("/module").Use(mid.NewAuth(enforcer))
+	{
+		module.POST("", h.CreateModule)
+		module.GET("", h.GetAllModules)
+		module.GET("/:id", h.GetByIdModule)
+		module.PUT("/:id/update", h.UpdateModule)
+		module.DELETE("/:id/delete", h.DeleteModule)
+	}
+
+	teacher := router.Group("/teacher").Use(mid.NewAuth(enforcer))
+	{
+		teacher.POST("", h.CreateTeacher)
+		teacher.GET("", h.GetAllTeachers)
+		teacher.GET("/:id", h.GetByIdTeacher)
+		teacher.PUT("/:id/update", h.UpdateTeacher)
+		teacher.DELETE("/:id/delete", h.DeleteTeacher)
+	}
+
+	source := router.Group("/source").Use(mid.NewAuth(enforcer))
+	{
+		source.POST("", h.CreateSource)
+		source.GET("", h.GetAllSources)
+		source.GET("/:id", h.GetByIdSource)
+		source.PUT("/:id/update", h.UpdateSource)
+		source.DELETE("/:id/delete", h.DeleteSource)
+	}
+
+	subject := router.Group("/subject").Use(mid.NewAuth(enforcer))
+	{
+		subject.POST("", h.CreateSubject)
+		subject.GET("", h.GetAllSubjects)
+		subject.GET("/:id", h.GetByIdSubject)
+		subject.PUT("/:id/update", h.UpdateSubject)
+		subject.DELETE("/:id/delete", h.DeleteSubject)
+	}
+
+	notification := router.Group("/notification").Use(mid.NewAuth(enforcer))
+	{
+		notification.POST("", h.CreateNotification)
+		notification.GET("", h.GetAllNotifications)
+		notification.GET("/:id", h.GetByIdNotification)
+		notification.PUT("/:id/update", h.UpdateNotification)
+		notification.DELETE("/:id/delete", h.DeleteNotification)
+	}
+
+	router.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer))
+
+	return router
+}

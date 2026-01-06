@@ -1,0 +1,78 @@
+version: '3.9'
+
+services:
+  migrate-road:
+    image: ghcr.io/kukymbr/goose-docker:3.23.0
+    environment:
+      - GOOSE_DRIVER=postgres
+      - GOOSE_DBSTRING=host=postgres-imed port=5432 user=postgres password=1111 dbname=imed sslmode=disable
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      postgres-imed:
+        condition: service_healthy
+    networks:
+      - imed
+
+  postgres-imed:
+    container_name: postgres-imed
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+      PGDATA: /data/postgres
+      POSTGRES_DB: imed
+    volumes:
+     - imed_postgres_data:/var/lib/postgres/data
+    ports:
+      - "5473:5432"
+    networks:
+      - imed
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  imed:
+    container_name: imed
+    build: .
+    ports:
+      - "8004:8004"
+    depends_on:
+      - postgres-imed
+      - redis-imed
+    networks:
+      - imed
+
+  redis-imed:
+    image: redis:latest
+    container_name: redis-imed
+    ports:
+      - "6337:6379"
+    networks:
+      - imed
+
+  minio-imed:
+    image: minio/minio
+    container_name: minio-imed
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    ports:
+      - "9010:9010"   
+      - "9011:9011" 
+    command: server /data --address ":9010" --console-address ":9011"
+    volumes:
+      - imed_minio_data:/data
+    networks:
+      - imed
+
+networks:
+  imed:
+    driver: bridge
+
+volumes:
+  imed_postgres_data: 
+  imed_minio_data: 
