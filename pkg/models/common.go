@@ -52,6 +52,11 @@ type ById struct {
 	Id string `json:"id"`
 }
 
+type CourseById struct {
+	Id     string `json:"id"`
+	UserId string `json:"user_id"`
+}
+
 type Location struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`

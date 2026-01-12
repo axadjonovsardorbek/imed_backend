@@ -56,7 +56,7 @@ func (r *CourseRepo) Create(req *m.CourseCreateReq) (*m.ById, error) {
 	return &m.ById{Id: id}, nil
 }
 
-func (r *CourseRepo) GetById(req *m.ById) (*m.CourseRes, error) {
+func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 
 	query := `
 	SELECT 
@@ -72,6 +72,15 @@ func (r *CourseRepo) GetById(req *m.ById) (*m.CourseRes, error) {
 		c.teacher_id,
 		t.name,
 		t.phone_number,
+		EXISTS (
+			SELECT 1
+			FROM user_courses uc
+			WHERE uc.user_id = $1
+			  AND uc.course_id = c.id
+			  AND uc.deleted_at = 0
+			  AND uc.started_at <= NOW()
+			  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+		) AS has_access,
 		c.created_at,
 		c.updated_at
 	FROM
@@ -83,10 +92,10 @@ func (r *CourseRepo) GetById(req *m.ById) (*m.CourseRes, error) {
 	WHERE
 		c.deleted_at = 0
 	AND
-		c.id = $1
+		c.id = $2
 	`
 
-	row := r.db.QueryRow(query, req.Id)
+	row := r.db.QueryRow(query, req.UserId, req.Id)
 
 	course := m.CourseRes{
 		Subject: m.SubjectRes{},
@@ -110,6 +119,7 @@ func (r *CourseRepo) GetById(req *m.ById) (*m.CourseRes, error) {
 		&course.Teacher.Id,
 		&course.Teacher.Name,
 		&course.Teacher.PhoneNumber,
+		&course.HasAccess,
 		&course.CreatedAt,
 		&course.UpdatedAt,
 	)
@@ -144,6 +154,15 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 		c.teacher_id,
 		t.name,
 		t.phone_number,
+		EXISTS (
+			SELECT 1
+			FROM user_courses uc
+			WHERE uc.user_id = $1
+			  AND uc.course_id = c.id
+			  AND uc.deleted_at = 0
+			  AND uc.started_at <= NOW()
+			  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+		) AS has_access,
 		c.created_at,
 		c.updated_at
 	FROM
@@ -157,6 +176,7 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 	`
 
 	var args []interface{}
+	args = append(args, req.UserId)
 
 	if req.Name != "" && req.Name != "string" {
 		query += fmt.Sprintf(" AND c.name::text ILIKE $%d", len(args)+1)
@@ -215,6 +235,7 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 			&course.Teacher.Id,
 			&course.Teacher.Name,
 			&course.Teacher.PhoneNumber,
+			&course.HasAccess,
 			&course.CreatedAt,
 			&course.UpdatedAt,
 		)
@@ -358,7 +379,10 @@ func (r *CourseRepo) UserCourse(req *m.ById) (*m.UserCourseRes, error) {
 		u.name,
 		c.course_id,
 		co.name,
-		c.is_active,
+		(
+			c.started_at <= NOW()
+			AND (c.ended_at IS NULL OR c.ended_at > NOW())
+		) AS is_active,
 		c.type,
 		c.started_at,
 		c.ended_at,
@@ -378,17 +402,14 @@ func (r *CourseRepo) UserCourse(req *m.ById) (*m.UserCourseRes, error) {
 
 	row := r.db.QueryRow(query, req.Id)
 
-	course := m.UserCourseRes{
-		User:   &m.UserRes{},
-		Course: &m.CourseRes{},
-	}
+	course := m.UserCourseRes{}
 	var courseNameJSON []byte
 
 	err := row.Scan(
 		&course.Id,
-		&course.User.Id,
-		&course.User.Name,
-		&course.Course.Id,
+		&course.UserId,
+		&course.UserName,
+		&course.CourseId,
 		&courseNameJSON,
 		&course.IsActive,
 		&course.Type,
@@ -398,7 +419,7 @@ func (r *CourseRepo) UserCourse(req *m.ById) (*m.UserCourseRes, error) {
 		&course.UpdatedAt,
 	)
 
-	json.Unmarshal(courseNameJSON, &course.Course.Name)
+	json.Unmarshal(courseNameJSON, &course.CourseName)
 
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("user course not found with id: %s", req.Id)
@@ -417,7 +438,10 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 		u.name,
 		c.course_id,
 		co.name,
-		c.is_active,
+		(
+			c.started_at <= NOW()
+			AND (c.ended_at IS NULL OR c.ended_at > NOW())
+		) AS is_active,
 		c.type,
 		c.started_at,
 		c.ended_at,
@@ -449,11 +473,17 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 	}
 	if req.IsActive != "" && req.IsActive != "string" {
 		if req.IsActive == "true" {
-			query += fmt.Sprintf(" AND c.is_active = $%d", len(args)+1)
-			args = append(args, true)
+			query += `
+				AND c.started_at <= NOW()
+				AND (c.ended_at IS NULL OR c.ended_at > NOW())
+			`
 		} else if req.IsActive == "false" {
-			query += fmt.Sprintf(" AND c.is_active = $%d", len(args)+1)
-			args = append(args, false)
+			query += `
+				AND (
+					c.started_at > NOW()
+					OR (c.ended_at IS NOT NULL AND c.ended_at <= NOW())
+				)
+			`
 		}
 	}
 
@@ -468,19 +498,16 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 
 	courses := m.UserCourseList{}
 	for rows.Next() {
-		course := m.UserCourseRes{
-			User:   &m.UserRes{},
-			Course: &m.CourseRes{},
-		}
+		course := m.UserCourseRes{}
 		var courseNameJSON []byte
 		var totalCount int
 
 		err := rows.Scan(
 			&totalCount,
 			&course.Id,
-			&course.User.Id,
-			&course.User.Name,
-			&course.Course.Id,
+			&course.UserId,
+			&course.UserName,
+			&course.CourseId,
 			&courseNameJSON,
 			&course.IsActive,
 			&course.Type,
@@ -490,7 +517,7 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 			&course.UpdatedAt,
 		)
 
-		json.Unmarshal(courseNameJSON, &course.Course.Name)
+		json.Unmarshal(courseNameJSON, &course.CourseName)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning user course row: %w", err)
@@ -518,9 +545,6 @@ func (r *CourseRepo) UserUpdateCourse(req *m.UserCourseUpdateReq) (*m.Void, erro
 		conditions = append(conditions, " course_id = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.CourseId)
 	}
-
-	conditions = append(conditions, " is_active = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.IsActive)
 
 	conditions = append(conditions, " type = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.Type)

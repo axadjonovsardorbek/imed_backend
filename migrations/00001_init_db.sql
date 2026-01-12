@@ -123,7 +123,6 @@ CREATE TABLE IF NOT EXISTS user_courses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id),
     course_id UUID REFERENCES courses(id),
-    is_active BOOLEAN DEFAULT TRUE,
     type VARCHAR(50) NOT NULL CHECK (type IN ('12months', '6months')),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
@@ -160,6 +159,43 @@ CREATE TABLE IF NOT EXISTS user_notifications (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(master_notification_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS user_activities (
+    user_id UUID REFERENCES users(id),
+    activity BIGINT DEFAULT 0,
+    day DATE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, day)
+);
+
+CREATE TABLE IF NOT EXISTS faqs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    question JSONB NOT NULL,
+    answer JSONB NOT NULL,
+    order_num BIGINT DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at BIGINT DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS abouts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title JSONB NOT NULL,
+    description JSONB NOT NULL,
+    link_url VARCHAR(255) DEFAULT NULL,
+    order_num BIGINT DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at BIGINT DEFAULT 0
+);
+
+CREATE INDEX idx_user_courses_user_time
+ON user_courses(user_id, ended_at)
+WHERE deleted_at = 0;
+
+CREATE INDEX idx_user_courses_permission
+ON user_courses(user_id, course_id, ended_at)
+WHERE deleted_at = 0;
 
 -- +goose StatementEnd
 

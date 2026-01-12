@@ -8,9 +8,11 @@ import (
 
 type Clients struct {
 	Admin        *service.AdminService
+	About        *service.AboutService
 	Banner       *service.BannerService
 	Contact      *service.ContactService
 	Course       *service.CourseService
+	Faq          *service.FaqService
 	Lesson       *service.LessonService
 	Module       *service.ModuleService
 	Source       *service.SourceService
@@ -23,9 +25,11 @@ type Clients struct {
 func NewClients(cfg *config.Config, conn *postgres.Storage) (*Clients, error) {
 	return &Clients{
 		Admin:        service.NewAdminService(conn),
+		About:        service.NewAboutService(conn),
 		Banner:       service.NewBannerService(conn),
 		Contact:      service.NewContactService(conn),
 		Course:       service.NewCourseService(conn),
+		Faq:          service.NewFaqService(conn),
 		Lesson:       service.NewLessonService(conn),
 		Module:       service.NewModuleService(conn),
 		Source:       service.NewSourceService(conn),

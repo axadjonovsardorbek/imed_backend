@@ -1,5 +1,65 @@
 basePath: /
 definitions:
+  models.AboutCreateBody:
+    properties:
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.AboutList:
+    properties:
+      abouts:
+        items:
+          $ref: '#/definitions/models.AboutRes'
+        type: array
+      count:
+        type: integer
+    type: object
+  models.AboutRes:
+    properties:
+      created_at:
+        type: string
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      id:
+        type: string
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+      updated_at:
+        type: string
+    type: object
+  models.AboutUpdateBody:
+    properties:
+      description:
+        additionalProperties:
+          type: string
+        type: object
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
   models.AdminRes:
     properties:
       created_at:
@@ -224,6 +284,60 @@ definitions:
       teacher_id:
         type: string
     type: object
+  models.FaqCreateBody:
+    properties:
+      answer:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      question:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.FaqList:
+    properties:
+      count:
+        type: integer
+      faqs:
+        items:
+          $ref: '#/definitions/models.FaqRes'
+        type: array
+    type: object
+  models.FaqRes:
+    properties:
+      answer:
+        additionalProperties:
+          type: string
+        type: object
+      created_at:
+        type: string
+      id:
+        type: string
+      order_num:
+        type: integer
+      question:
+        additionalProperties:
+          type: string
+        type: object
+      updated_at:
+        type: string
+    type: object
+  models.FaqUpdateBody:
+    properties:
+      answer:
+        additionalProperties:
+          type: string
+        type: object
+      order_num:
+        type: integer
+      question:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
   models.LessonCreateBody:
     properties:
       duration:
@@ -291,6 +405,47 @@ definitions:
       password:
         type: string
     type: object
+  models.MasterNotificationList:
+    properties:
+      count:
+        type: integer
+      notifications:
+        items:
+          $ref: '#/definitions/models.MasterNotificationRes'
+        type: array
+    type: object
+  models.MasterNotificationRes:
+    properties:
+      course:
+        $ref: '#/definitions/models.CourseRes'
+      created_at:
+        type: string
+      id:
+        type: string
+      message:
+        additionalProperties:
+          type: string
+        type: object
+      title:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.MasterNotificationUpdateBody:
+    properties:
+      message:
+        additionalProperties:
+          type: string
+        type: object
+      title:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
   models.ModuleCreateBody:
     properties:
       course_id:
@@ -338,6 +493,21 @@ definitions:
         type: object
       order_num:
         type: integer
+    type: object
+  models.NotificationCreateBody:
+    properties:
+      course_id:
+        type: string
+      message:
+        additionalProperties:
+          type: string
+        type: object
+      title:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        type: string
     type: object
   models.RefreshPassword:
     properties:
@@ -520,6 +690,11 @@ definitions:
       role:
         type: string
     type: object
+  models.UserActivityCreateBody:
+    properties:
+      activity:
+        type: integer
+    type: object
   models.UserCheckReq:
     properties:
       phone_number:
@@ -549,8 +724,10 @@ definitions:
     type: object
   models.UserCourseRes:
     properties:
-      course:
-        $ref: '#/definitions/models.CourseRes'
+      course_id:
+        type: string
+      course_name:
+        type: string
       created_at:
         type: string
       ended_at:
@@ -565,8 +742,10 @@ definitions:
         type: string
       updated_at:
         type: string
-      user:
-        $ref: '#/definitions/models.UserRes'
+      user_id:
+        type: string
+      user_name:
+        type: string
     type: object
   models.UserCourseUpdateReq:
     properties:
@@ -603,6 +782,28 @@ definitions:
       phone_number:
         type: string
     type: object
+  models.UserNotificationList:
+    properties:
+      count:
+        type: integer
+      notifications:
+        items:
+          $ref: '#/definitions/models.UserNotificationRes'
+        type: array
+    type: object
+  models.UserNotificationRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      is_read:
+        type: boolean
+      master_notification:
+        $ref: '#/definitions/models.MasterNotificationRes'
+      updated_at:
+        type: string
+    type: object
   models.UserRes:
     properties:
       created_at:
@@ -612,6 +813,8 @@ definitions:
       id:
         type: string
       image_url:
+        type: string
+      language:
         type: string
       name:
         type: string
@@ -626,6 +829,8 @@ definitions:
         type: string
       image_url:
         type: string
+      language:
+        type: string
       name:
         type: string
       phone_number:
@@ -637,6 +842,172 @@ info:
   title: Imed API
   version: "1.0"
 paths:
+  /about:
+    get:
+      consumes:
+      - application/json
+      description: Get all about with optional filtering
+      parameters:
+      - description: Title
+        in: query
+        name: title
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AboutList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all about
+      tags:
+      - about
+    post:
+      consumes:
+      - application/json
+      description: Create a new about with the provided details
+      parameters:
+      - description: About Details
+        in: body
+        name: about
+        required: true
+        schema:
+          $ref: '#/definitions/models.AboutCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new about
+      tags:
+      - about
+  /about/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a about by their ID
+      parameters:
+      - description: About ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AboutRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get about by ID
+      tags:
+      - about
+  /about/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete about
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: About deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete about
+      tags:
+      - about
+  /about/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update about
+      parameters:
+      - description: About ID
+        in: path
+        name: id
+        type: string
+      - description: About update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.AboutUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: About updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update about
+      tags:
+      - about
   /admin/{id}:
     get:
       consumes:
@@ -762,7 +1133,39 @@ paths:
       - BearerAuth: []
       summary: Refresh password
       tags:
-      - user
+      - auth
+  /auth/user/activity:
+    post:
+      consumes:
+      - application/json
+      description: Activity user
+      parameters:
+      - description: User activity credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserActivityCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity created
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Activity user
+      tags:
+      - auth
   /auth/user/check:
     post:
       consumes:
@@ -1519,6 +1922,172 @@ paths:
       summary: Update user course
       tags:
       - course
+  /faq:
+    get:
+      consumes:
+      - application/json
+      description: Get all faq with optional filtering
+      parameters:
+      - description: Question
+        in: query
+        name: question
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FaqList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all faq
+      tags:
+      - faq
+    post:
+      consumes:
+      - application/json
+      description: Create a new faq with the provided details
+      parameters:
+      - description: Faq Details
+        in: body
+        name: faq
+        required: true
+        schema:
+          $ref: '#/definitions/models.FaqCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new faq
+      tags:
+      - faq
+  /faq/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a faq by their ID
+      parameters:
+      - description: Faq ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FaqRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get faq by ID
+      tags:
+      - faq
+  /faq/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete faq
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Faq deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete faq
+      tags:
+      - faq
+  /faq/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update faq
+      parameters:
+      - description: Faq ID
+        in: path
+        name: id
+        type: string
+      - description: Faq update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.FaqUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Faq updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update faq
+      tags:
+      - faq
   /file-upload:
     post:
       consumes:
@@ -1920,6 +2489,250 @@ paths:
       summary: Update module
       tags:
       - module
+  /notification:
+    get:
+      consumes:
+      - application/json
+      description: Get all notification with optional filtering
+      parameters:
+      - description: Title
+        in: query
+        name: title
+        type: string
+      - description: Course ID
+        in: query
+        name: course_id
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MasterNotificationList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all notification
+      tags:
+      - notification
+    post:
+      consumes:
+      - application/json
+      description: Create a new notification with the provided details
+      parameters:
+      - description: Notification Details
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/models.NotificationCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new notification
+      tags:
+      - notification
+  /notification/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a notification by their ID
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MasterNotificationRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get notification by ID
+      tags:
+      - notification
+  /notification/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete notification
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete notification
+      tags:
+      - notification
+  /notification/{id}/read:
+    put:
+      consumes:
+      - application/json
+      description: Read notification
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        type: string
+      - description: Notification update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.MasterNotificationUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Read notification
+      tags:
+      - notification
+  /notification/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update notification
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        type: string
+      - description: Notification update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.MasterNotificationUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update notification
+      tags:
+      - notification
+  /notification/user:
+    get:
+      consumes:
+      - application/json
+      description: Get all notification with optional filtering
+      parameters:
+      - description: Is Read
+        in: query
+        name: is_read
+        type: boolean
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserNotificationList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all notification
+      tags:
+      - notification
   /source:
     get:
       consumes:

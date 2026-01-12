@@ -8,6 +8,7 @@ import (
 
 	"imed/api/token"
 	"imed/internal/helper"
+	"imed/pkg/models"
 	m "imed/pkg/models"
 
 	"github.com/google/uuid"
@@ -383,4 +384,117 @@ func (r *UserRepo) RefreshPassword(req *m.RefreshPasswordReq) (*m.RefreshPasswor
 		UserId:   req.UserId,
 		Password: password,
 	}, nil
+}
+
+func (r *UserRepo) CreateActivity(req *m.UserActivityCreateReq) (*m.Void, error) {
+
+	query := `
+    INSERT INTO user_activities (user_id, day, activity)
+    VALUES ($1, (now() AT TIME ZONE 'Asia/Tashkent')::date, $2)
+    ON CONFLICT (user_id, day)
+    DO UPDATE SET
+		activity = user_activities.activity + EXCLUDED.activity,
+        updated_at = now();
+    `
+	_, err := r.db.Exec(query, req.UserId, req.Activity)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while creating/updating user activity: %w", err)
+	}
+
+	return nil, nil
+}
+func (r *UserRepo) GetActivities(req *m.UserActivityGetListReq) (*m.PaginationResponse, *m.UserActivityList, error) {
+
+	if req.Type == "day"{
+		query := `
+		SELECT
+			user_id,
+			day,
+			activity,
+			updated_at
+		FROM
+			user_activities
+		WHERE
+			user_id = $1
+		AND
+			day = $2
+		`
+
+		row := r.db.QueryRow(query, req.UserId, req.Date)
+		activities := m.UserActivityList{}
+		activity := m.UserActivity{}
+
+		err := row.Scan(
+			&activity.UserId,
+			&activity.Day,
+			&activity.Activity,
+			&activity.UpdatedAt,
+		)
+		
+		if err == sql.ErrNoRows {
+			activity.UserId = &req.UserId
+			activity.Day = &req.Date
+		}
+		activities.Activities = append(activities.Activities, &activity)
+		activities.Count = 1
+
+		filter := models.Pagination{
+			Limit: 1,
+			Page:  0,
+		}
+
+		response := m.NewPaginationResponse(filter, activities.Count, activities.Activities)
+
+		return &response, &activities, nil
+	} else if req.Type == "range"{
+		query := `
+		SELECT
+			user_id,
+			day,
+			activity,
+			updated_at
+		FROM
+			user_activities
+		WHERE
+			user_id = $1
+		AND
+			day BETWEEN $2 AND $3
+		ORDER BY day DESC
+		`
+
+		rows, err := r.db.Query(query, req.UserId, req.FromDate, req.ToDate)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while getting user activities: %w", err)
+		}
+		defer rows.Close()
+
+		activities := m.UserActivityList{}
+
+		for rows.Next() {
+			activity := m.UserActivity{}
+			err := rows.Scan(
+				&activity.UserId,
+				&activity.Day,
+				&activity.Activity,
+				&activity.UpdatedAt,
+			)
+			if err != nil {
+				return nil, nil, fmt.Errorf("error while scanning user activity row: %w", err)
+			}
+			activities.Activities = append(activities.Activities, &activity)
+		}
+		activities.Count = len(activities.Activities)
+
+		filter := models.Pagination{
+			Limit: activities.Count,
+			Page:  0,
+		}
+
+		response := m.NewPaginationResponse(filter, activities.Count, activities.Activities)
+
+		return &response, &activities, nil
+
+	}
+	return nil, nil, nil
 }

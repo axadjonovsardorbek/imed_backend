@@ -20,17 +20,6 @@ func NewContactRepo(db *sql.DB) *ContactRepo {
 	}
 }
 
-// CREATE TABLE IF NOT EXISTS contacts (
-//
-//	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//	name VARCHAR(100) NOT NULL,
-//	phone_number VARCHAR(100) NOT NULL,
-//	link_url VARCHAR(255) DEFAULT NULL,
-//	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-//	updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-//	deleted_at BIGINT DEFAULT 0
-//
-// );
 func (r *ContactRepo) Create(req *m.ContactCreateReq) (*m.ById, error) {
 	id := uuid.NewString()
 	query := `

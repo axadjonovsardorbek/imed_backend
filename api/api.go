@@ -68,6 +68,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 		user.GET("/get/profile", h.GetProfileUser)
 		user.PUT("/update/profile", h.UpdateProfileUser)
 		user.DELETE("/delete/profile", h.DeleteProfileUser)
+		user.POST("/activity", h.CreateActivity)
 	}
 
 	router.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer))
@@ -85,6 +86,24 @@ func NewApi(h *handler.Handler) *gin.Engine {
 		banner.GET("/:id", h.GetByIdBanner)
 		banner.PUT("/:id/update", h.UpdateBanner)
 		banner.DELETE("/:id/delete", h.DeleteBanner)
+	}
+
+	about := router.Group("/about").Use(mid.NewAuth(enforcer))
+	{
+		about.POST("", h.CreateAbout)
+		about.GET("", h.GetAllAbouts)
+		about.GET("/:id", h.GetByIdAbout)
+		about.PUT("/:id/update", h.UpdateAbout)
+		about.DELETE("/:id/delete", h.DeleteAbout)
+	}
+
+	faq := router.Group("/faq").Use(mid.NewAuth(enforcer))
+	{
+		faq.POST("", h.CreateFaq)
+		faq.GET("", h.GetAllFaqs)
+		faq.GET("/:id", h.GetByIdFaq)
+		faq.PUT("/:id/update", h.UpdateFaq)
+		faq.DELETE("/:id/delete", h.DeleteFaq)
 	}
 
 	course := router.Group("/course").Use(mid.NewAuth(enforcer))
@@ -163,6 +182,8 @@ func NewApi(h *handler.Handler) *gin.Engine {
 		notification.GET("/:id", h.GetByIdNotification)
 		notification.PUT("/:id/update", h.UpdateNotification)
 		notification.DELETE("/:id/delete", h.DeleteNotification)
+		notification.PUT("/:id/read", h.ReadNotification)
+		notification.GET("/user", h.GetAllUserNotifications)
 	}
 
 	router.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer))

@@ -13,9 +13,11 @@ import (
 type Storage struct {
 	Db            *sql.DB
 	AdminS        storage.AdminI
+	AboutS        storage.AboutI
 	BannerS       storage.BannerI
 	ContactS      storage.ContactI
 	CourseS       storage.CourseI
+	FaqS          storage.FaqI
 	LessonS       storage.LessonI
 	ModuleS       storage.ModuleI
 	SourceS       storage.SourceI
@@ -39,9 +41,11 @@ func NewPostgresStorage(config config.Config) (*Storage, error) {
 	}
 
 	admin := NewAdminRepo(db)
+	about := NewAboutRepo(db)
 	banner := NewBannerRepo(db)
 	contact := NewContactRepo(db)
 	course := NewCourseRepo(db)
+	faq := NewFaqRepo(db)
 	lesson := NewLessonRepo(db)
 	module := NewModuleRepo(db)
 	source := NewSourceRepo(db)
@@ -53,9 +57,11 @@ func NewPostgresStorage(config config.Config) (*Storage, error) {
 	return &Storage{
 		Db:            db,
 		AdminS:        admin,
+		AboutS:        about,
 		BannerS:       banner,
 		ContactS:      contact,
 		CourseS:       course,
+		FaqS:          faq,
 		LessonS:       lesson,
 		ModuleS:       module,
 		SourceS:       source,

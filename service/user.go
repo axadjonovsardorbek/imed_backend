@@ -38,3 +38,9 @@ func (s *UserService) ChangePassword(ctx context.Context, req *m.ChangePasswordR
 func (s *UserService) RefreshPassword(ctx context.Context, req *m.RefreshPasswordReq) (*m.RefreshPassword, error) {
 	return s.storage.UserS.RefreshPassword(req)
 }
+func (s *UserService) CreateActivity(ctx context.Context, req *m.UserActivityCreateReq) (*m.Void, error) {
+	return s.storage.UserS.CreateActivity(req)
+}
+func (s *UserService) GetActivities(ctx context.Context, req *m.UserActivityGetListReq) (*m.PaginationResponse, *m.UserActivityList, error) {
+	return s.storage.UserS.GetActivities(req)
+}

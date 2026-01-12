@@ -364,3 +364,112 @@ func (r *NotificationRepo) Delete(req *m.ById) (*m.Void, error) {
 
 	return nil, nil
 }
+
+// CREATE TABLE IF NOT EXISTS user_notifications (
+//
+//	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+//	master_notification_id UUID NOT NULL REFERENCES master_notifications(id) ON DELETE CASCADE,
+//	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+//	is_read BOOLEAN DEFAULT false,
+//	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//	UNIQUE(master_notification_id, user_id)
+//
+// );
+func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.PaginationResponse, *m.UserNotificationList, error) {
+	query := `
+	SELECT 
+		COUNT(n.id) OVER() AS total_count,
+		n.id,
+		n.is_read,
+		m.id,
+		m.title,
+		m.message,
+		n.created_at,
+		n.updated_at
+	FROM
+		user_notifications n
+	JOIN
+		master_notifications m ON n.master_notification_id = m.id
+	WHERE
+		n.user_id = $1
+	`
+
+	var args []interface{}
+	args = append(args, req.UserId)
+
+	if req.IsRead != "" && req.IsRead != "string" {
+		if req.IsRead == "true" {
+			query += fmt.Sprintf(" AND n.is_read = $%d", len(args)+1)
+			args = append(args, true)
+		} else if req.IsRead == "false" {
+			query += fmt.Sprintf(" AND n.is_read = $%d", len(args)+1)
+			args = append(args, false)
+		}
+	}
+
+	query += " ORDER BY n.created_at DESC"
+
+	args = append(args, req.Filter.Limit, req.Filter.Page)
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting notification: %w", err)
+	}
+	defer rows.Close()
+
+	notifications := m.UserNotificationList{}
+
+	for rows.Next() {
+
+		notification := m.UserNotificationRes{
+			MasterNotification: &m.MasterNotificationRes{},
+		}
+		var titleJSON []byte
+		var messageJSON []byte
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&notification.Id,
+			&notification.IsRead,
+			&notification.MasterNotification.Id,
+			&titleJSON,
+			&messageJSON,
+			&notification.CreatedAt,
+			&notification.UpdatedAt,
+		)
+
+		json.Unmarshal(titleJSON, &notification.MasterNotification.Title)
+		json.Unmarshal(messageJSON, &notification.MasterNotification.Message)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning notification row: %w", err)
+		}
+
+		notifications.Notifications = append(notifications.Notifications, &notification)
+		notifications.Count = totalCount
+	}
+
+	response := m.NewPaginationResponse(req.Filter, notifications.Count, notifications.Notifications)
+
+	return &response, &notifications, nil
+}
+func (r *NotificationRepo) MarkAsRead(req *m.NotificationMarkReadReq) (*m.Void, error) {
+
+	query := `
+	UPDATE user_notifications
+	SET
+		is_read = true,
+		updated_at = now()
+	WHERE id = $1 AND user_id = $2
+	`
+
+	_, err := r.db.Exec(query, req.Id, req.UserId)
+	if err != nil {
+		return nil, fmt.Errorf("error while marking notification as read: %w", err)
+	}
+
+	return &m.Void{}, nil
+}

@@ -97,8 +97,10 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 func (h *Handler) GetByIdCourse(c *gin.Context) {
 	id := c.Param("id")
 
+	user_id := claimData(c, "user_id")
+
 	slog.Info("Get course with id", id)
-	res, err := h.Clients.Course.GetById(context.Background(), &m.ById{Id: id})
+	res, err := h.Clients.Course.GetById(context.Background(), &m.CourseById{Id: id, UserId: user_id})
 	slog.Info("Course details", res)
 
 	if err != nil {
@@ -139,11 +141,14 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 
 	pagination := m.ParsePagination(limit, page)
 
+	user_id := claimData(c, "user_id")
+
 	req := &m.CourseGetListReq{
 		Name:      name,
 		SubjectId: subject_id,
 		TeacherId: teacher_id,
 		IsPublic:  is_public,
+		UserId:    user_id,
 		Filter:    pagination,
 	}
 
@@ -391,17 +396,18 @@ func (h *Handler) UserCourses(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path string false "Permission ID"
-// @Param credentials body models.UserCourseUpdateReq true "Course update credentials"
+// @Param credentials body models.UserCourseUpdateBody true "Course update credentials"
 // @Success 200 {object} string "Permission updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
 // @Router /course/permission{id}/update [put]
 func (h *Handler) UpdateUserCourse(c *gin.Context) {
 	var req m.UserCourseUpdateReq
+	var body m.UserCourseUpdateBody
 
 	id := c.Param("id")
 
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.BindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
@@ -409,8 +415,13 @@ func (h *Handler) UpdateUserCourse(c *gin.Context) {
 	}
 
 	req.Id = id
+	req.CourseId = body.CourseId
+	req.EndedAt = body.EndedAt
+	req.StartedAt = body.StartedAt
+	req.Type = body.Type
+	req.UserId = body.UserId
 
-	slog.Info("Update user uourse", req)
+	slog.Info("Update user course", req)
 	_, err := h.Clients.Course.UserUpdateCourse(context.Background(), &req)
 
 	if err != nil {

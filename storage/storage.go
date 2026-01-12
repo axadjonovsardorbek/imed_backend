@@ -35,7 +35,7 @@ type SubjectI interface {
 
 type CourseI interface {
 	Create(req *m.CourseCreateReq) (*m.ById, error)
-	GetById(req *m.ById) (*m.CourseRes, error)
+	GetById(req *m.CourseById) (*m.CourseRes, error)
 	GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.CourseList, error)
 	Update(req *m.CourseUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
@@ -88,6 +88,8 @@ type UserI interface {
 	Delete(req *m.ById) (*m.Void, error)
 	ChangePassword(req *m.ChangePasswordReq) (*m.Void, error)
 	RefreshPassword(req *m.RefreshPasswordReq) (*m.RefreshPassword, error)
+	CreateActivity(req *m.UserActivityCreateReq) (*m.Void, error)
+	GetActivities(req *m.UserActivityGetListReq) (*m.PaginationResponse, *m.UserActivityList, error)
 }
 
 type NotificationI interface {
@@ -95,5 +97,23 @@ type NotificationI interface {
 	GetById(req *m.ById) (*m.MasterNotificationRes, error)
 	GetAll(req *m.NotificationGetListReq) (*m.PaginationResponse, *m.MasterNotificationList, error)
 	Update(req *m.MasterNotificationUpdateReq) (*m.Void, error)
+	Delete(req *m.ById) (*m.Void, error)
+	UserNotifications(req *m.NotificationGetListReq) (*m.PaginationResponse, *m.UserNotificationList, error)
+	MarkAsRead(req *m.NotificationMarkReadReq) (*m.Void, error)
+}
+
+type FaqI interface {
+	Create(req *m.FaqCreateReq) (*m.ById, error)
+	GetById(req *m.ById) (*m.FaqRes, error)
+	GetAll(req *m.FaqGetListReq) (*m.PaginationResponse, *m.FaqList, error)
+	Update(req *m.FaqUpdateReq) (*m.Void, error)
+	Delete(req *m.ById) (*m.Void, error)
+}
+
+type AboutI interface {
+	Create(req *m.AboutCreateReq) (*m.ById, error)
+	GetById(req *m.ById) (*m.AboutRes, error)
+	GetAll(req *m.AboutGetListReq) (*m.PaginationResponse, *m.AboutList, error)
+	Update(req *m.AboutUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
 }

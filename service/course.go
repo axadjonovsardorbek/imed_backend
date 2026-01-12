@@ -18,7 +18,7 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 	return s.storage.CourseS.Create(req)
 }
 
-func (s *CourseService) GetById(ctx context.Context, req *m.ById) (*m.CourseRes, error) {
+func (s *CourseService) GetById(ctx context.Context, req *m.CourseById) (*m.CourseRes, error) {
 	return s.storage.CourseS.GetById(req)
 }
 

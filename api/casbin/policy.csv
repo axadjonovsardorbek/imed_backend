@@ -63,10 +63,28 @@ p, admin, /subject, GET
 p, admin, /subject/:id, GET
 p, admin, /subject/:id/update, PUT
 p, admin, /subject/:id/delete, DELETE
+p, admin, /notification, POST
+p, admin, /notification, GET
+p, admin, /notification/:id, GET
+p, admin, /notification/:id/update, PUT
+p, admin, /notification/:id/delete, DELETE
+p, admin, /notification/:id/read, PUT
+p, admin, /notification/user, GET
+p, admin, /about, POST
+p, admin, /about, GET
+p, admin, /about/:id, GET
+p, admin, /about/:id/update, PUT
+p, admin, /about/:id/delete, DELETE
+p, admin, /faq, POST
+p, admin, /faq, GET
+p, admin, /faq/:id, GET
+p, admin, /faq/:id/update, PUT
+p, admin, /faq/:id/delete, DELETE
 p, admin, /file-upload, POST
 
 p, user, /auth/user/check, POST
 p, user, /auth/user/login, POST
+p, user, /auth/user/activity, POST
 p, user, /auth/password/change, PUT
 p, user, /auth/password/refresh, PUT
 p, user, /user/get/profile, GET
@@ -93,6 +111,12 @@ p, user, /source, GET
 p, user, /source/:id, GET
 p, user, /subject, GET
 p, user, /subject/:id, GET
+p, user, /notification/:id/read, PUT
+p, user, /notification/user, GET
+p, user, /about, GET
+p, user, /about/:id, GET
+p, user, /faq, GET
+p, user, /faq/:id, GET
 p, user, /file-upload, POST
 
 g, user, unauthorized

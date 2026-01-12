@@ -33,3 +33,11 @@ func (s *NotificationService) Update(ctx context.Context, req *m.MasterNotificat
 func (s *NotificationService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	return s.storage.NotificationS.Delete(req)
 }
+
+func (s *NotificationService) UserNotifications(ctx context.Context, req *m.NotificationGetListReq) (*m.PaginationResponse, *m.UserNotificationList, error) {
+	return s.storage.NotificationS.UserNotifications(req)
+}
+
+func (s *NotificationService) MarkAsRead(ctx context.Context, req *m.NotificationMarkReadReq) (*m.Void, error) {
+	return s.storage.NotificationS.MarkAsRead(req)
+}

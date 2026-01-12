@@ -109,8 +109,7 @@ func (h *Handler) GetByIdNotification(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param title query string false "Title"
-// @Param course_id query string false "Lesson ID"
-// @Param type query string false "Type" Enums(video, document, test)
+// @Param course_id query string false "Course ID"
 // @Param limit query int false "Limit"
 // @Param page query int false "Page"
 // @Success 200 {object} models.MasterNotificationList
@@ -236,4 +235,90 @@ func (h *Handler) DeleteNotification(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Notification deleted successfully"})
+}
+
+// GetAllNotifications godoc
+// @Summary Get all notification
+// @Description Get all notification with optional filtering
+// @Tags notification
+// @Accept  json
+// @Produce  json
+// @Param is_read query bool false "Is Read"
+// @Param limit query int false "Limit"
+// @Param page query int false "Page"
+// @Success 200 {object} models.UserNotificationList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /notification/user [get]
+func (h *Handler) GetAllUserNotifications(c *gin.Context) {
+	is_read := c.Query("is_read")
+	limit := c.Query("limit")
+	page := c.Query("page")
+
+	pagination := m.ParsePagination(limit, page)
+
+	user_id := claimData(c, "user_id")
+	if user_id == "" {
+		return
+	}
+
+	req := &m.NotificationGetListReq{
+		UserId: user_id,
+		IsRead: is_read,
+		Filter: pagination,
+	}
+
+	slog.Info("Get all notification with filtes", req)
+	data, _, err := h.Clients.Notification.UserNotifications(context.Background(), req)
+	slog.Info("All notification", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"Error": err.Error()})
+		slog.Error("Error getting notification: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Notifications retrieved successfully")
+	c.JSON(200, data)
+}
+
+// Read godoc
+// @Summary Read notification
+// @Description Read notification
+// @Tags notification
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string false "Notification ID"
+// @Param credentials body models.MasterNotificationUpdateBody true "Notification update credentials"
+// @Success 200 {object} string "Notification updated"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Server error"
+// @Router /notification/{id}/read [put]
+func (h *Handler) ReadNotification(c *gin.Context) {
+	var req m.NotificationMarkReadReq
+
+	id := c.Param("id")
+
+	user_id := claimData(c, "user_id")
+	if user_id == "" {
+		return
+	}
+
+	req.Id = id
+	req.UserId = user_id
+
+	slog.Info("Update Notification", req)
+	_, err := h.Clients.Notification.MarkAsRead(context.Background(), &req)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		slog.Error("Error updating Notification: ", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Notification read"})
 }

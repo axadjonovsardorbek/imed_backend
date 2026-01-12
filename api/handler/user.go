@@ -410,3 +410,48 @@ func (h *Handler) DeleteProfileUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Profile deleted successfully"})
 }
+
+// Activity godoc
+// @Summary Activity user
+// @Description Activity user
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param credentials body models.UserActivityCreateBody true "User activity credentials"
+// @Success 200 {object} string "Activity created"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Server error"
+// @Router /auth/user/activity [post]
+func (h *Handler) CreateActivity(c *gin.Context) {
+	var req m.UserActivityCreateReq
+	var body m.UserActivityCreateBody
+
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		slog.Error("Error binding request body", err)
+		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	user_id := claimData(c, "user_id")
+	if user_id == "" {
+		return
+	}
+
+	req.UserId = user_id
+	req.Activity = body.Activity
+
+	slog.Info("Create activity ", req)
+	res, err := h.Clients.User.CreateActivity(context.Background(), &req)
+	slog.Info("Create activity response", res)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		slog.Error("Error while create activity", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
+}

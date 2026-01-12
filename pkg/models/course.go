@@ -32,6 +32,7 @@ type CourseRes struct {
 	ImageUrl    *string           `json:"image_url"`
 	IsPublic    *bool             `json:"is_public"`
 	OrderNum    *int              `json:"order_num"`
+	HasAccess   bool              `json:"has_access"`
 	CreatedAt   *string           `json:"created_at"`
 	UpdatedAt   *string           `json:"updated_at"`
 }
@@ -47,6 +48,7 @@ type CourseGetListReq struct {
 	Name      string     `json:"name"`
 	IsPublic  string     `json:"is_public"`
 	Price     int        `json:"price"`
+	UserId    string     `json:"user_id"`
 	Filter    Pagination `json:"filter"`
 }
 
@@ -82,15 +84,17 @@ type UserCourseCreateReq struct {
 }
 
 type UserCourseRes struct {
-	Id        *string    `json:"id"`
-	User      *UserRes   `json:"user"`
-	Course    *CourseRes `json:"course"`
-	IsActive  *bool      `json:"is_active"`
-	Type      *string    `json:"type"`
-	StartedAt *string    `json:"started_at"`
-	EndedAt   *string    `json:"ended_at"`
-	CreatedAt *string    `json:"created_at"`
-	UpdatedAt *string    `json:"updated_at"`
+	Id         *string `json:"id"`
+	UserId     *string `json:"user_id"`
+	UserName   *string `json:"user_name"`
+	CourseId   *string `json:"course_id"`
+	CourseName *string `json:"course_name"`
+	IsActive   *bool   `json:"is_active"`
+	Type       *string `json:"type"`
+	StartedAt  *string `json:"started_at"`
+	EndedAt    *string `json:"ended_at"`
+	CreatedAt  *string `json:"created_at"`
+	UpdatedAt  *string `json:"updated_at"`
 }
 
 type UserCourseList struct {
@@ -109,7 +113,6 @@ type UserCourseGetListReq struct {
 type UserCourseUpdateBody struct {
 	UserId    string `json:"user_id"`
 	CourseId  string `json:"course_id"`
-	IsActive  bool   `json:"is_active"`
 	Type      string `json:"type"`
 	StartedAt string `json:"started_at"`
 	EndedAt   string `json:"ended_at"`
@@ -119,7 +122,6 @@ type UserCourseUpdateReq struct {
 	Id        string `json:"id"`
 	UserId    string `json:"user_id"`
 	CourseId  string `json:"course_id"`
-	IsActive  bool   `json:"is_active"`
 	Type      string `json:"type"`
 	StartedAt string `json:"started_at"`
 	EndedAt   string `json:"ended_at"`
