@@ -236,6 +236,8 @@ definitions:
         additionalProperties:
           type: string
         type: object
+      has_access:
+        type: boolean
       id:
         type: string
       image_url:
@@ -416,8 +418,10 @@ definitions:
     type: object
   models.MasterNotificationRes:
     properties:
-      course:
-        $ref: '#/definitions/models.CourseRes'
+      course_id:
+        type: string
+      course_name:
+        type: string
       created_at:
         type: string
       id:
@@ -747,16 +751,12 @@ definitions:
       user_name:
         type: string
     type: object
-  models.UserCourseUpdateReq:
+  models.UserCourseUpdateBody:
     properties:
       course_id:
         type: string
       ended_at:
         type: string
-      id:
-        type: string
-      is_active:
-        type: boolean
       started_at:
         type: string
       type:
@@ -799,8 +799,10 @@ definitions:
         type: string
       is_read:
         type: boolean
-      master_notification:
-        $ref: '#/definitions/models.MasterNotificationRes'
+      message:
+        type: string
+      title:
+        type: string
       updated_at:
         type: string
     type: object
@@ -1132,38 +1134,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Refresh password
-      tags:
-      - auth
-  /auth/user/activity:
-    post:
-      consumes:
-      - application/json
-      description: Activity user
-      parameters:
-      - description: User activity credentials
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/models.UserActivityCreateBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Activity created
-          schema:
-            type: string
-        "400":
-          description: Invalid request payload
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Activity user
       tags:
       - auth
   /auth/user/check:
@@ -1901,7 +1871,7 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/models.UserCourseUpdateReq'
+          $ref: '#/definitions/models.UserCourseUpdateBody'
       produces:
       - application/json
       responses:
@@ -2633,12 +2603,6 @@ paths:
         in: path
         name: id
         type: string
-      - description: Notification update credentials
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/models.MasterNotificationUpdateBody'
       produces:
       - application/json
       responses:
@@ -3350,6 +3314,38 @@ paths:
       summary: Delete user
       tags:
       - user
+  /user/activity:
+    post:
+      consumes:
+      - application/json
+      description: Activity user
+      parameters:
+      - description: User activity credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserActivityCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity created
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Activity user
+      tags:
+      - profile
   /user/delete/profile:
     delete:
       consumes:

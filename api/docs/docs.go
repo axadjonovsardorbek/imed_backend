@@ -479,57 +479,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/user/activity": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Activity user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Activity user",
-                "parameters": [
-                    {
-                        "description": "User activity credentials",
-                        "name": "credentials",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserActivityCreateBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Activity created",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/user/check": {
             "post": {
                 "security": [
@@ -1546,7 +1495,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserCourseUpdateReq"
+                            "$ref": "#/definitions/models.UserCourseUpdateBody"
                         }
                     }
                 ],
@@ -2921,15 +2870,6 @@ const docTemplate = `{
                         "description": "Notification ID",
                         "name": "id",
                         "in": "path"
-                    },
-                    {
-                        "description": "Notification update credentials",
-                        "name": "credentials",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.MasterNotificationUpdateBody"
-                        }
                     }
                 ],
                 "responses": {
@@ -3889,6 +3829,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/activity": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Activity user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Activity user",
+                "parameters": [
+                    {
+                        "description": "User activity credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserActivityCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activity created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/delete/profile": {
             "delete": {
                 "security": [
@@ -4481,6 +4472,9 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "has_access": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -4757,8 +4751,11 @@ const docTemplate = `{
         "models.MasterNotificationRes": {
             "type": "object",
             "properties": {
-                "course": {
-                    "$ref": "#/definitions/models.CourseRes"
+                "course_id": {
+                    "type": "string"
+                },
+                "course_name": {
+                    "type": "string"
                 },
                 "created_at": {
                     "type": "string"
@@ -5267,7 +5264,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserCourseUpdateReq": {
+        "models.UserCourseUpdateBody": {
             "type": "object",
             "properties": {
                 "course_id": {
@@ -5275,12 +5272,6 @@ const docTemplate = `{
                 },
                 "ended_at": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_active": {
-                    "type": "boolean"
                 },
                 "started_at": {
                     "type": "string"
@@ -5347,8 +5338,11 @@ const docTemplate = `{
                 "is_read": {
                     "type": "boolean"
                 },
-                "master_notification": {
-                    "$ref": "#/definitions/models.MasterNotificationRes"
+                "message": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"

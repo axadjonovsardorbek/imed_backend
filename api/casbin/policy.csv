@@ -84,12 +84,12 @@ p, admin, /file-upload, POST
 
 p, user, /auth/user/check, POST
 p, user, /auth/user/login, POST
-p, user, /auth/user/activity, POST
 p, user, /auth/password/change, PUT
 p, user, /auth/password/refresh, PUT
 p, user, /user/get/profile, GET
 p, user, /user/update/profile, PUT
 p, user, /user/delete/profile, DELETE
+p, user, /user/activity, POST
 p, user, /banner, GET
 p, user, /banner/:id, GET
 p, user, /course, GET

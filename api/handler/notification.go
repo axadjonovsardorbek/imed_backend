@@ -292,7 +292,6 @@ func (h *Handler) GetAllUserNotifications(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path string false "Notification ID"
-// @Param credentials body models.MasterNotificationUpdateBody true "Notification update credentials"
 // @Success 200 {object} string "Notification updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"

@@ -21,26 +21,6 @@ func NewNotificationRepo(db *sql.DB) *NotificationRepo {
 	}
 }
 
-// CREATE TABLE IF NOT EXISTS master_notifications (
-//     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//     title JSONB NOT NULL,
-//     message JSONB NOT NULL,
-//     type VARCHAR(50) NOT NULL CHECK (type IN ('selected', 'all')),
-//     course_id UUID REFERENCES courses(id) DEFAULT NULL,
-//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-// );
-
-// CREATE TABLE IF NOT EXISTS user_notifications (
-//     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//     master_notification_id UUID NOT NULL REFERENCES master_notifications(id) ON DELETE CASCADE,
-//     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-//     is_read BOOLEAN DEFAULT false,
-//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//     UNIQUE(master_notification_id, user_id)
-// );
-
 func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error) {
 
 	tz, err := r.db.Begin()
@@ -180,11 +160,9 @@ func (r *NotificationRepo) GetById(req *m.ById) (*m.MasterNotificationRes, error
 		n.updated_at
 	FROM
 		master_notifications n
-	JOIN
+	LEFT JOIN
 		courses c ON n.course_id = c.id
 	WHERE
-		n.deleted_at = 0
-	AND
 		n.id = $1
 	`
 
@@ -194,15 +172,13 @@ func (r *NotificationRepo) GetById(req *m.ById) (*m.MasterNotificationRes, error
 	var messageJSON []byte
 	var courseNameJSON []byte
 
-	notification := m.MasterNotificationRes{
-		Course: &m.CourseRes{},
-	}
+	notification := m.MasterNotificationRes{}
 	err := row.Scan(
 		&notification.Id,
 		&titleJSON,
 		&messageJSON,
 		&notification.Type,
-		&notification.Course.Id,
+		&notification.CourseId,
 		&courseNameJSON,
 		&notification.CreatedAt,
 		&notification.UpdatedAt,
@@ -210,7 +186,7 @@ func (r *NotificationRepo) GetById(req *m.ById) (*m.MasterNotificationRes, error
 
 	json.Unmarshal(titleJSON, &notification.Title)
 	json.Unmarshal(messageJSON, &notification.Message)
-	json.Unmarshal(courseNameJSON, &notification.Course.Name)
+	json.Unmarshal(courseNameJSON, &notification.CourseName)
 
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("notification not found with id: %s", req.Id)
@@ -236,10 +212,10 @@ func (r *NotificationRepo) GetAll(req *m.NotificationGetListReq) (*m.PaginationR
 		n.updated_at
 	FROM
 		master_notifications n
-	JOIN
+	LEFT JOIN
 		courses c ON n.course_id = c.id
 	WHERE
-		n.deleted_at = 0
+		1=1
 	`
 
 	var args []interface{}
@@ -279,7 +255,7 @@ func (r *NotificationRepo) GetAll(req *m.NotificationGetListReq) (*m.PaginationR
 			&titleJSON,
 			&messageJSON,
 			&notification.Type,
-			&notification.Course.Id,
+			&notification.CourseId,
 			&courseNameJSON,
 			&notification.CreatedAt,
 			&notification.UpdatedAt,
@@ -287,7 +263,7 @@ func (r *NotificationRepo) GetAll(req *m.NotificationGetListReq) (*m.PaginationR
 
 		json.Unmarshal(titleJSON, &notification.Title)
 		json.Unmarshal(messageJSON, &notification.Message)
-		json.Unmarshal(courseNameJSON, &notification.Course.Name)
+		json.Unmarshal(courseNameJSON, &notification.CourseName)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning notification row: %w", err)
@@ -301,6 +277,7 @@ func (r *NotificationRepo) GetAll(req *m.NotificationGetListReq) (*m.PaginationR
 
 	return &response, &notifications, nil
 }
+
 func (r *NotificationRepo) Update(req *m.MasterNotificationUpdateReq) (*m.Void, error) {
 	query := `
 	UPDATE master_notifications
@@ -325,7 +302,7 @@ func (r *NotificationRepo) Update(req *m.MasterNotificationUpdateReq) (*m.Void, 
 
 	conditions = append(conditions, " updated_at = now()")
 	query += strings.Join(conditions, ", ")
-	query += " WHERE id = $" + strconv.Itoa(len(args)+1) + " AND deleted_at = 0"
+	query += " WHERE id = $" + strconv.Itoa(len(args)+1)
 
 	args = append(args, req.Id)
 
@@ -342,6 +319,7 @@ func (r *NotificationRepo) Update(req *m.MasterNotificationUpdateReq) (*m.Void, 
 	}
 	return &m.Void{}, nil
 }
+
 func (r *NotificationRepo) Delete(req *m.ById) (*m.Void, error) {
 
 	query := `
@@ -365,17 +343,6 @@ func (r *NotificationRepo) Delete(req *m.ById) (*m.Void, error) {
 	return nil, nil
 }
 
-// CREATE TABLE IF NOT EXISTS user_notifications (
-//
-//	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//	master_notification_id UUID NOT NULL REFERENCES master_notifications(id) ON DELETE CASCADE,
-//	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-//	is_read BOOLEAN DEFAULT false,
-//	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//	UNIQUE(master_notification_id, user_id)
-//
-// );
 func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.PaginationResponse, *m.UserNotificationList, error) {
 	query := `
 	SELECT 
@@ -423,26 +390,25 @@ func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.
 
 	for rows.Next() {
 
-		notification := m.UserNotificationRes{
-			MasterNotification: &m.MasterNotificationRes{},
-		}
+		notification := m.UserNotificationRes{}
 		var titleJSON []byte
 		var messageJSON []byte
 		var totalCount int
+		var master_notification_id string
 
 		err := rows.Scan(
 			&totalCount,
 			&notification.Id,
 			&notification.IsRead,
-			&notification.MasterNotification.Id,
+			&master_notification_id,
 			&titleJSON,
 			&messageJSON,
 			&notification.CreatedAt,
 			&notification.UpdatedAt,
 		)
 
-		json.Unmarshal(titleJSON, &notification.MasterNotification.Title)
-		json.Unmarshal(messageJSON, &notification.MasterNotification.Message)
+		json.Unmarshal(titleJSON, &notification.Title)
+		json.Unmarshal(messageJSON, &notification.Message)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning notification row: %w", err)

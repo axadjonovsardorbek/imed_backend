@@ -414,7 +414,7 @@ func (h *Handler) DeleteProfileUser(c *gin.Context) {
 // Activity godoc
 // @Summary Activity user
 // @Description Activity user
-// @Tags auth
+// @Tags profile
 // @Accept json
 // @Produce json
 // @Security BearerAuth
@@ -422,7 +422,7 @@ func (h *Handler) DeleteProfileUser(c *gin.Context) {
 // @Success 200 {object} string "Activity created"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /auth/user/activity [post]
+// @Router /user/activity [post]
 func (h *Handler) CreateActivity(c *gin.Context) {
 	var req m.UserActivityCreateReq
 	var body m.UserActivityCreateBody
