@@ -17,14 +17,15 @@ type SourceCreateBody struct {
 }
 
 type SourceRes struct {
-	Id        string            `json:"id"`
-	Name      map[string]string `json:"name"`
-	Lesson    LessonRes         `json:"lesson"`
-	Url       map[string]string `json:"url"`
-	Type      *string           `json:"type"`
-	OrderNum  *int              `json:"order_num"`
-	CreatedAt *string           `json:"created_at"`
-	UpdatedAt *string           `json:"updated_at"`
+	Id         string            `json:"id"`
+	Name       map[string]string `json:"name"`
+	LessonId   string            `json:"lesson_id"`
+	LessonName map[string]string `json:"lesson_name"`
+	Url        map[string]string `json:"url"`
+	Type       *string           `json:"type"`
+	OrderNum   *int              `json:"order_num"`
+	CreatedAt  *string           `json:"created_at"`
+	UpdatedAt  *string           `json:"updated_at"`
 }
 
 type SourceList struct {

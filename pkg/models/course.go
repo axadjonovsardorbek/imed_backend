@@ -49,6 +49,7 @@ type CourseGetListReq struct {
 	IsPublic  string     `json:"is_public"`
 	Price     int        `json:"price"`
 	UserId    string     `json:"user_id"`
+	Role      string     `json:"role"`
 	Filter    Pagination `json:"filter"`
 }
 
@@ -84,17 +85,17 @@ type UserCourseCreateReq struct {
 }
 
 type UserCourseRes struct {
-	Id         *string `json:"id"`
-	UserId     *string `json:"user_id"`
-	UserName   *string `json:"user_name"`
-	CourseId   *string `json:"course_id"`
-	CourseName *string `json:"course_name"`
-	IsActive   *bool   `json:"is_active"`
-	Type       *string `json:"type"`
-	StartedAt  *string `json:"started_at"`
-	EndedAt    *string `json:"ended_at"`
-	CreatedAt  *string `json:"created_at"`
-	UpdatedAt  *string `json:"updated_at"`
+	Id         *string           `json:"id"`
+	UserId     *string           `json:"user_id"`
+	UserName   *string           `json:"user_name"`
+	CourseId   *string           `json:"course_id"`
+	CourseName map[string]string `json:"course_name"`
+	IsActive   *bool             `json:"is_active"`
+	Type       *string           `json:"type"`
+	StartedAt  *string           `json:"started_at"`
+	EndedAt    *string           `json:"ended_at"`
+	CreatedAt  *string           `json:"created_at"`
+	UpdatedAt  *string           `json:"updated_at"`
 }
 
 type UserCourseList struct {

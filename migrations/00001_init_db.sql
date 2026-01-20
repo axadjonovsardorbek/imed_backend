@@ -197,6 +197,10 @@ CREATE INDEX idx_user_courses_permission
 ON user_courses(user_id, course_id, ended_at)
 WHERE deleted_at = 0;
 
+CREATE UNIQUE INDEX IF NOT EXISTS ux_user_lessons_user_lesson
+ON user_lessons(user_id, lesson_id);
+
+
 -- +goose StatementEnd
 
 -- +goose Down

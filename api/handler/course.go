@@ -98,9 +98,10 @@ func (h *Handler) GetByIdCourse(c *gin.Context) {
 	id := c.Param("id")
 
 	user_id := claimData(c, "user_id")
+	role := claimData(c, "role")
 
 	slog.Info("Get course with id", id)
-	res, err := h.Clients.Course.GetById(context.Background(), &m.CourseById{Id: id, UserId: user_id})
+	res, err := h.Clients.Course.GetById(context.Background(), &m.CourseById{Id: id, UserId: user_id, Role: role})
 	slog.Info("Course details", res)
 
 	if err != nil {
@@ -142,6 +143,7 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 	pagination := m.ParsePagination(limit, page)
 
 	user_id := claimData(c, "user_id")
+	role := claimData(c, "role")
 
 	req := &m.CourseGetListReq{
 		Name:      name,
@@ -149,6 +151,7 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 		TeacherId: teacher_id,
 		IsPublic:  is_public,
 		UserId:    user_id,
+		Role:      role,
 		Filter:    pagination,
 	}
 

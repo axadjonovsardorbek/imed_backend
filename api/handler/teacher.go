@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	m "imed/pkg/models"
@@ -29,6 +30,16 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 		c.JSON(400, gin.H{"Error": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	check := isValidPhone(req.PhoneNumber)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Phone number is not valid",
+		})
+		slog.Error("Error binding request body: Phone number is not valid")
+		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
 		return
 	}
 
@@ -146,6 +157,16 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	check := isValidPhone(body.PhoneNumber)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Phone number is not valid",
+		})
+		slog.Error("Error binding request body: Phone number is not valid")
+		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
 		return
 	}
 

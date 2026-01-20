@@ -80,8 +80,11 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 func (h *Handler) GetByIdLesson(c *gin.Context) {
 	id := c.Param("id")
 
+	role := claimData(c, "role")
+	user_id := claimData(c, "user_id")
+
 	slog.Info("Get lesson with id", id)
-	res, err := h.Clients.Lesson.GetById(context.Background(), &m.ById{Id: id})
+	res, err := h.Clients.Lesson.GetById(context.Background(), &m.CourseById{Id: id, Role: role, UserId: user_id})
 	slog.Info("Lesson details", res)
 
 	if err != nil {

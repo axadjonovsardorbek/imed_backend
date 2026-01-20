@@ -4680,8 +4680,17 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "module": {
-                    "$ref": "#/definitions/models.ModuleRes"
+                "is_completed": {
+                    "type": "boolean"
+                },
+                "module_id": {
+                    "type": "string"
+                },
+                "module_name": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "name": {
                     "type": "object",
@@ -4834,8 +4843,14 @@ const docTemplate = `{
         "models.ModuleRes": {
             "type": "object",
             "properties": {
-                "course": {
-                    "$ref": "#/definitions/models.CourseRes"
+                "course_id": {
+                    "type": "string"
+                },
+                "course_name": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "created_at": {
                     "type": "string"
@@ -4968,8 +4983,14 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "lesson": {
-                    "$ref": "#/definitions/models.LessonRes"
+                "lesson_id": {
+                    "type": "string"
+                },
+                "lesson_name": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "name": {
                     "type": "object",
@@ -5233,7 +5254,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "course_name": {
-                    "type": "string"
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "created_at": {
                     "type": "string"

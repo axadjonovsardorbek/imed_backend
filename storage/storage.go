@@ -56,7 +56,7 @@ type ModuleI interface {
 
 type LessonI interface {
 	Create(req *m.LessonCreateReq) (*m.ById, error)
-	GetById(req *m.ById) (*m.LessonRes, error)
+	GetById(req *m.CourseById) (*m.LessonRes, error)
 	GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.LessonList, error)
 	Update(req *m.LessonUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)

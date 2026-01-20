@@ -42,7 +42,7 @@ func (r *UserRepo) Check(req *m.UserCheckReq) (bool, error) {
 		return false, fmt.Errorf("error while checking user existence: %w", err)
 	}
 
-	return true, nil
+	return exists, nil
 }
 
 func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
@@ -406,7 +406,7 @@ func (r *UserRepo) CreateActivity(req *m.UserActivityCreateReq) (*m.Void, error)
 }
 func (r *UserRepo) GetActivities(req *m.UserActivityGetListReq) (*m.PaginationResponse, *m.UserActivityList, error) {
 
-	if req.Type == "day"{
+	if req.Type == "day" {
 		query := `
 		SELECT
 			user_id,
@@ -431,7 +431,7 @@ func (r *UserRepo) GetActivities(req *m.UserActivityGetListReq) (*m.PaginationRe
 			&activity.Activity,
 			&activity.UpdatedAt,
 		)
-		
+
 		if err == sql.ErrNoRows {
 			activity.UserId = &req.UserId
 			activity.Day = &req.Date
@@ -447,7 +447,7 @@ func (r *UserRepo) GetActivities(req *m.UserActivityGetListReq) (*m.PaginationRe
 		response := m.NewPaginationResponse(filter, activities.Count, activities.Activities)
 
 		return &response, &activities, nil
-	} else if req.Type == "range"{
+	} else if req.Type == "range" {
 		query := `
 		SELECT
 			user_id,

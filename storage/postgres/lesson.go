@@ -50,34 +50,67 @@ func (r *LessonRepo) Create(req *m.LessonCreateReq) (*m.ById, error) {
 	return &m.ById{Id: id}, nil
 }
 
-func (r *LessonRepo) GetById(req *m.ById) (*m.LessonRes, error) {
+func (r *LessonRepo) GetById(req *m.CourseById) (*m.LessonRes, error) {
+	var query string
+	var args []interface{}
 
-	query := `
-	SELECT 
-		l.id,
-		l.name,
-		l.type,
-		l.duration,
-		l.order_num,
-		l.module_id,
-		m.name,
-		l.created_at,
-		l.updated_at
-	FROM
-		lessons l
-	LEFT JOIN
-		modules m ON l.module_id = m.id
-	WHERE
-		l.deleted_at = 0
-	AND
-		l.id = $1
-	`
-
-	row := r.db.QueryRow(query, req.Id)
-
-	lesson := m.LessonRes{
-		Module: m.ModuleRes{},
+	if req.Role != "user" || req.UserId == "" {
+		query = `
+		SELECT 
+			l.id,
+			l.name,
+			l.type,
+			l.duration,
+			l.order_num,
+			l.module_id,
+			m.name,
+			1 AS is_completed,
+			l.created_at,
+			l.updated_at
+		FROM
+			lessons l
+		LEFT JOIN
+			modules m ON l.module_id = m.id
+		WHERE
+			l.deleted_at = 0
+		AND 
+			l.id = $1
+		`
+		args = append(args, req.Id)
+	} else {
+		query = `
+		SELECT 
+			l.id,
+			l.name,
+			l.type,
+			l.duration,
+			l.order_num,
+			l.module_id,
+			m.name,
+			COALESCE(ul.is_completed, false) AS is_completed,
+			l.created_at,
+			l.updated_at
+		FROM
+			lessons l
+		LEFT JOIN
+			user_lessons ul
+		ON 
+			ul.lesson_id = l.id
+		AND
+			ul.user_id = $1
+		LEFT JOIN
+			modules m ON l.module_id = m.id
+		WHERE
+			l.deleted_at = 0
+		AND
+			l.id = $2
+		`
+		args = append(args, req.UserId, req.Id)
 	}
+
+	row := r.db.QueryRow(query, args...)
+
+	lesson := m.LessonRes{}
 	var nameJSON []byte
 	var moduleNameJSON []byte
 
@@ -87,14 +120,15 @@ func (r *LessonRepo) GetById(req *m.ById) (*m.LessonRes, error) {
 		&lesson.Type,
 		&lesson.Duration,
 		&lesson.OrderNum,
-		&lesson.Module.Id,
+		&lesson.ModuleId,
 		&moduleNameJSON,
+		&lesson.IsCompleted,
 		&lesson.CreatedAt,
 		&lesson.UpdatedAt,
 	)
 
 	json.Unmarshal(nameJSON, &lesson.Name)
-	json.Unmarshal(moduleNameJSON, &lesson.Module.Name)
+	json.Unmarshal(moduleNameJSON, &lesson.ModuleName)
 
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("lesson not found with id: %s", req.Id)
@@ -106,27 +140,59 @@ func (r *LessonRepo) GetById(req *m.ById) (*m.LessonRes, error) {
 }
 
 func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.LessonList, error) {
-	query := `
-	SELECT 
-		COUNT(l.id) OVER() AS total_count,
-		l.id,
-		l.name,
-		l.type,
-		l.duration,
-		l.order_num,
-		l.module_id,
-		m.name,
-		l.created_at,
-		l.updated_at
-	FROM
-		lessons l
-	LEFT JOIN
-		modules m ON l.module_id = m.id
-	WHERE
-		l.deleted_at = 0
-	`
-
+	var query string
 	var args []interface{}
+
+	if req.Role != "user" || req.UserId == "" {
+		query = `
+		SELECT 
+			COUNT(l.id) OVER() AS total_count,
+			l.id,
+			l.name,
+			l.type,
+			l.duration,
+			l.order_num,
+			l.module_id,
+			m.name,
+			1 AS is_completed,
+			l.created_at,
+			l.updated_at
+		FROM
+			lessons l
+		LEFT JOIN
+			modules m ON l.module_id = m.id
+		WHERE
+			l.deleted_at = 0
+		`
+	} else {
+		query = `
+		SELECT 
+			COUNT(l.id) OVER() AS total_count,
+			l.id,
+			l.name,
+			l.type,
+			l.duration,
+			l.order_num,
+			l.module_id,
+			m.name,
+			COALESCE(ul.is_completed, false) AS is_completed,
+			l.created_at,
+			l.updated_at
+		FROM
+			lessons l
+		LEFT JOIN
+			user_lessons ul
+		ON 
+			ul.lesson_id = l.id
+		AND
+			ul.user_id = $1
+		LEFT JOIN
+			modules m ON l.module_id = m.id
+		WHERE
+			l.deleted_at = 0
+		`
+		args = append(args, req.UserId)
+	}
 
 	if req.Name != "" && req.Name != "string" {
 		query += fmt.Sprintf(" AND l.name::text ILIKE $%d", len(args)+1)
@@ -152,9 +218,7 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 
 	lessons := m.LessonList{}
 	for rows.Next() {
-		lesson := m.LessonRes{
-			Module: m.ModuleRes{},
-		}
+		lesson := m.LessonRes{}
 		var nameJSON []byte
 		var moduleNameJSON []byte
 		var totalCount int
@@ -166,14 +230,15 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 			&lesson.Type,
 			&lesson.Duration,
 			&lesson.OrderNum,
-			&lesson.Module.Id,
+			&lesson.ModuleId,
 			&moduleNameJSON,
+			&lesson.IsCompleted,
 			&lesson.CreatedAt,
 			&lesson.UpdatedAt,
 		)
 
 		json.Unmarshal(nameJSON, &lesson.Name)
-		json.Unmarshal(moduleNameJSON, &lesson.Module.Name)
+		json.Unmarshal(moduleNameJSON, &lesson.ModuleName)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning lesson row: %w", err)

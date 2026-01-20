@@ -87,9 +87,7 @@ func (r *SourceRepo) GetById(req *m.ById) (*m.SourceRes, error) {
 
 	row := r.db.QueryRow(query, req.Id)
 
-	source := m.SourceRes{
-		Lesson: m.LessonRes{},
-	}
+	source := m.SourceRes{}
 	var nameJSON []byte
 	var urlJSON []byte
 	var lessonNameJSON []byte
@@ -100,7 +98,7 @@ func (r *SourceRepo) GetById(req *m.ById) (*m.SourceRes, error) {
 		&urlJSON,
 		&source.Type,
 		&source.OrderNum,
-		&source.Lesson.Id,
+		&source.LessonId,
 		&lessonNameJSON,
 		&source.CreatedAt,
 		&source.UpdatedAt,
@@ -108,7 +106,7 @@ func (r *SourceRepo) GetById(req *m.ById) (*m.SourceRes, error) {
 
 	json.Unmarshal(nameJSON, &source.Name)
 	json.Unmarshal(urlJSON, &source.Url)
-	json.Unmarshal(lessonNameJSON, &source.Lesson.Name)
+	json.Unmarshal(lessonNameJSON, &source.LessonName)
 
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("source not found with id: %s", req.Id)
@@ -166,9 +164,7 @@ func (r *SourceRepo) GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.
 
 	sources := m.SourceList{}
 	for rows.Next() {
-		source := m.SourceRes{
-			Lesson: m.LessonRes{},
-		}
+		source := m.SourceRes{}
 		var nameJSON []byte
 		var urlJSON []byte
 		var lessonNameJSON []byte
@@ -181,7 +177,7 @@ func (r *SourceRepo) GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.
 			&urlJSON,
 			&source.Type,
 			&source.OrderNum,
-			&source.Lesson.Id,
+			&source.LessonId,
 			&lessonNameJSON,
 			&source.CreatedAt,
 			&source.UpdatedAt,
@@ -189,7 +185,7 @@ func (r *SourceRepo) GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.
 
 		json.Unmarshal(nameJSON, &source.Name)
 		json.Unmarshal(urlJSON, &source.Url)
-		json.Unmarshal(lessonNameJSON, &source.Lesson.Name)
+		json.Unmarshal(lessonNameJSON, &source.LessonName)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning source row: %w", err)

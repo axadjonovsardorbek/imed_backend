@@ -372,8 +372,14 @@ definitions:
         type: integer
       id:
         type: string
-      module:
-        $ref: '#/definitions/models.ModuleRes'
+      is_completed:
+        type: boolean
+      module_id:
+        type: string
+      module_name:
+        additionalProperties:
+          type: string
+        type: object
       name:
         additionalProperties:
           type: string
@@ -472,8 +478,12 @@ definitions:
     type: object
   models.ModuleRes:
     properties:
-      course:
-        $ref: '#/definitions/models.CourseRes'
+      course_id:
+        type: string
+      course_name:
+        additionalProperties:
+          type: string
+        type: object
       created_at:
         type: string
       id:
@@ -559,8 +569,12 @@ definitions:
         type: string
       id:
         type: string
-      lesson:
-        $ref: '#/definitions/models.LessonRes'
+      lesson_id:
+        type: string
+      lesson_name:
+        additionalProperties:
+          type: string
+        type: object
       name:
         additionalProperties:
           type: string
@@ -731,7 +745,9 @@ definitions:
       course_id:
         type: string
       course_name:
-        type: string
+        additionalProperties:
+          type: string
+        type: object
       created_at:
         type: string
       ended_at:

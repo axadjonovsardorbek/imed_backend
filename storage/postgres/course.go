@@ -58,44 +58,81 @@ func (r *CourseRepo) Create(req *m.CourseCreateReq) (*m.ById, error) {
 
 func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 
-	query := `
-	SELECT 
-		c.id,
-		c.name,
-		c.description,
-		c.price,
-		c.image_url,
-		c.is_public,
-		c.order_num,
-		c.subject_id,
-		s.name,
-		c.teacher_id,
-		t.name,
-		t.phone_number,
-		EXISTS (
-			SELECT 1
-			FROM user_courses uc
-			WHERE uc.user_id = $1
-			  AND uc.course_id = c.id
-			  AND uc.deleted_at = 0
-			  AND uc.started_at <= NOW()
-			  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
-		) AS has_access,
-		c.created_at,
-		c.updated_at
-	FROM
-		courses c
-	LEFT JOIN
-		subjects s ON c.subject_id = s.id
-	LEFT JOIN
-		teachers t ON c.teacher_id = t.id
-	WHERE
-		c.deleted_at = 0
-	AND
-		c.id = $2
-	`
+	var query string
+	var args []interface{}
 
-	row := r.db.QueryRow(query, req.UserId, req.Id)
+	if req.Role != "user" || req.UserId == "" {
+		query = `
+		SELECT 
+			COUNT(c.id) OVER() AS total_count,
+			c.id,
+			c.name,
+			c.description,
+			c.price,
+			c.image_url,
+			c.is_public,
+			c.order_num,
+			c.subject_id,
+			s.name,
+			c.teacher_id,
+			t.name,
+			t.phone_number,
+			1 AS has_access,
+			c.created_at,
+			c.updated_at
+		FROM
+			courses c
+		LEFT JOIN
+			subjects s ON c.subject_id = s.id
+		LEFT JOIN
+			teachers t ON c.teacher_id = t.id
+		WHERE
+			c.deleted_at = 0
+		AND
+			c.id = $1
+		`
+		args = append(args, req.Id)
+	} else {
+		query = `
+		SELECT 
+			c.id,
+			c.name,
+			c.description,
+			c.price,
+			c.image_url,
+			c.is_public,
+			c.order_num,
+			c.subject_id,
+			s.name,
+			c.teacher_id,
+			t.name,
+			t.phone_number,
+			EXISTS (
+				SELECT 1
+				FROM user_courses uc
+				WHERE uc.user_id = $1
+				  AND uc.course_id = c.id
+				  AND uc.deleted_at = 0
+				  AND uc.started_at <= NOW()
+				  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+			) AS has_access,
+			c.created_at,
+			c.updated_at
+		FROM
+			courses c
+		LEFT JOIN
+			subjects s ON c.subject_id = s.id
+		LEFT JOIN
+			teachers t ON c.teacher_id = t.id
+		WHERE
+			c.deleted_at = 0
+		AND
+			c.id = $2
+		`
+		args = append(args, req.UserId, req.Id)
+	}
+
+	row := r.db.QueryRow(query, args...)
 
 	course := m.CourseRes{
 		Subject: m.SubjectRes{},
@@ -139,44 +176,76 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 }
 
 func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.CourseList, error) {
-	query := `
-	SELECT 
-		COUNT(c.id) OVER() AS total_count,
-		c.id,
-		c.name,
-		c.description,
-		c.price,
-		c.image_url,
-		c.is_public,
-		c.order_num,
-		c.subject_id,
-		s.name,
-		c.teacher_id,
-		t.name,
-		t.phone_number,
-		EXISTS (
-			SELECT 1
-			FROM user_courses uc
-			WHERE uc.user_id = $1
-			  AND uc.course_id = c.id
-			  AND uc.deleted_at = 0
-			  AND uc.started_at <= NOW()
-			  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
-		) AS has_access,
-		c.created_at,
-		c.updated_at
-	FROM
-		courses c
-	LEFT JOIN
-		subjects s ON c.subject_id = s.id
-	LEFT JOIN
-		teachers t ON c.teacher_id = t.id
-	WHERE
-		c.deleted_at = 0
-	`
 
+	var query string
 	var args []interface{}
-	args = append(args, req.UserId)
+
+	if req.Role != "user" || req.UserId == "" {
+		query = `
+		SELECT 
+			COUNT(c.id) OVER() AS total_count,
+			c.id,
+			c.name,
+			c.description,
+			c.price,
+			c.image_url,
+			c.is_public,
+			c.order_num,
+			c.subject_id,
+			s.name,
+			c.teacher_id,
+			t.name,
+			t.phone_number,
+			1 AS has_access,
+			c.created_at,
+			c.updated_at
+		FROM
+			courses c
+		LEFT JOIN
+			subjects s ON c.subject_id = s.id
+		LEFT JOIN
+			teachers t ON c.teacher_id = t.id
+		WHERE
+			c.deleted_at = 0
+		`
+	} else {
+		query = `
+		SELECT 
+			COUNT(c.id) OVER() AS total_count,
+			c.id,
+			c.name,
+			c.description,
+			c.price,
+			c.image_url,
+			c.is_public,
+			c.order_num,
+			c.subject_id,
+			s.name,
+			c.teacher_id,
+			t.name,
+			t.phone_number,
+			EXISTS (
+				SELECT 1
+				FROM user_courses uc
+				WHERE uc.user_id = $1
+				  AND uc.course_id = c.id
+				  AND uc.deleted_at = 0
+				  AND uc.started_at <= NOW()
+				  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+			) AS has_access,
+			c.created_at,
+			c.updated_at
+		FROM
+			courses c
+		LEFT JOIN
+			subjects s ON c.subject_id = s.id
+		LEFT JOIN
+			teachers t ON c.teacher_id = t.id
+		WHERE
+			c.deleted_at = 0
+		`
+		args = append(args, req.UserId)
+	}
 
 	if req.Name != "" && req.Name != "string" {
 		query += fmt.Sprintf(" AND c.name::text ILIKE $%d", len(args)+1)

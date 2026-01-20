@@ -138,6 +138,16 @@ func (h *Handler) CheckUser(c *gin.Context) {
 		return
 	}
 
+	check := isValidPhone(req.PhoneNumber)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Phone number is not valid",
+		})
+		slog.Error("Error binding request body: Phone number is not valid")
+		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
+		return
+	}
+
 	slog.Info("User check credentials ", req)
 	res, err := h.Clients.User.Check(context.Background(), &req)
 	slog.Info("User check response", res)
@@ -171,6 +181,16 @@ func (h *Handler) LoginUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	check := isValidPhone(req.PhoneNumber)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Phone number is not valid",
+		})
+		slog.Error("Error binding request body: Phone number is not valid")
+		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
 		return
 	}
 
@@ -352,6 +372,16 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	check := isValidPhone(body.PhoneNumber)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Phone number is not valid",
+		})
+		slog.Error("Error binding request body: Phone number is not valid")
+		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
 		return
 	}
 

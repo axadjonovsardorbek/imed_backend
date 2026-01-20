@@ -69,9 +69,7 @@ func (r *ModuleRepo) GetById(req *m.ById) (*m.ModuleRes, error) {
 
 	row := r.db.QueryRow(query, req.Id)
 
-	module := m.ModuleRes{
-		Course: m.CourseRes{},
-	}
+	module := m.ModuleRes{}
 	var nameJSON []byte
 	var courseNameJSON []byte
 
@@ -79,14 +77,14 @@ func (r *ModuleRepo) GetById(req *m.ById) (*m.ModuleRes, error) {
 		&module.Id,
 		&nameJSON,
 		&module.OrderNum,
-		&module.Course.Id,
+		&module.CourseId,
 		&courseNameJSON,
 		&module.CreatedAt,
 		&module.UpdatedAt,
 	)
 
 	json.Unmarshal(nameJSON, &module.Name)
-	json.Unmarshal(courseNameJSON, &module.Course.Name)
+	json.Unmarshal(courseNameJSON, &module.CourseName)
 
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("module not found with id: %s", req.Id)
@@ -138,9 +136,7 @@ func (r *ModuleRepo) GetAll(req *m.ModuleGetListReq) (*m.PaginationResponse, *m.
 
 	modules := m.ModuleList{}
 	for rows.Next() {
-		module := m.ModuleRes{
-			Course: m.CourseRes{},
-		}
+		module := m.ModuleRes{}
 		var nameJSON []byte
 		var courseNameJSON []byte
 		var totalCount int
@@ -150,14 +146,14 @@ func (r *ModuleRepo) GetAll(req *m.ModuleGetListReq) (*m.PaginationResponse, *m.
 			&module.Id,
 			&nameJSON,
 			&module.OrderNum,
-			&module.Course.Id,
+			&module.CourseId,
 			&courseNameJSON,
 			&module.CreatedAt,
 			&module.UpdatedAt,
 		)
 
 		json.Unmarshal(nameJSON, &module.Name)
-		json.Unmarshal(courseNameJSON, &module.Course.Name)
+		json.Unmarshal(courseNameJSON, &module.CourseName)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning course row: %w", err)

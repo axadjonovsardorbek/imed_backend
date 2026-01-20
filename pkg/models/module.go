@@ -13,12 +13,13 @@ type ModuleCreateBody struct {
 }
 
 type ModuleRes struct {
-	Id        string            `json:"id"`
-	Name      map[string]string `json:"name"`
-	Course    CourseRes         `json:"course"`
-	OrderNum  *int              `json:"order_num"`
-	CreatedAt *string           `json:"created_at"`
-	UpdatedAt *string           `json:"updated_at"`
+	Id         string            `json:"id"`
+	Name       map[string]string `json:"name"`
+	CourseId   *string           `json:"course_id"`
+	CourseName map[string]string `json:"course_name"`
+	OrderNum   *int              `json:"order_num"`
+	CreatedAt  *string           `json:"created_at"`
+	UpdatedAt  *string           `json:"updated_at"`
 }
 
 type ModuleList struct {
