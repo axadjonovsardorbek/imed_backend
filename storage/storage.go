@@ -80,7 +80,7 @@ type SourceI interface {
 }
 
 type UserI interface {
-	Check(req *m.UserCheckReq) (bool, error)
+	Check(req *m.UserCheckReq) (*m.UserCheckRes, error)
 	Login(req *m.UserLoginReq) (*m.TokenRes, error)
 	GetById(req *m.ById) (*m.UserRes, error)
 	GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.UserList, error)

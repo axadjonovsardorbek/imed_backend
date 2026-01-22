@@ -781,6 +781,11 @@ definitions:
       phone_number:
         type: string
     type: object
+  models.UserCheckRes:
+    properties:
+      has_account:
+        type: boolean
+    type: object
   models.UserCourseCreateReq:
     properties:
       course_id:
@@ -1231,9 +1236,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: User exists or not
+          description: OK
           schema:
-            type: boolean
+            $ref: '#/definitions/models.UserCheckRes'
         "400":
           description: Invalid request payload
           schema:
@@ -3550,15 +3555,11 @@ paths:
         "400":
           description: Invalid request params
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            type: string
         "500":
           description: Server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            type: string
       security:
       - BearerAuth: []
       summary: Reyting (leaderboard) olish

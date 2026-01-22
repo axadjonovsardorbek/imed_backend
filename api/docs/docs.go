@@ -510,9 +510,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User exists or not",
+                        "description": "OK",
                         "schema": {
-                            "type": "boolean"
+                            "$ref": "#/definitions/models.UserCheckRes"
                         }
                     },
                     "400": {
@@ -4074,19 +4074,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request params",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     }
                 }
@@ -5433,6 +5427,14 @@ const docTemplate = `{
             "properties": {
                 "phone_number": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UserCheckRes": {
+            "type": "object",
+            "properties": {
+                "has_account": {
+                    "type": "boolean"
                 }
             }
         },

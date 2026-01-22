@@ -20,7 +20,7 @@ func NewUserService(storage *st.Storage, rdb *redis.Client) *UserService {
 	return &UserService{storage: *storage, rdb: rdb}
 }
 
-func (s *UserService) Check(ctx context.Context, req *m.UserCheckReq) (bool, error) {
+func (s *UserService) Check(ctx context.Context, req *m.UserCheckReq) (*m.UserCheckRes, error) {
 	return s.storage.UserS.Check(req)
 }
 func (s *UserService) Login(ctx context.Context, req *m.UserLoginReq) (*m.TokenRes, error) {

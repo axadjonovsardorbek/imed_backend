@@ -4,6 +4,10 @@ type UserCheckReq struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
+type UserCheckRes struct {
+	HasAccount bool `json:"has_account"`
+}
+
 type UserLoginReq struct {
 	PhoneNumber string `json:"phone_number"`
 	Password    string `json:"password"`

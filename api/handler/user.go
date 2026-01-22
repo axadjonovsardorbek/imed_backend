@@ -124,7 +124,7 @@ func (h *Handler) RefreshPassword(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param credentials body models.UserCheckReq true "User check credentials"
-// @Success 200 {object} bool "User exists or not"
+// @Success 200 {object} models.UserCheckRes
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
 // @Router /auth/user/check [post]
@@ -572,8 +572,8 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 // @Param type query string false "Filter type: day|week|month|year|total (default: total)" Enums(day,week,month,year,total)
 // @Param limit query int false "Top list limit (default: 10, max: 100)"
 // @Success 200 {object} models.RatingResponse "Rating response"
-// @Failure 400 {object} map[string]string "Invalid request params"
-// @Failure 500 {object} map[string]string "Server error"
+// @Failure 400 {object} string "Invalid request params"
+// @Failure 500 {object} string "Server error"
 // @Router /user/rating [get]
 func (h *Handler) GetRating(c *gin.Context) {
 	limit := c.Query("limit")

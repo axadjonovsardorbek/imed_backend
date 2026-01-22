@@ -27,8 +27,8 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 	}
 }
 
-func (r *UserRepo) Check(req *m.UserCheckReq) (bool, error) {
-	var exists bool
+func (r *UserRepo) Check(req *m.UserCheckReq) (*m.UserCheckRes, error) {
+	var res m.UserCheckRes
 
 	query := `
 	SELECT EXISTS (
@@ -39,12 +39,12 @@ func (r *UserRepo) Check(req *m.UserCheckReq) (bool, error) {
 	)
 	`
 	row := r.db.QueryRow(query, req.PhoneNumber)
-	err := row.Scan(&exists)
+	err := row.Scan(&res.HasAccount)
 	if err != nil {
-		return false, fmt.Errorf("error while checking user existence: %w", err)
+		return &res, fmt.Errorf("error while checking user existence: %w", err)
 	}
 
-	return exists, nil
+	return &res, nil
 }
 
 func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
