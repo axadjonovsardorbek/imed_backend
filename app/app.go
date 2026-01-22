@@ -47,7 +47,7 @@ func Run(cfg *config.Config) {
 	}
 
 	// services
-	services, err := clients.NewClients(cfg, conn)
+	services, err := clients.NewClients(cfg, conn, rdb)
 	if err != nil {
 		log.Fatalf("error while connecting clients. err: %s", err.Error())
 	}

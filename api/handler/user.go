@@ -485,3 +485,133 @@ func (h *Handler) CreateActivity(c *gin.Context) {
 
 	c.JSON(http.StatusOK, res)
 }
+
+// GetActivityStats godoc
+// @Summary Get user activity stats
+// @Description Returns user activity stats by type: day|week|month|year|range. For day: optional ?date=YYYY-MM-DD. For range: required ?from=YYYY-MM-DD&to=YYYY-MM-DD
+// @Tags profile
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param type query string true "Stats type: day|week|month|year|range"
+// @Param date query string false "For day only: YYYY-MM-DD (default: today)"
+// @Param from query string false "For range only: YYYY-MM-DD"
+// @Param to query string false "For range only: YYYY-MM-DD"
+// @Success 200 {object} models.ActivityStatsResponse "Activity stats"
+// @Failure 400 {object} string "Invalid request params"
+// @Failure 500 {object} string "Server error"
+// @Router /user/activity [get]
+func (h *Handler) GetActivityStats(c *gin.Context) {
+	userID := claimData(c, "user_id")
+	if userID == "" {
+		return
+	}
+
+	typ := c.Query("type")
+	date := c.Query("date")
+	from := c.Query("from")
+	to := c.Query("to")
+
+	if typ == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "type is required"})
+		return
+	}
+
+	req := &m.UserActivityGetListReq{
+		UserId: userID,
+		Type:   typ,
+	}
+
+	if typ == "day" {
+		if date != "" && !IsYYYYMMDD(date) {
+			slog.Error("Invalid date format for day type")
+			smssender(c, fmt.Errorf("invalid date format for day type"), http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "date must be YYYY-MM-DD"})
+			return
+		}
+		req.Date = date
+	}
+
+	if typ == "range" {
+		if from == "" || to == "" {
+			slog.Error("from and to are required for range type")
+			smssender(c, fmt.Errorf("from and to are required for range type"), http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "from and to are required for range"})
+			return
+		}
+		if !IsYYYYMMDD(from) || !IsYYYYMMDD(to) {
+			slog.Error("Invalid from/to format for range type")
+			smssender(c, fmt.Errorf("invalid from/to format for range type"), http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "from/to must be YYYY-MM-DD"})
+			return
+		}
+
+		req.FromDate = from
+		req.ToDate = to
+	}
+
+	slog.Info("Get activity stats request", "req", req)
+	statsRes, err := h.Clients.User.GetActivities(context.Background(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		slog.Error("Error while get activity stats", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, statsRes)
+}
+
+// GetRating godoc
+// @Summary Reyting (leaderboard) olish
+// @Description Reytingni qaytaradi: day|week|month|year|total. Default: total. 0 activity bo'lgan userlar avtomatik oxirida turadi. Response ichida TOP list va "Me" (mening o'rnim) qaytadi.
+// @Tags profile
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param type query string false "Filter type: day|week|month|year|total (default: total)" Enums(day,week,month,year,total)
+// @Param limit query int false "Top list limit (default: 10, max: 100)"
+// @Success 200 {object} models.RatingResponse "Rating response"
+// @Failure 400 {object} map[string]string "Invalid request params"
+// @Failure 500 {object} map[string]string "Server error"
+// @Router /user/rating [get]
+func (h *Handler) GetRating(c *gin.Context) {
+	limit := c.Query("limit")
+	typ := c.Query("type")
+
+	userID := claimData(c, "user_id")
+	if userID == "" {
+		return
+	}
+
+	if typ == "" {
+		typ = "total"
+	}
+
+	switch typ {
+	case "day", "week", "month", "year", "total":
+	default:
+		slog.Error("Invalid type parameter for rating")
+		smssender(c, fmt.Errorf("invalid type parameter for rating"), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "type must be one of: day|week|month|year|total"})
+		return
+	}
+
+	pagination := m.ParsePagination(limit, "0")
+
+	req := m.RatingRequest{
+		UserId: userID,
+		Type:   m.RatingType(typ),
+		Limit:  int(pagination.Limit),
+	}
+
+	res, err := h.Clients.User.GetRating(context.Background(), &req)
+	if err != nil {
+		slog.Error("Error while get rating", err)
+		smssender(c, err, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
+}

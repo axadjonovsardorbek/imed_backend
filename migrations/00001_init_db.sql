@@ -200,6 +200,9 @@ WHERE deleted_at = 0;
 CREATE UNIQUE INDEX IF NOT EXISTS ux_user_lessons_user_lesson
 ON user_lessons(user_id, lesson_id);
 
+CREATE INDEX IF NOT EXISTS idx_user_activities_day_user
+ON user_activities (day, user_id);
+
 
 -- +goose StatementEnd
 

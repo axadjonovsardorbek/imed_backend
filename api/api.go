@@ -69,6 +69,8 @@ func NewApi(h *handler.Handler) *gin.Engine {
 		user.PUT("/update/profile", h.UpdateProfileUser)
 		user.DELETE("/delete/profile", h.DeleteProfileUser)
 		user.POST("/activity", h.CreateActivity)
+		user.GET("/activity", h.GetActivityStats)
+		user.GET("/rating", h.GetRating)
 	}
 
 	router.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer))

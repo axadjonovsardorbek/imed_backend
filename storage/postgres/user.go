@@ -3,8 +3,10 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
+	"time"
 
 	"imed/api/token"
 	"imed/internal/helper"
@@ -404,97 +406,452 @@ func (r *UserRepo) CreateActivity(req *m.UserActivityCreateReq) (*m.Void, error)
 
 	return nil, nil
 }
-func (r *UserRepo) GetActivities(req *m.UserActivityGetListReq) (*m.PaginationResponse, *m.UserActivityList, error) {
+func (r *UserRepo) GetActivities(req *m.UserActivityGetListReq) (*m.ActivityStatsResponse, error) {
+	if req == nil {
+		return nil, fmt.Errorf("nil request")
+	}
+	if req.UserId == "" {
+		return nil, fmt.Errorf("user_id required")
+	}
+	if req.Type == "" {
+		return nil, fmt.Errorf("type required")
+	}
 
-	if req.Type == "day" {
+	res := &models.ActivityStatsResponse{
+		UserID: req.UserId,
+		Type:   req.Type,
+		Items:  make([]models.ActivityStatItem, 0, 32),
+	}
+
+	switch req.Type {
+
+	case "day":
 		query := `
-		SELECT
-			user_id,
-			day,
-			activity,
-			updated_at
-		FROM
-			user_activities
-		WHERE
-			user_id = $1
-		AND
-			day = $2
+	SELECT
+		COALESCE(NULLIF($2, '')::date, CURRENT_DATE) AS day,
+		COALESCE(ua.activity, 0) AS value
+	FROM (SELECT 1) x
+	LEFT JOIN user_activities ua
+	ON ua.user_id = $1
+	AND ua.day = COALESCE(NULLIF($2, '')::date, CURRENT_DATE)
+	
 		`
 
-		row := r.db.QueryRow(query, req.UserId, req.Date)
-		activities := m.UserActivityList{}
-		activity := m.UserActivity{}
+		var day time.Time
+		var value int64
 
-		err := row.Scan(
-			&activity.UserId,
-			&activity.Day,
-			&activity.Activity,
-			&activity.UpdatedAt,
+		if err := r.db.QueryRow(query, req.UserId, req.Date).Scan(&day, &value); err != nil {
+			return nil, fmt.Errorf("day query error: %w", err)
+		}
+
+		res.Items = append(res.Items, models.ActivityStatItem{
+			Date:  day.Format("2006-01-02"),
+			Value: value,
+		})
+		res.Total = value
+		return res, nil
+
+	case "week", "month", "range":
+		var start interface{}
+		var end interface{}
+
+		if req.Type == "range" {
+			if req.FromDate == "" || req.ToDate == "" {
+				return nil, fmt.Errorf("from_date and to_date are required for range")
+			}
+			start = req.FromDate
+			end = req.ToDate
+		} else if req.Type == "week" {
+			queryWeek := `
+			WITH r AS (
+			  SELECT $1::uuid AS user_id,
+			         date_trunc('week', CURRENT_DATE)::date AS start_day,
+			         CURRENT_DATE AS end_day
+			),
+			series AS (
+			  SELECT
+				d.day::date AS day,
+				COALESCE(ua.activity, 0) AS value
+			  FROM r
+			  JOIN LATERAL generate_series(r.start_day, r.end_day, interval '1 day') AS d(day) ON TRUE
+			  LEFT JOIN user_activities ua
+				ON ua.user_id = r.user_id
+			   AND ua.day = d.day::date
+			)
+			SELECT day, value, SUM(value) OVER () AS total
+			FROM series
+			ORDER BY day DESC
+			`
+
+			rows, err := r.db.Query(queryWeek, req.UserId)
+			if err != nil {
+				return nil, fmt.Errorf("week query error: %w", err)
+			}
+			defer rows.Close()
+
+			items, total, err := scanKeyValueTotalRows(rows)
+			if err != nil {
+				return nil, fmt.Errorf("week scan error: %w", err)
+			}
+			res.Items = items
+			res.Total = total
+			return res, nil
+
+		} else {
+			queryMonth := `
+			WITH r AS (
+			  SELECT $1::uuid AS user_id,
+			         date_trunc('month', CURRENT_DATE)::date AS start_day,
+			         CURRENT_DATE AS end_day
+			),
+			series AS (
+			  SELECT
+				d.day::date AS day,
+				COALESCE(ua.activity, 0) AS value
+			  FROM r
+			  JOIN LATERAL generate_series(r.start_day, r.end_day, interval '1 day') AS d(day) ON TRUE
+			  LEFT JOIN user_activities ua
+				ON ua.user_id = r.user_id
+			   AND ua.day = d.day::date
+			)
+			SELECT day, value, SUM(value) OVER () AS total
+			FROM series
+			ORDER BY day DESC
+			`
+
+			rows, err := r.db.Query(queryMonth, req.UserId)
+			if err != nil {
+				return nil, fmt.Errorf("month query error: %w", err)
+			}
+			defer rows.Close()
+
+			items, total, err := scanKeyValueTotalRows(rows)
+			if err != nil {
+				return nil, fmt.Errorf("month scan error: %w", err)
+			}
+			res.Items = items
+			res.Total = total
+			return res, nil
+		}
+
+		queryRange := `
+		WITH r AS (
+		  SELECT
+			$1::uuid AS user_id,
+			$2::date AS start_day,
+			LEAST($3::date, CURRENT_DATE) AS end_day
+		),
+		series AS (
+		  SELECT
+			d.day::date AS day,
+			COALESCE(ua.activity, 0) AS value
+		  FROM r
+		  JOIN LATERAL generate_series(r.start_day, r.end_day, interval '1 day') AS d(day)
+			ON r.start_day <= r.end_day
+		  LEFT JOIN user_activities ua
+			ON ua.user_id = r.user_id
+		   AND ua.day = d.day::date
 		)
-
-		if err == sql.ErrNoRows {
-			activity.UserId = &req.UserId
-			activity.Day = &req.Date
-		}
-		activities.Activities = append(activities.Activities, &activity)
-		activities.Count = 1
-
-		filter := models.Pagination{
-			Limit: 1,
-			Page:  0,
-		}
-
-		response := m.NewPaginationResponse(filter, activities.Count, activities.Activities)
-
-		return &response, &activities, nil
-	} else if req.Type == "range" {
-		query := `
-		SELECT
-			user_id,
-			day,
-			activity,
-			updated_at
-		FROM
-			user_activities
-		WHERE
-			user_id = $1
-		AND
-			day BETWEEN $2 AND $3
+		SELECT day, value, SUM(value) OVER () AS total
+		FROM series
 		ORDER BY day DESC
 		`
 
-		rows, err := r.db.Query(query, req.UserId, req.FromDate, req.ToDate)
+		rows, err := r.db.Query(queryRange, req.UserId, start, end)
 		if err != nil {
-			return nil, nil, fmt.Errorf("error while getting user activities: %w", err)
+			return nil, fmt.Errorf("range query error: %w", err)
 		}
 		defer rows.Close()
 
-		activities := m.UserActivityList{}
-
-		for rows.Next() {
-			activity := m.UserActivity{}
-			err := rows.Scan(
-				&activity.UserId,
-				&activity.Day,
-				&activity.Activity,
-				&activity.UpdatedAt,
-			)
-			if err != nil {
-				return nil, nil, fmt.Errorf("error while scanning user activity row: %w", err)
-			}
-			activities.Activities = append(activities.Activities, &activity)
+		items, total, err := scanKeyValueTotalRows(rows)
+		if err != nil {
+			return nil, fmt.Errorf("range scan error: %w", err)
 		}
-		activities.Count = len(activities.Activities)
+		res.Items = items
+		res.Total = total
+		return res, nil
 
-		filter := models.Pagination{
-			Limit: activities.Count,
-			Page:  0,
+	case "year":
+		query := `
+		WITH months AS (
+		  SELECT generate_series(
+				   date_trunc('year', CURRENT_DATE)::date,
+				   date_trunc('month', CURRENT_DATE)::date,
+				   interval '1 month'
+				 )::date AS month_start
+		),
+		agg AS (
+		  SELECT
+			m.month_start AS day,
+			COALESCE(SUM(ua.activity), 0) AS value
+		  FROM months m
+		  LEFT JOIN user_activities ua
+			ON ua.user_id = $1
+		   AND ua.day >= m.month_start
+		   AND ua.day <  (m.month_start + interval '1 month')::date
+		   AND ua.day <= CURRENT_DATE
+		  GROUP BY m.month_start
+		)
+		SELECT day, value, SUM(value) OVER () AS total
+		FROM agg
+		ORDER BY day DESC
+		`
+
+		rows, err := r.db.Query(query, req.UserId)
+		if err != nil {
+			return nil, fmt.Errorf("year query error: %w", err)
 		}
+		defer rows.Close()
 
-		response := m.NewPaginationResponse(filter, activities.Count, activities.Activities)
+		items, total, err := scanKeyValueTotalRows(rows)
+		if err != nil {
+			return nil, fmt.Errorf("year scan error: %w", err)
+		}
+		res.Items = items
+		res.Total = total
+		return res, nil
 
-		return &response, &activities, nil
-
+	default:
+		return nil, fmt.Errorf("unsupported type: %s", req.Type)
 	}
-	return nil, nil, nil
+}
+
+func (r *UserRepo) GetRating(req *m.RatingRequest) (*m.RatingResponse, error) {
+
+	if req.Limit <= 0 || req.Limit > 100 {
+		req.Limit = 10
+	}
+	if req.Type == "" {
+		req.Type = "total"
+	}
+
+	loc := time.FixedZone("UTC+5", 5*3600)
+	rt := m.RatingType(req.Type)
+	start, end := calcRange(rt, loc)
+
+	res := &m.RatingResponse{
+		Type:  rt,
+		Limit: req.Limit,
+		Items: make([]m.RatingUserItem, 0, req.Limit),
+	}
+
+	query := `
+	WITH scores AS (
+		SELECT
+		  u.id AS user_id,
+		  u.name AS name,
+		  u.image_url AS avatar,
+		  COALESCE(SUM(ua.activity), 0) AS activity
+		FROM users u
+		LEFT JOIN user_activities ua
+		  ON ua.user_id = u.id
+		 AND ua.day >= $1::date
+		 AND ua.day <= $2::date
+		GROUP BY u.id, u.name, u.image_url
+	),
+	ranked AS (
+		SELECT
+		  user_id,
+		  name,
+		  avatar,
+		  activity,
+		  ROW_NUMBER() OVER (
+			ORDER BY activity DESC, name ASC, user_id ASC
+		  ) AS rank
+		FROM scores
+	),
+	topn AS (
+		SELECT user_id, name, avatar, activity, rank
+		FROM ranked
+		ORDER BY rank
+		LIMIT $3
+	),
+	me AS (
+		SELECT user_id, name, avatar, activity, rank
+		FROM ranked
+		WHERE user_id = $4::uuid
+	)
+	SELECT 'top' AS kind, user_id, name, avatar, activity, rank FROM topn
+	UNION ALL
+	SELECT 'me'  AS kind, user_id, name, avatar, activity, rank FROM me;
+	`
+
+	rows, err := r.db.Query(query, start, end, req.Limit, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var kind string
+		var it m.RatingUserItem
+
+		if err := rows.Scan(&kind, &it.UserID, &it.Name, &it.ImageUrl, &it.Activity, &it.Rank); err != nil {
+			return nil, err
+		}
+
+		if kind == "me" {
+			res.Me = &it
+		} else {
+			res.Items = append(res.Items, it)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
+	qTopRating := `
+	WITH scores AS (
+	  SELECT
+	    u.id AS user_id,
+	    u.name AS name,
+	    u.image_url AS avatar,
+	    COALESCE(SUM(ua.activity), 0) AS activity
+	  FROM users u
+	  LEFT JOIN user_activities ua
+	    ON ua.user_id = u.id
+	   AND ua.day >= $1::date
+	   AND ua.day <= $2::date
+	  GROUP BY u.id, u.name, u.image_url
+	),
+	ranked AS (
+	  SELECT
+	    user_id, name, avatar, activity,
+	    ROW_NUMBER() OVER (ORDER BY activity DESC, name ASC, user_id ASC) AS rank
+	  FROM scores
+	)
+	SELECT user_id, name, avatar, activity, rank
+	FROM ranked
+	ORDER BY rank
+	LIMIT $3
+	`
+
+	loc := time.FixedZone("UTC+5", 5*3600)
+	rt := m.RatingType(req.Type)
+	start, end := calcRange(rt, loc)
+
+	rows, err := r.db.Query(qTopRating, start, end, req.Limit)
+	if err != nil {
+		return nil, fmt.Errorf("top rating query: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]m.RatingUserItem, 0, req.Limit)
+	for rows.Next() {
+		var it m.RatingUserItem
+
+		if err := rows.Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.Activity, &it.Rank); err != nil {
+			return nil, fmt.Errorf("top rating scan: %w", err)
+		}
+
+		items = append(items, it)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("top rating rows: %w", err)
+	}
+
+	slog.Debug("GetTop rating", "type", req.Type, "limit", req.Limit, "items_count", len(items))
+	fmt.Println("GetTop rating", "type", req.Type, "limit", req.Limit, "items_count", len(items))
+	return items, nil
+}
+
+func (r *UserRepo) GetMe(req *m.RatingRequest) (*m.RatingUserItem, error) {
+	qMeRating := `
+	WITH scores AS (
+	  SELECT
+	    u.id AS user_id,
+	    u.name AS name,
+	    u.image_url AS avatar,
+	    COALESCE(SUM(ua.activity), 0) AS activity
+	  FROM users u
+	  LEFT JOIN user_activities ua
+	    ON ua.user_id = u.id
+	   AND ua.day >= $1::date
+	   AND ua.day <= $2::date
+	  GROUP BY u.id, u.name, u.image_url
+	),
+	ranked AS (
+	  SELECT
+	    user_id, name, avatar, activity,
+	    ROW_NUMBER() OVER (ORDER BY activity DESC, name ASC, user_id ASC) AS rank
+	  FROM scores
+	)
+	SELECT user_id, name, avatar, activity, rank
+	FROM ranked
+	WHERE user_id = $3::uuid
+	`
+
+	var it models.RatingUserItem
+
+	loc := time.FixedZone("UTC+5", 5*3600)
+	rt := m.RatingType(req.Type)
+	start, end := calcRange(rt, loc)
+
+	err := r.db.QueryRow(qMeRating, start, end, req.UserId).
+		Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.Activity, &it.Rank)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("me rating query: %w", err)
+	}
+
+	slog.Debug("GetMe rating", "type", req.Type, "user_id", req.UserId, "activity", it.Activity, "rank", it.Rank)
+	fmt.Println("GetMe rating", "type", req.Type, "user_id", req.UserId, "activity", it.Activity, "rank", it.Rank)
+	return &it, nil
+}
+
+func scanKeyValueTotalRows(rows *sql.Rows) (items []models.ActivityStatItem, total int64, err error) {
+	for rows.Next() {
+		var day time.Time
+		var value int64
+		var rowTotal sql.NullInt64
+
+		if err := rows.Scan(&day, &value, &rowTotal); err != nil {
+			return nil, 0, err
+		}
+		if rowTotal.Valid {
+			total = rowTotal.Int64
+		}
+		items = append(items, models.ActivityStatItem{
+			Date:  day.Format("2006-01-02"),
+			Value: value,
+		})
+	}
+	return items, total, rows.Err()
+}
+
+func calcRange(t m.RatingType, loc *time.Location) (time.Time, time.Time) {
+	now := time.Now().In(loc)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+
+	switch t {
+	case m.RatingDay:
+		return today, today
+
+	case m.RatingWeek:
+		wd := int(today.Weekday())
+		if wd == 0 {
+			wd = 7
+		}
+		start := today.AddDate(0, 0, -(wd - 1))
+		return start, today
+
+	case m.RatingMonth:
+		start := time.Date(today.Year(), today.Month(), 1, 0, 0, 0, 0, loc)
+		return start, today
+
+	case m.RatingYear:
+		start := time.Date(today.Year(), time.January, 1, 0, 0, 0, 0, loc)
+		return start, today
+
+	default:
+		start := time.Date(1970, 1, 1, 0, 0, 0, 0, loc)
+		return start, today
+	}
 }

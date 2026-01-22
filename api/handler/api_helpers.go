@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 
 	sms "imed/internal/helper"
 
@@ -48,4 +49,16 @@ func smssender(c *gin.Context, err error, code int) {
 	} else {
 		slog.Error("Error isnt sending to group by bot: ", err)
 	}
+}
+
+func IsYYYYMMDD(s string) bool {
+	if len(s) != 10 {
+		return false
+	}
+	// tezkor tekshiruv: YYYY-MM-DD
+	if s[4] != '-' || s[7] != '-' {
+		return false
+	}
+	_, err := time.Parse("2006-01-02", s)
+	return err == nil
 }

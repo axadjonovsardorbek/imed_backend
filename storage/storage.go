@@ -89,7 +89,10 @@ type UserI interface {
 	ChangePassword(req *m.ChangePasswordReq) (*m.Void, error)
 	RefreshPassword(req *m.RefreshPasswordReq) (*m.RefreshPassword, error)
 	CreateActivity(req *m.UserActivityCreateReq) (*m.Void, error)
-	GetActivities(req *m.UserActivityGetListReq) (*m.PaginationResponse, *m.UserActivityList, error)
+	GetActivities(req *m.UserActivityGetListReq) (*m.ActivityStatsResponse, error)
+	GetRating(req *m.RatingRequest) (*m.RatingResponse, error)
+	GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error)
+	GetMe(req *m.RatingRequest) (*m.RatingUserItem, error)
 }
 
 type NotificationI interface {

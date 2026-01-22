@@ -90,6 +90,8 @@ p, user, /user/get/profile, GET
 p, user, /user/update/profile, PUT
 p, user, /user/delete/profile, DELETE
 p, user, /user/activity, POST
+p, user, /user/activity, GET
+p, user, /user/rating, GET
 p, user, /banner, GET
 p, user, /banner/:id, GET
 p, user, /course, GET

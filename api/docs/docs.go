@@ -3830,6 +3830,71 @@ const docTemplate = `{
             }
         },
         "/user/activity": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns user activity stats by type: day|week|month|year|range. For day: optional ?date=YYYY-MM-DD. For range: required ?from=YYYY-MM-DD\u0026to=YYYY-MM-DD",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Get user activity stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stats type: day|week|month|year|range",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "For day only: YYYY-MM-DD (default: today)",
+                        "name": "date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "For range only: YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "For range only: YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activity stats",
+                        "schema": {
+                            "$ref": "#/definitions/models.ActivityStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request params",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -3955,6 +4020,73 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/rating": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reytingni qaytaradi: day|week|month|year|total. Default: total. 0 activity bo'lgan userlar avtomatik oxirida turadi. Response ichida TOP list va \"Me\" (mening o'rnim) qaytadi.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Reyting (leaderboard) olish",
+                "parameters": [
+                    {
+                        "enum": [
+                            "day",
+                            "week",
+                            "month",
+                            "year",
+                            "total"
+                        ],
+                        "type": "string",
+                        "description": "Filter type: day|week|month|year|total (default: total)",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Top list limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rating response",
+                        "schema": {
+                            "$ref": "#/definitions/models.RatingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request params",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -4199,6 +4331,40 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "models.ActivityStatItem": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "description": "day/week/month/range: YYYY-MM-DD, year: YYYY-MM-01",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "activity (minut/sekund)",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.ActivityStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityStatItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "day|week|month|year|range",
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         },
@@ -4908,6 +5074,63 @@ const docTemplate = `{
                     }
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.RatingResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.RatingUserItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "me": {
+                    "$ref": "#/definitions/models.RatingUserItem"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.RatingType"
+                }
+            }
+        },
+        "models.RatingType": {
+            "type": "string",
+            "enum": [
+                "total",
+                "day",
+                "week",
+                "month",
+                "year"
+            ],
+            "x-enum-varnames": [
+                "RatingTotal",
+                "RatingDay",
+                "RatingWeek",
+                "RatingMonth",
+                "RatingYear"
+            ]
+        },
+        "models.RatingUserItem": {
+            "type": "object",
+            "properties": {
+                "activity": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }
