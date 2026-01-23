@@ -30,7 +30,7 @@ func (h *Handler) GetByIdAdmin(c *gin.Context) {
 	slog.Info("Admin details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting admin by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -39,7 +39,6 @@ func (h *Handler) GetByIdAdmin(c *gin.Context) {
 	slog.Info("Admin retrieved successfully")
 	c.JSON(200, res)
 }
-
 
 // Login godoc
 // @Summary Login admin
@@ -57,7 +56,7 @@ func (h *Handler) Login(c *gin.Context) {
 	var req m.LoginReq
 
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -68,7 +67,7 @@ func (h *Handler) Login(c *gin.Context) {
 	slog.Info("Admin login response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error while login", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

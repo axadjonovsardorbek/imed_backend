@@ -1,14 +1,26 @@
 package models
 
+import (
+	"bytes"
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+)
+
+type CoursePriceOption struct {
+	Price    int `json:"price"`
+	Duration int `json:"duration"` // oy
+}
+
 type CourseCreateReq struct {
-	SubjectId   string `json:"subject_id"`
-	TeacherId   string `json:"teacher_id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Price       string `json:"price"`
-	ImageUrl    string `json:"image_url"`
-	IsPublic    bool   `json:"is_public"`
-	OrderNum    int    `json:"order_num"`
+	SubjectId   string     `json:"subject_id"`
+	TeacherId   string     `json:"teacher_id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	Price       PriceField `json:"price"`
+	ImageUrl    string     `json:"image_url"`
+	IsPublic    bool       `json:"is_public"`
+	OrderNum    int        `json:"order_num"`
 }
 
 type CourseCreateBody struct {
@@ -16,25 +28,28 @@ type CourseCreateBody struct {
 	TeacherId   string            `json:"teacher_id"`
 	Name        map[string]string `json:"name"`
 	Description map[string]string `json:"description"`
-	Price       map[string]string `json:"price"`
+	Price       PriceField        `json:"price"`
 	ImageUrl    string            `json:"image_url"`
 	IsPublic    bool              `json:"is_public"`
 	OrderNum    int               `json:"order_num"`
 }
 
 type CourseRes struct {
-	Id          string            `json:"id"`
-	Name        map[string]string `json:"name"`
-	Description map[string]string `json:"description"`
-	Subject     SubjectRes        `json:"subject"`
-	Teacher     TeacherRes        `json:"teacher"`
-	Price       map[string]string `json:"price"`
-	ImageUrl    *string           `json:"image_url"`
-	IsPublic    *bool             `json:"is_public"`
-	OrderNum    *int              `json:"order_num"`
-	HasAccess   bool              `json:"has_access"`
-	CreatedAt   *string           `json:"created_at"`
-	UpdatedAt   *string           `json:"updated_at"`
+	Id                 string            `json:"id"`
+	Name               map[string]string `json:"name"`
+	Description        map[string]string `json:"description"`
+	SubjectId          string            `json:"subject_id"`
+	SubjectName        map[string]string `json:"subject_name"`
+	TeacherId          string            `json:"teacher_id"`
+	TeacherName        string            `json:"teacher_name"`
+	TeacherPhoneNumber string            `json:"teacher_phone_number"`
+	Price              PriceField        `db:"price" json:"price"`
+	ImageUrl           *string           `json:"image_url"`
+	IsPublic           *bool             `json:"is_public"`
+	OrderNum           *int              `json:"order_num"`
+	HasAccess          bool              `json:"has_access"`
+	CreatedAt          *string           `json:"created_at"`
+	UpdatedAt          *string           `json:"updated_at"`
 }
 
 type CourseList struct {
@@ -58,22 +73,22 @@ type CourseUpdateBody struct {
 	Description map[string]string `json:"description"`
 	SubjectId   string            `json:"subject_id"`
 	TeacherId   string            `json:"teacher_id"`
-	Price       map[string]string `json:"price"`
+	Price       PriceField        `json:"price"`
 	ImageUrl    string            `json:"image_url"`
 	IsPublic    bool              `json:"is_public"`
 	OrderNum    int               `json:"order_num"`
 }
 
 type CourseUpdateReq struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	SubjectId   string `json:"subject_id"`
-	TeacherId   string `json:"teacher_id"`
-	Price       string `json:"price"`
-	ImageUrl    string `json:"image_url"`
-	IsPublic    bool   `json:"is_public"`
-	OrderNum    int    `json:"order_num"`
+	Id          string     `json:"id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	SubjectId   string     `json:"subject_id"`
+	TeacherId   string     `json:"teacher_id"`
+	Price       PriceField `json:"price"`
+	ImageUrl    string     `json:"image_url"`
+	IsPublic    bool       `json:"is_public"`
+	OrderNum    int        `json:"order_num"`
 }
 
 type UserCourseCreateReq struct {
@@ -126,4 +141,62 @@ type UserCourseUpdateReq struct {
 	Type      string `json:"type"`
 	StartedAt string `json:"started_at"`
 	EndedAt   string `json:"ended_at"`
+}
+
+type PriceField []CoursePriceOption
+
+func (p *PriceField) Scan(src any) error {
+	if src == nil {
+		*p = nil
+		return nil
+	}
+
+	var b []byte
+	switch v := src.(type) {
+	case []byte:
+		b = v
+	case string:
+		b = []byte(v)
+	default:
+		return fmt.Errorf("PriceField.Scan: unsupported type %T", src)
+	}
+
+	b = bytes.TrimSpace(b)
+	if len(b) == 0 || bytes.Equal(b, []byte("null")) {
+		*p = nil
+		return nil
+	}
+
+	switch b[0] {
+	case '[':
+		var arr []CoursePriceOption
+		if err := json.Unmarshal(b, &arr); err != nil {
+			return fmt.Errorf("PriceField.Scan array unmarshal: %w", err)
+		}
+		*p = arr
+		return nil
+
+	case '{':
+		var one CoursePriceOption
+		if err := json.Unmarshal(b, &one); err != nil {
+			return fmt.Errorf("PriceField.Scan object unmarshal: %w", err)
+		}
+		*p = []CoursePriceOption{one}
+		return nil
+
+	default:
+		return fmt.Errorf("PriceField.Scan: invalid json (must be array/object): %s", string(b))
+	}
+}
+
+// Value Go -> DB (INSERT/UPDATE)
+func (p PriceField) Value() (driver.Value, error) {
+	if p == nil {
+		return []byte("[]"), nil
+	}
+	j, err := json.Marshal([]CoursePriceOption(p))
+	if err != nil {
+		return nil, fmt.Errorf("PriceField.Value marshal: %w", err)
+	}
+	return j, nil
 }

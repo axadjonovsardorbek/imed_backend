@@ -28,7 +28,7 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 	body := m.LessonCreateBody{}
 	err := c.BindJSON(&body)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -52,7 +52,7 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 	res, err := h.Clients.Lesson.Create(context.Background(), &req)
 	slog.Info("Create lesson response", "Lesson", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating lesson: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -60,7 +60,7 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 
 	slog.Info("Lesson created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Lesson created successfully",
+		"message": "Lesson created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -88,7 +88,7 @@ func (h *Handler) GetByIdLesson(c *gin.Context) {
 	slog.Info("Lesson details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting lesson by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -135,7 +135,7 @@ func (h *Handler) GetAllLessons(c *gin.Context) {
 	slog.Info("All lesson", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting lesson: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -165,7 +165,7 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -173,7 +173,7 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -190,7 +190,7 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 	_, err = h.Clients.Lesson.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Lesson: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -222,7 +222,7 @@ func (h *Handler) DeleteLesson(c *gin.Context) {
 	_, err := h.Clients.Lesson.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting lesson", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -259,7 +259,7 @@ func (h *Handler) EndLesson(c *gin.Context) {
 	_, err := h.Clients.Lesson.EndLesson(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Lesson: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

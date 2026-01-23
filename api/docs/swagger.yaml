@@ -234,9 +234,9 @@ definitions:
       order_num:
         type: integer
       price:
-        additionalProperties:
-          type: string
-        type: object
+        items:
+          $ref: '#/definitions/models.CoursePriceOption'
+        type: array
       subject_id:
         type: string
       teacher_id:
@@ -250,6 +250,14 @@ definitions:
         items:
           $ref: '#/definitions/models.CourseRes'
         type: array
+    type: object
+  models.CoursePriceOption:
+    properties:
+      duration:
+        description: oy
+        type: integer
+      price:
+        type: integer
     type: object
   models.CourseRes:
     properties:
@@ -274,13 +282,21 @@ definitions:
       order_num:
         type: integer
       price:
+        items:
+          $ref: '#/definitions/models.CoursePriceOption'
+        type: array
+      subject_id:
+        type: string
+      subject_name:
         additionalProperties:
           type: string
         type: object
-      subject:
-        $ref: '#/definitions/models.SubjectRes'
-      teacher:
-        $ref: '#/definitions/models.TeacherRes'
+      teacher_id:
+        type: string
+      teacher_name:
+        type: string
+      teacher_phone_number:
+        type: string
       updated_at:
         type: string
     type: object
@@ -301,9 +317,9 @@ definitions:
       order_num:
         type: integer
       price:
-        additionalProperties:
-          type: string
-        type: object
+        items:
+          $ref: '#/definitions/models.CoursePriceOption'
+        type: array
       subject_id:
         type: string
       teacher_id:
@@ -907,19 +923,6 @@ definitions:
       phone_number:
         type: string
       updated_at:
-        type: string
-    type: object
-  models.UserUpdateBody:
-    properties:
-      fcm_token:
-        type: string
-      image_url:
-        type: string
-      language:
-        type: string
-      name:
-        type: string
-      phone_number:
         type: string
     type: object
 info:
@@ -3568,15 +3571,29 @@ paths:
   /user/update/profile:
     put:
       consumes:
-      - application/json
-      description: Update a user
+      - multipart/form-data
+      description: Updates user profile fields via multipart/form-data. Image is optional.
       parameters:
-      - description: User update credentials
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/models.UserUpdateBody'
+      - description: User name
+        in: formData
+        name: name
+        type: string
+      - description: Phone number
+        in: formData
+        name: phone_number
+        type: string
+      - description: FCM token
+        in: formData
+        name: fcm_token
+        type: string
+      - description: Language (e.g. uz, ru, en)
+        in: formData
+        name: language
+        type: string
+      - description: Profile image (jpg/png/webp)
+        in: formData
+        name: image
+        type: file
       produces:
       - application/json
       responses:
@@ -3594,7 +3611,7 @@ paths:
             type: string
       security:
       - BearerAuth: []
-      summary: Update a user
+      summary: Update a user profile
       tags:
       - profile
 securityDefinitions:

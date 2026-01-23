@@ -28,7 +28,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 	body := m.SourceCreateBody{}
 	err := c.BindJSON(&body)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -44,7 +44,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 
 	urlJSON, err := json.Marshal(body.Url)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize url"})
+		c.JSON(409, gin.H{"message": "Failed to serialize url"})
 		slog.Error("Error serializing url: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -60,7 +60,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 	res, err := h.Clients.Source.Create(context.Background(), &req)
 	slog.Info("Create source response", "Source", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating source: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -68,7 +68,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 
 	slog.Info("Source created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Source created successfully",
+		"message": "Source created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -93,7 +93,7 @@ func (h *Handler) GetByIdSource(c *gin.Context) {
 	slog.Info("Source details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting source by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -140,7 +140,7 @@ func (h *Handler) GetAllSources(c *gin.Context) {
 	slog.Info("All source", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting source: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -170,7 +170,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -178,7 +178,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -186,7 +186,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 
 	urlJSON, err := json.Marshal(body.Url)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize url"})
+		c.JSON(409, gin.H{"message": "Failed to serialize url"})
 		slog.Error("Error serializing url: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -203,7 +203,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 	_, err = h.Clients.Source.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Source: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -235,7 +235,7 @@ func (h *Handler) DeleteSource(c *gin.Context) {
 	_, err := h.Clients.Source.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting source", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

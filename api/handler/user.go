@@ -28,7 +28,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	var body m.ChangePasswordBody
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 
 	if body.OldPassword == body.NewPassword || body.OldPassword == body.ConfirmPassword {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "The old password must not be the same as the new password.",
+			"message": "The old password must not be the same as the new password.",
 		})
 		slog.Error("Error changing password")
 		smssender(c, fmt.Errorf("the old password same as the new password"), http.StatusBadRequest)
@@ -44,7 +44,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	}
 	if body.NewPassword != body.ConfirmPassword {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "The new password must not be the different as the confirm password.",
+			"message": "The new password must not be the different as the confirm password.",
 		})
 		slog.Error("Error changing password")
 		smssender(c, fmt.Errorf("the confirm password different as the new password"), http.StatusBadRequest)
@@ -70,7 +70,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	slog.Info("Change password response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error while check", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -96,7 +96,7 @@ func (h *Handler) RefreshPassword(c *gin.Context) {
 	var req m.RefreshPasswordReq
 
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -107,7 +107,7 @@ func (h *Handler) RefreshPassword(c *gin.Context) {
 	slog.Info("Refreshed password", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error refreshing password: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -132,7 +132,7 @@ func (h *Handler) CheckUser(c *gin.Context) {
 	var req m.UserCheckReq
 
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -141,7 +141,7 @@ func (h *Handler) CheckUser(c *gin.Context) {
 	check := isValidPhone(req.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "Phone number is not valid",
+			"message": "Phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -153,7 +153,7 @@ func (h *Handler) CheckUser(c *gin.Context) {
 	slog.Info("User check response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error while check", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -178,7 +178,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	var req m.UserLoginReq
 
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -187,7 +187,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	check := isValidPhone(req.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "Phone number is not valid",
+			"message": "Phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -199,7 +199,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	slog.Info("User login response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error while login", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -228,7 +228,7 @@ func (h *Handler) GetByIdUser(c *gin.Context) {
 	slog.Info("User details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting user by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -272,7 +272,7 @@ func (h *Handler) GetAllUsers(c *gin.Context) {
 	slog.Info("All user", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting user: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -305,7 +305,7 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 	_, err := h.Clients.User.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting user", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -337,7 +337,7 @@ func (h *Handler) GetProfileUser(c *gin.Context) {
 	slog.Info("User details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting user by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -347,63 +347,81 @@ func (h *Handler) GetProfileUser(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-// Update godoc
-// @Summary Update a user
-// @Description Update a user
+// UpdateProfile godoc
+// @Summary Update a user profile
+// @Description Updates user profile fields via multipart/form-data. Image is optional.
 // @Tags profile
-// @Accept json
+// @Accept multipart/form-data
 // @Produce json
 // @Security BearerAuth
-// @Param credentials body models.UserUpdateBody true "User update credentials"
+// @Param name formData string false "User name"
+// @Param phone_number formData string false "Phone number"
+// @Param fcm_token formData string false "FCM token"
+// @Param language formData string false "Language (e.g. uz, ru, en)"
+// @Param image formData file false "Profile image (jpg/png/webp)"
 // @Success 200 {object} string "Profile updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
 // @Router /user/update/profile [put]
 func (h *Handler) UpdateProfileUser(c *gin.Context) {
-	var req m.UserUpdateReq
-	var body m.UserUpdateBody
+
+	req := m.UserUpdateReq{
+		Name:        formStr(c, "name"),
+		PhoneNumber: formStr(c, "phone_number"),
+		FCMToken:    formStr(c, "fcm_token"),
+		Language:    formStr(c, "language"),
+	}
 
 	user_id := claimData(c, "user_id")
 	if user_id == "" {
 		return
 	}
 
-	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		slog.Error("Error binding request body", err)
+	req.Id = user_id
+
+	if req.PhoneNumber != "" {
+		check := isValidPhone(req.PhoneNumber)
+		if !check {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "phone number is not valid",
+			})
+			slog.Error("Error binding request body: Phone number is not valid")
+			smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
+			return
+		}
+	}
+
+	fileName, tempFilePath, err := formFile(c, "image")
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+		slog.Error("Error processing image: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
-	check := isValidPhone(body.PhoneNumber)
-	if !check {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "Phone number is not valid",
-		})
-		slog.Error("Error binding request body: Phone number is not valid")
-		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
-		return
+	if tempFilePath != "" && fileName != "" {
+		minioURL, err := h.MinIO.Upload(fileName, tempFilePath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to upload to MinIO"})
+			smssender(c, err, http.StatusInternalServerError)
+			return
+		}
+		req.ImageUrl = minioURL
 	}
 
-	req.Id = user_id
-	req.Name = body.Name
-	req.ImageUrl = body.ImageUrl
-	req.PhoneNumber = body.PhoneNumber
-	req.FCMToken = body.FCMToken
-	req.Language = body.Language
-
 	slog.Info("Update User Profile", req)
-	_, err := h.Clients.User.Update(context.Background(), &req)
+	_, err = h.Clients.User.Update(context.Background(), &req)
 	slog.Info("User profile updated")
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating user profile: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Profile updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "profile updated"})
 }
 
 // Delete godoc
@@ -432,13 +450,13 @@ func (h *Handler) DeleteProfileUser(c *gin.Context) {
 	slog.Info("User profile deleted")
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting user profile", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Profile deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "profile deleted successfully"})
 }
 
 // Activity godoc
@@ -458,7 +476,7 @@ func (h *Handler) CreateActivity(c *gin.Context) {
 	var body m.UserActivityCreateBody
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -477,7 +495,7 @@ func (h *Handler) CreateActivity(c *gin.Context) {
 	slog.Info("Create activity response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error while create activity", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -513,7 +531,7 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 	to := c.Query("to")
 
 	if typ == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "type is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "type is required"})
 		return
 	}
 
@@ -526,7 +544,7 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 		if date != "" && !IsYYYYMMDD(date) {
 			slog.Error("Invalid date format for day type")
 			smssender(c, fmt.Errorf("invalid date format for day type"), http.StatusBadRequest)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "date must be YYYY-MM-DD"})
+			c.JSON(http.StatusBadRequest, gin.H{"message": "date must be YYYY-MM-DD"})
 			return
 		}
 		req.Date = date
@@ -536,13 +554,13 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 		if from == "" || to == "" {
 			slog.Error("from and to are required for range type")
 			smssender(c, fmt.Errorf("from and to are required for range type"), http.StatusBadRequest)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "from and to are required for range"})
+			c.JSON(http.StatusBadRequest, gin.H{"message": "from and to are required for range"})
 			return
 		}
 		if !IsYYYYMMDD(from) || !IsYYYYMMDD(to) {
 			slog.Error("Invalid from/to format for range type")
 			smssender(c, fmt.Errorf("invalid from/to format for range type"), http.StatusBadRequest)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "from/to must be YYYY-MM-DD"})
+			c.JSON(http.StatusBadRequest, gin.H{"message": "from/to must be YYYY-MM-DD"})
 			return
 		}
 
@@ -553,7 +571,7 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 	slog.Info("Get activity stats request", "req", req)
 	statsRes, err := h.Clients.User.GetActivities(context.Background(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error while get activity stats", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -593,7 +611,7 @@ func (h *Handler) GetRating(c *gin.Context) {
 	default:
 		slog.Error("Invalid type parameter for rating")
 		smssender(c, fmt.Errorf("invalid type parameter for rating"), http.StatusBadRequest)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "type must be one of: day|week|month|year|total"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "type must be one of: day|week|month|year|total"})
 		return
 	}
 
@@ -609,7 +627,7 @@ func (h *Handler) GetRating(c *gin.Context) {
 	if err != nil {
 		slog.Error("Error while get rating", err)
 		smssender(c, err, http.StatusInternalServerError)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 

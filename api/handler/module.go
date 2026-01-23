@@ -28,7 +28,7 @@ func (h *Handler) CreateModule(c *gin.Context) {
 	body := m.ModuleCreateBody{}
 	err := c.BindJSON(&body)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) CreateModule(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -50,7 +50,7 @@ func (h *Handler) CreateModule(c *gin.Context) {
 	res, err := h.Clients.Module.Create(context.Background(), &req)
 	slog.Info("Create module response", "Module", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating module: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -58,7 +58,7 @@ func (h *Handler) CreateModule(c *gin.Context) {
 
 	slog.Info("Module created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Module created successfully",
+		"message": "Module created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -83,7 +83,7 @@ func (h *Handler) GetByIdModule(c *gin.Context) {
 	slog.Info("Module details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting module by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -127,7 +127,7 @@ func (h *Handler) GetAllModules(c *gin.Context) {
 	slog.Info("All module", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting module: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -157,7 +157,7 @@ func (h *Handler) UpdateModule(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -165,7 +165,7 @@ func (h *Handler) UpdateModule(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -180,7 +180,7 @@ func (h *Handler) UpdateModule(c *gin.Context) {
 	_, err = h.Clients.Module.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Module: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -212,7 +212,7 @@ func (h *Handler) DeleteModule(c *gin.Context) {
 	_, err := h.Clients.Module.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting module", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

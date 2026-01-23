@@ -26,7 +26,7 @@ func (h *Handler) CreateContact(c *gin.Context) {
 	req := m.ContactCreateReq{}
 	err := c.BindJSON(&req)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) CreateContact(c *gin.Context) {
 	res, err := h.Clients.Contact.Create(context.Background(), &req)
 	slog.Info("Create contact response", "Contact", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating contact: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -44,7 +44,7 @@ func (h *Handler) CreateContact(c *gin.Context) {
 
 	slog.Info("Contact created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Contact created successfully",
+		"message": "Contact created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -69,7 +69,7 @@ func (h *Handler) GetByIdContact(c *gin.Context) {
 	slog.Info("Contact details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting contact by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -113,7 +113,7 @@ func (h *Handler) GetAllContacts(c *gin.Context) {
 	slog.Info("All contact", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting contact: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -143,7 +143,7 @@ func (h *Handler) UpdateContact(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -158,7 +158,7 @@ func (h *Handler) UpdateContact(c *gin.Context) {
 	_, err := h.Clients.Contact.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Contact: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -190,7 +190,7 @@ func (h *Handler) DeleteContact(c *gin.Context) {
 	_, err := h.Clients.Contact.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting contact", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

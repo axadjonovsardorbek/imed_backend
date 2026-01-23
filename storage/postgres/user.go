@@ -263,12 +263,14 @@ func (r *UserRepo) Update(req *m.UserUpdateReq) (*m.Void, error) {
 		conditions = append(conditions, " phone_number = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.PhoneNumber)
 	}
-	conditions = append(conditions, " fcm_token = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.FCMToken)
-
-	conditions = append(conditions, " image_url = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.ImageUrl)
-
+	if req.FCMToken != "" && req.FCMToken != "string" {
+		conditions = append(conditions, " fcm_token = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.FCMToken)
+	}
+	if req.ImageUrl != "" && req.ImageUrl != "string" {
+		conditions = append(conditions, " image_url = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.ImageUrl)
+	}
 	if req.Language != "" && req.Language != "string" {
 		conditions = append(conditions, " language = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.Language)

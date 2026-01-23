@@ -203,6 +203,10 @@ ON user_lessons(user_id, lesson_id);
 CREATE INDEX IF NOT EXISTS idx_user_activities_day_user
 ON user_activities (day, user_id);
 
+ALTER TABLE courses
+ADD CONSTRAINT courses_price_is_array
+CHECK (jsonb_typeof(price) = 'array');
+
 
 -- +goose StatementEnd
 

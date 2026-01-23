@@ -22,6 +22,7 @@ func NewCourseRepo(db *sql.DB) *CourseRepo {
 }
 
 func (r *CourseRepo) Create(req *m.CourseCreateReq) (*m.ById, error) {
+
 	id := uuid.NewString()
 	query := `
 	INSERT INTO courses (
@@ -64,7 +65,6 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 	if req.Role != "user" || req.UserId == "" {
 		query = `
 		SELECT 
-			COUNT(c.id) OVER() AS total_count,
 			c.id,
 			c.name,
 			c.description,
@@ -134,28 +134,24 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 
 	row := r.db.QueryRow(query, args...)
 
-	course := m.CourseRes{
-		Subject: m.SubjectRes{},
-		Teacher: m.TeacherRes{},
-	}
+	course := m.CourseRes{}
 	var nameJSON []byte
 	var descriptionJSON []byte
 	var subjectNameJSON []byte
-	var priceJSON []byte
 
 	err := row.Scan(
 		&course.Id,
 		&nameJSON,
 		&descriptionJSON,
-		&priceJSON,
+		&course.Price,
 		&course.ImageUrl,
 		&course.IsPublic,
 		&course.OrderNum,
-		&course.Subject.Id,
+		&course.SubjectId,
 		&subjectNameJSON,
-		&course.Teacher.Id,
-		&course.Teacher.Name,
-		&course.Teacher.PhoneNumber,
+		&course.TeacherId,
+		&course.TeacherName,
+		&course.TeacherPhoneNumber,
 		&course.HasAccess,
 		&course.CreatedAt,
 		&course.UpdatedAt,
@@ -163,8 +159,7 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 
 	json.Unmarshal(nameJSON, &course.Name)
 	json.Unmarshal(descriptionJSON, &course.Description)
-	json.Unmarshal(subjectNameJSON, &course.Subject.Name)
-	json.Unmarshal(priceJSON, &course.Price)
+	json.Unmarshal(subjectNameJSON, &course.SubjectName)
 
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("course not found with id: %s", req.Id)
@@ -280,14 +275,10 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 
 	courses := m.CourseList{}
 	for rows.Next() {
-		course := m.CourseRes{
-			Subject: m.SubjectRes{},
-			Teacher: m.TeacherRes{},
-		}
+		course := m.CourseRes{}
 		var nameJSON []byte
 		var descriptionJSON []byte
 		var subjectNameJSON []byte
-		var priceJSON []byte
 		var totalCount int
 
 		err := rows.Scan(
@@ -295,15 +286,15 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 			&course.Id,
 			&nameJSON,
 			&descriptionJSON,
-			&priceJSON,
+			&course.Price,
 			&course.ImageUrl,
 			&course.IsPublic,
 			&course.OrderNum,
-			&course.Subject.Id,
+			&course.SubjectId,
 			&subjectNameJSON,
-			&course.Teacher.Id,
-			&course.Teacher.Name,
-			&course.Teacher.PhoneNumber,
+			&course.TeacherId,
+			&course.TeacherName,
+			&course.TeacherPhoneNumber,
 			&course.HasAccess,
 			&course.CreatedAt,
 			&course.UpdatedAt,
@@ -311,8 +302,7 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 
 		json.Unmarshal(nameJSON, &course.Name)
 		json.Unmarshal(descriptionJSON, &course.Description)
-		json.Unmarshal(subjectNameJSON, &course.Subject.Name)
-		json.Unmarshal(priceJSON, &course.Price)
+		json.Unmarshal(subjectNameJSON, &course.SubjectName)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning course row: %w", err)
@@ -338,23 +328,35 @@ func (r *CourseRepo) Update(req *m.CourseUpdateReq) (*m.Void, error) {
 		args = append(args, req.Name)
 	}
 
-	conditions = append(conditions, " description = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.Description)
+	if req.Description != "" && req.Description != "string" {
+		conditions = append(conditions, " description = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.Description)
+	}
 
-	conditions = append(conditions, " subject_id = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.SubjectId)
+	if req.SubjectId != "" && req.SubjectId != "string" {
+		conditions = append(conditions, " subject_id = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.SubjectId)
+	}
 
-	conditions = append(conditions, " teacher_id = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.TeacherId)
+	if req.TeacherId != "" && req.TeacherId != "string" {
+		conditions = append(conditions, " teacher_id = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.TeacherId)
+	}
 
-	conditions = append(conditions, " price = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.Price)
+	if req.Price != nil && len(req.Price) > 0 {
+		conditions = append(conditions, "price = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.Price)
+	}
 
-	conditions = append(conditions, " image_url = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.ImageUrl)
+	if req.ImageUrl != "" && req.ImageUrl != "string" {
+		conditions = append(conditions, " image_url = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.ImageUrl)
+	}
 
-	conditions = append(conditions, " order_num = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.OrderNum)
+	if req.OrderNum > 0 {
+		conditions = append(conditions, " order_num = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.OrderNum)
+	}
 
 	conditions = append(conditions, " is_public = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.IsPublic)

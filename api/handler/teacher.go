@@ -27,7 +27,7 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 	req := m.TeacherCreateReq{}
 	err := c.BindJSON(&req)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 	check := isValidPhone(req.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "Phone number is not valid",
+			"message": "Phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -47,7 +47,7 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 	res, err := h.Clients.Teacher.Create(context.Background(), &req)
 	slog.Info("Create teacher response", "Teacher", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating meacher: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -55,7 +55,7 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 
 	slog.Info("Teacher created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Teacher created successfully",
+		"message": "Teacher created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -80,7 +80,7 @@ func (h *Handler) GetByIdTeacher(c *gin.Context) {
 	slog.Info("Teacher details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting teacher by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -124,7 +124,7 @@ func (h *Handler) GetAllTeachers(c *gin.Context) {
 	slog.Info("All teacher", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting teacher: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -154,7 +154,7 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -163,7 +163,7 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 	check := isValidPhone(body.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "Phone number is not valid",
+			"message": "Phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -178,7 +178,7 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 	_, err := h.Clients.Teacher.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating teacher: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -210,7 +210,7 @@ func (h *Handler) DeleteTeacher(c *gin.Context) {
 	_, err := h.Clients.Teacher.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting teacher", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

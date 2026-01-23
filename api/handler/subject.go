@@ -28,7 +28,7 @@ func (h *Handler) CreateSubject(c *gin.Context) {
 	body := m.SubjectCreateBody{}
 	err := c.BindJSON(&body)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) CreateSubject(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -50,7 +50,7 @@ func (h *Handler) CreateSubject(c *gin.Context) {
 	res, err := h.Clients.Subject.Create(context.Background(), &req)
 	slog.Info("Create subject response", "Subject", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating subject: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -58,7 +58,7 @@ func (h *Handler) CreateSubject(c *gin.Context) {
 
 	slog.Info("Subject created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Subject created successfully",
+		"message": "Subject created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -83,7 +83,7 @@ func (h *Handler) GetByIdSubject(c *gin.Context) {
 	slog.Info("Subject details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting subject by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -124,7 +124,7 @@ func (h *Handler) GetAllSubjects(c *gin.Context) {
 	slog.Info("All subject", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting subject: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -154,7 +154,7 @@ func (h *Handler) UpdateSubject(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -162,7 +162,7 @@ func (h *Handler) UpdateSubject(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -177,7 +177,7 @@ func (h *Handler) UpdateSubject(c *gin.Context) {
 	_, err = h.Clients.Subject.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Subject: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -209,7 +209,7 @@ func (h *Handler) DeleteSubject(c *gin.Context) {
 	_, err := h.Clients.Subject.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting subject", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

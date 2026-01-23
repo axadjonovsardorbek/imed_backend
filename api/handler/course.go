@@ -28,7 +28,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 	body := m.CourseCreateBody{}
 	err := c.BindJSON(&body)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,31 +36,31 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "Failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
-	priceJSON, err := json.Marshal(body.Price)
-	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize price"})
-		slog.Error("Error serializing price: ", err)
-		smssender(c, err, http.StatusConflict)
-		return
-	}
+	// priceJSON, err := json.Marshal(body.Price)
+	// if err != nil {
+	// 	c.JSON(409, gin.H{"message": "Failed to serialize price"})
+	// 	slog.Error("Error serializing price: ", err)
+	// 	smssender(c, err, http.StatusConflict)
+	// 	return
+	// }
 
 	req.Name = string(nameJSON)
 	req.Description = string(descriptionJson)
 	req.SubjectId = body.SubjectId
 	req.TeacherId = body.TeacherId
-	req.Price = string(priceJSON)
+	req.Price = body.Price
 	req.ImageUrl = body.ImageUrl
 	req.OrderNum = body.OrderNum
 	req.IsPublic = body.IsPublic
@@ -69,7 +69,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 	res, err := h.Clients.Course.Create(context.Background(), &req)
 	slog.Info("Create course response", "Course", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating course: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -77,7 +77,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 
 	slog.Info("Course created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Course created successfully",
+		"message": "Course created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -105,7 +105,7 @@ func (h *Handler) GetByIdCourse(c *gin.Context) {
 	slog.Info("Course details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting course by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -160,7 +160,7 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 	slog.Info("All course", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting course: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -190,7 +190,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -198,32 +198,32 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "Failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "Failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
-	priceJSON, err := json.Marshal(body.Price)
-	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize price"})
-		slog.Error("Error serializing price: ", err)
-		smssender(c, err, http.StatusConflict)
-		return
-	}
+	// priceJSON, err := json.Marshal(body.Price)
+	// if err != nil {
+	// 	c.JSON(409, gin.H{"message": "Failed to serialize price"})
+	// 	slog.Error("Error serializing price: ", err)
+	// 	smssender(c, err, http.StatusConflict)
+	// 	return
+	// }
 
 	req.Id = id
 	req.Name = string(nameJSON)
 	req.Description = string(descriptionJson)
 	req.SubjectId = body.SubjectId
 	req.TeacherId = body.TeacherId
-	req.Price = string(priceJSON)
+	req.Price = body.Price
 	req.ImageUrl = body.ImageUrl
 	req.OrderNum = body.OrderNum
 	req.IsPublic = body.IsPublic
@@ -232,7 +232,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 	_, err = h.Clients.Course.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Course: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -264,7 +264,7 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 	_, err := h.Clients.Course.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting course", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -289,7 +289,7 @@ func (h *Handler) BuyCourse(c *gin.Context) {
 	req := m.UserCourseCreateReq{}
 	err := c.BindJSON(&req)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -299,7 +299,7 @@ func (h *Handler) BuyCourse(c *gin.Context) {
 	res, err := h.Clients.Course.BuyCourse(context.Background(), &req)
 	slog.Info("Buy course response", "Course", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error buying course: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -307,7 +307,7 @@ func (h *Handler) BuyCourse(c *gin.Context) {
 
 	slog.Info("Course bought successfully")
 	c.JSON(200, gin.H{
-		"Message": "Course bought successfully",
+		"message": "Course bought successfully",
 	})
 }
 
@@ -331,7 +331,7 @@ func (h *Handler) UserCourse(c *gin.Context) {
 	slog.Info("User course details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting user course by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -381,7 +381,7 @@ func (h *Handler) UserCourses(c *gin.Context) {
 	slog.Info("All user course", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting user course: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -411,7 +411,7 @@ func (h *Handler) UpdateUserCourse(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -428,7 +428,7 @@ func (h *Handler) UpdateUserCourse(c *gin.Context) {
 	_, err := h.Clients.Course.UserUpdateCourse(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating user Course: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -460,7 +460,7 @@ func (h *Handler) DeleteUserCourse(c *gin.Context) {
 	_, err := h.Clients.Course.DeleteUserCourse(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting user course", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

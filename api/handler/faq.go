@@ -28,7 +28,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 	body := m.FaqCreateBody{}
 	err := c.BindJSON(&body)
 	if err != nil {
-		c.JSON(400, gin.H{"Error": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -36,7 +36,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 
 	questionJSON, err := json.Marshal(body.Question)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize question"})
+		c.JSON(409, gin.H{"message": "Failed to serialize question"})
 		slog.Error("Error serializing question: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -44,7 +44,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 
 	answerJSON, err := json.Marshal(body.Answer)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize answer"})
+		c.JSON(409, gin.H{"message": "Failed to serialize answer"})
 		slog.Error("Error serializing answer: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -58,7 +58,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 	res, err := h.Clients.Faq.Create(context.Background(), &req)
 	slog.Info("Create faq response", "Faq", res)
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error creating faq: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -66,7 +66,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 
 	slog.Info("Faq created successfully")
 	c.JSON(200, gin.H{
-		"Message": "Faq created successfully",
+		"message": "Faq created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -91,7 +91,7 @@ func (h *Handler) GetByIdFaq(c *gin.Context) {
 	slog.Info("Faq details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting faq by ID: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -132,7 +132,7 @@ func (h *Handler) GetAllFaqs(c *gin.Context) {
 	slog.Info("All faq", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"Error": err.Error()})
+		c.JSON(500, gin.H{"message": err.Error()})
 		slog.Error("Error getting faq: ", err.Error())
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -162,7 +162,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := c.BindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err.Error())
 		smssender(c, err, http.StatusBadRequest)
 		return
@@ -170,7 +170,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 
 	questionJSON, err := json.Marshal(body.Question)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize question"})
+		c.JSON(409, gin.H{"message": "Failed to serialize question"})
 		slog.Error("Error serializing question: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -178,7 +178,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 
 	answerJSON, err := json.Marshal(body.Answer)
 	if err != nil {
-		c.JSON(409, gin.H{"Error": "Failed to serialize answer"})
+		c.JSON(409, gin.H{"message": "Failed to serialize answer"})
 		slog.Error("Error serializing answer: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -193,7 +193,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 	_, err = h.Clients.Faq.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error updating Faq: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
@@ -225,7 +225,7 @@ func (h *Handler) DeleteFaq(c *gin.Context) {
 	_, err := h.Clients.Faq.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		slog.Error("Error deleting faq", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

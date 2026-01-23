@@ -4093,9 +4093,9 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update a user",
+                "description": "Updates user profile fields via multipart/form-data. Image is optional.",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -4103,16 +4103,37 @@ const docTemplate = `{
                 "tags": [
                     "profile"
                 ],
-                "summary": "Update a user",
+                "summary": "Update a user profile",
                 "parameters": [
                     {
-                        "description": "User update credentials",
-                        "name": "credentials",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserUpdateBody"
-                        }
+                        "type": "string",
+                        "description": "User name",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phone number",
+                        "name": "phone_number",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "FCM token",
+                        "name": "fcm_token",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language (e.g. uz, ru, en)",
+                        "name": "language",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Profile image (jpg/png/webp)",
+                        "name": "image",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -4593,9 +4614,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "price": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CoursePriceOption"
                     }
                 },
                 "subject_id": {
@@ -4617,6 +4638,18 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.CourseRes"
                     }
+                }
+            }
+        },
+        "models.CoursePriceOption": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "oy",
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
                 }
             }
         },
@@ -4654,16 +4687,28 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "price": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CoursePriceOption"
+                    }
+                },
+                "subject_id": {
+                    "type": "string"
+                },
+                "subject_name": {
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
-                "subject": {
-                    "$ref": "#/definitions/models.SubjectRes"
+                "teacher_id": {
+                    "type": "string"
                 },
-                "teacher": {
-                    "$ref": "#/definitions/models.TeacherRes"
+                "teacher_name": {
+                    "type": "string"
+                },
+                "teacher_phone_number": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -4695,9 +4740,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "price": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CoursePriceOption"
                     }
                 },
                 "subject_id": {
@@ -5623,26 +5668,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserUpdateBody": {
-            "type": "object",
-            "properties": {
-                "fcm_token": {
-                    "type": "string"
-                },
-                "image_url": {
-                    "type": "string"
-                },
-                "language": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone_number": {
                     "type": "string"
                 }
             }
