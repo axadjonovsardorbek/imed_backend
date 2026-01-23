@@ -102,18 +102,18 @@ func CheckPermission(path string, r *http.Request, enforcer *casbin.Enforcer) (b
 
 func InvalidToken(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"error": "Invalid token!",
+		"message": "invalid token!",
 	})
 }
 
 func RequirePermission(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"error": "Permission denied",
+		"message": "permission denied",
 	})
 }
 
 func RequireRefresh(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-		"error": "Access token expired",
+		"message": "access token expired",
 	})
 }

@@ -44,7 +44,7 @@ func (h *Handler) CreateContact(c *gin.Context) {
 
 	slog.Info("Contact created successfully")
 	c.JSON(200, gin.H{
-		"message": "Contact created successfully",
+		"message": "contact created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -164,7 +164,7 @@ func (h *Handler) UpdateContact(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Contact updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "contact updated"})
 }
 
 // Delete godoc
@@ -196,5 +196,5 @@ func (h *Handler) DeleteContact(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Contact deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "contact deleted successfully"})
 }

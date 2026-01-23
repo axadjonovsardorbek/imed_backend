@@ -36,7 +36,7 @@ func (h *Handler) GetByIdAdmin(c *gin.Context) {
 		return
 	}
 
-	slog.Info("Admin retrieved successfully")
+	slog.Info("admin retrieved successfully")
 	c.JSON(200, res)
 }
 

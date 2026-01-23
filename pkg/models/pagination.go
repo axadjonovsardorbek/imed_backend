@@ -1,6 +1,8 @@
 package models
 
-import "strconv"
+import (
+	"strconv"
+)
 
 // Pagination represents pagination parameters
 type Pagination struct {
@@ -40,6 +42,10 @@ type PaginationResponse struct {
 
 // NewPaginationResponse creates a new pagination response
 func NewPaginationResponse(pagination Pagination, total int, data interface{}) PaginationResponse {
+	if total == 0 {
+		data = []interface{}{}
+	}
+
 	totalPages := total / pagination.Limit
 	if total%pagination.Limit != 0 {
 		totalPages++

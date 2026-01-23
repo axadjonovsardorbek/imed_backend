@@ -36,7 +36,7 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -60,7 +60,7 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 
 	slog.Info("Lesson created successfully")
 	c.JSON(200, gin.H{
-		"message": "Lesson created successfully",
+		"message": "lesson created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -173,7 +173,7 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -196,7 +196,7 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Lesson updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "lesson updated"})
 }
 
 // Delete godoc
@@ -228,7 +228,7 @@ func (h *Handler) DeleteLesson(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Lesson deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "lesson deleted successfully"})
 }
 
 // EndLesson godoc

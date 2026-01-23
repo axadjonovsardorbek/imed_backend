@@ -36,7 +36,7 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 	check := isValidPhone(req.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Phone number is not valid",
+			"message": "phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -55,7 +55,7 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 
 	slog.Info("Teacher created successfully")
 	c.JSON(200, gin.H{
-		"message": "Teacher created successfully",
+		"message": "teacher created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -163,7 +163,7 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 	check := isValidPhone(body.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Phone number is not valid",
+			"message": "phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -184,7 +184,7 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Teacher updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "teacher updated"})
 }
 
 // Delete godoc
@@ -216,5 +216,5 @@ func (h *Handler) DeleteTeacher(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Teacher deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "teacher deleted successfully"})
 }

@@ -36,7 +36,7 @@ func (h *Handler) CreateNotification(c *gin.Context) {
 
 	titleJSON, err := json.Marshal(body.Title)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize title"})
+		c.JSON(409, gin.H{"message": "failed to serialize title"})
 		slog.Error("Error serializing title: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -44,7 +44,7 @@ func (h *Handler) CreateNotification(c *gin.Context) {
 
 	messageJSON, err := json.Marshal(body.Message)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize message"})
+		c.JSON(409, gin.H{"message": "failed to serialize message"})
 		slog.Error("Error serializing message: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -67,7 +67,7 @@ func (h *Handler) CreateNotification(c *gin.Context) {
 
 	slog.Info("Notification created successfully")
 	c.JSON(200, gin.H{
-		"message": "Notification created successfully",
+		"message": "notification created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -174,7 +174,7 @@ func (h *Handler) UpdateNotification(c *gin.Context) {
 
 	titleJSON, err := json.Marshal(body.Title)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize title"})
+		c.JSON(409, gin.H{"message": "failed to serialize title"})
 		slog.Error("Error serializing title: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -182,7 +182,7 @@ func (h *Handler) UpdateNotification(c *gin.Context) {
 
 	messageJSON, err := json.Marshal(body.Message)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize message"})
+		c.JSON(409, gin.H{"message": "failed to serialize message"})
 		slog.Error("Error serializing message: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -202,7 +202,7 @@ func (h *Handler) UpdateNotification(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Notification updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "notification updated"})
 }
 
 // Delete godoc
@@ -234,7 +234,7 @@ func (h *Handler) DeleteNotification(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Notification deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "notification deleted successfully"})
 }
 
 // GetAllNotifications godoc
@@ -319,5 +319,5 @@ func (h *Handler) ReadNotification(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Notification read"})
+	c.JSON(http.StatusOK, gin.H{"message": "notification read"})
 }

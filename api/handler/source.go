@@ -36,7 +36,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -44,7 +44,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 
 	urlJSON, err := json.Marshal(body.Url)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize url"})
+		c.JSON(409, gin.H{"message": "failed to serialize url"})
 		slog.Error("Error serializing url: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -68,7 +68,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 
 	slog.Info("Source created successfully")
 	c.JSON(200, gin.H{
-		"message": "Source created successfully",
+		"message": "source created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -178,7 +178,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -186,7 +186,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 
 	urlJSON, err := json.Marshal(body.Url)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize url"})
+		c.JSON(409, gin.H{"message": "failed to serialize url"})
 		slog.Error("Error serializing url: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -209,7 +209,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Source updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "source updated"})
 }
 
 // Delete godoc
@@ -241,5 +241,5 @@ func (h *Handler) DeleteSource(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Source deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "source deleted successfully"})
 }

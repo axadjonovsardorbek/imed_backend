@@ -36,7 +36,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 
 	if body.OldPassword == body.NewPassword || body.OldPassword == body.ConfirmPassword {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "The old password must not be the same as the new password.",
+			"message": "the old password must not be the same as the new password.",
 		})
 		slog.Error("Error changing password")
 		smssender(c, fmt.Errorf("the old password same as the new password"), http.StatusBadRequest)
@@ -44,7 +44,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	}
 	if body.NewPassword != body.ConfirmPassword {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "The new password must not be the different as the confirm password.",
+			"message": "the new password must not be the different as the confirm password.",
 		})
 		slog.Error("Error changing password")
 		smssender(c, fmt.Errorf("the confirm password different as the new password"), http.StatusBadRequest)
@@ -76,7 +76,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, gin.H{"message": "password changed successfully"})
 }
 
 // RefreshPassword godoc
@@ -141,7 +141,7 @@ func (h *Handler) CheckUser(c *gin.Context) {
 	check := isValidPhone(req.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Phone number is not valid",
+			"message": "phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -187,7 +187,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	check := isValidPhone(req.PhoneNumber)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Phone number is not valid",
+			"message": "phone number is not valid",
 		})
 		slog.Error("Error binding request body: Phone number is not valid")
 		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
@@ -311,7 +311,7 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
 }
 
 // GetProfile godoc
@@ -343,7 +343,7 @@ func (h *Handler) GetProfileUser(c *gin.Context) {
 		return
 	}
 
-	slog.Info("User retrieved successfully")
+	slog.Info("user retrieved successfully")
 	c.JSON(200, res)
 }
 
@@ -403,7 +403,7 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 	if tempFilePath != "" && fileName != "" {
 		minioURL, err := h.MinIO.Upload(fileName, tempFilePath)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to upload to MinIO"})
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to upload to MinIO"})
 			smssender(c, err, http.StatusInternalServerError)
 			return
 		}

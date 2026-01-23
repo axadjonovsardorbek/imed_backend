@@ -36,7 +36,7 @@ func (h *Handler) CreateModule(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -58,7 +58,7 @@ func (h *Handler) CreateModule(c *gin.Context) {
 
 	slog.Info("Module created successfully")
 	c.JSON(200, gin.H{
-		"message": "Module created successfully",
+		"message": "module created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -165,7 +165,7 @@ func (h *Handler) UpdateModule(c *gin.Context) {
 
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -186,7 +186,7 @@ func (h *Handler) UpdateModule(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Module updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "module updated"})
 }
 
 // Delete godoc
@@ -218,5 +218,5 @@ func (h *Handler) DeleteModule(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Module deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "module deleted successfully"})
 }

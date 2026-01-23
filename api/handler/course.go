@@ -36,21 +36,21 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
 	// priceJSON, err := json.Marshal(body.Price)
 	// if err != nil {
-	// 	c.JSON(409, gin.H{"message": "Failed to serialize price"})
+	// 	c.JSON(409, gin.H{"message": "failed to serialize price"})
 	// 	slog.Error("Error serializing price: ", err)
 	// 	smssender(c, err, http.StatusConflict)
 	// 	return
@@ -77,7 +77,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 
 	slog.Info("Course created successfully")
 	c.JSON(200, gin.H{
-		"message": "Course created successfully",
+		"message": "course created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -198,25 +198,18 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
 	nameJSON, err := json.Marshal(body.Name)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize name"})
+		c.JSON(409, gin.H{"message": "failed to serialize name"})
 		slog.Error("Error serializing name: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
-	// priceJSON, err := json.Marshal(body.Price)
-	// if err != nil {
-	// 	c.JSON(409, gin.H{"message": "Failed to serialize price"})
-	// 	slog.Error("Error serializing price: ", err)
-	// 	smssender(c, err, http.StatusConflict)
-	// 	return
-	// }
 
 	req.Id = id
 	req.Name = string(nameJSON)
@@ -238,7 +231,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Course updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "course updated"})
 }
 
 // Delete godoc
@@ -270,7 +263,7 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Course deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "course deleted successfully"})
 }
 
 // Buy godoc
@@ -307,7 +300,7 @@ func (h *Handler) BuyCourse(c *gin.Context) {
 
 	slog.Info("Course bought successfully")
 	c.JSON(200, gin.H{
-		"message": "Course bought successfully",
+		"message": "course bought successfully",
 	})
 }
 
@@ -434,7 +427,7 @@ func (h *Handler) UpdateUserCourse(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User course updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "user course updated"})
 }
 
 // Delete godoc
@@ -466,5 +459,5 @@ func (h *Handler) DeleteUserCourse(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User course deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "user course deleted successfully"})
 }

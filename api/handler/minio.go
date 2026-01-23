@@ -30,7 +30,7 @@ func (h *Handler) UploadFile(c *gin.Context) {
 	// Faylni olish
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "File not provided"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "file not provided"})
 		smssender(c, err, http.StatusBadRequest)
 		return
 	}
@@ -45,7 +45,7 @@ func (h *Handler) UploadFile(c *gin.Context) {
 	tempFilePath := filepath.Join("/tmp", fileName)
 	out, err := os.Create(tempFilePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Unable to create temporary file"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "unable to create temporary file"})
 		smssender(c, err, http.StatusInternalServerError)
 		return
 	}
@@ -53,7 +53,7 @@ func (h *Handler) UploadFile(c *gin.Context) {
 
 	_, err = io.Copy(out, file)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to save file"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to save file"})
 		smssender(c, err, http.StatusInternalServerError)
 		return
 	}
@@ -61,13 +61,13 @@ func (h *Handler) UploadFile(c *gin.Context) {
 	// MinIO ga yuklash (avvalgi MinIO.Upload funksiyangizdan foydalanamiz)
 	minioURL, err := h.MinIO.Upload(fileName, tempFilePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to upload to MinIO"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to upload to MinIO"})
 		smssender(c, err, http.StatusInternalServerError)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Successfully upload",
+		"message": "successfully upload",
 		"Url":     minioURL,
 	})
 }

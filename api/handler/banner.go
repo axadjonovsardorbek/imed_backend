@@ -36,7 +36,7 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 
 	titleJson, err := json.Marshal(body.Title)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize title"})
+		c.JSON(409, gin.H{"message": "failed to serialize title"})
 		slog.Error("Error serializing title: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -44,14 +44,14 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
 	imageurlJson, err := json.Marshal(body.ImageUrl)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize image"})
+		c.JSON(409, gin.H{"message": "failed to serialize image"})
 		slog.Error("Error serializing image: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -75,7 +75,7 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 
 	slog.Info("Banner created successfully")
 	c.JSON(200, gin.H{
-		"message": "Banner created successfully",
+		"message": "banner created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -179,7 +179,7 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 
 	titleJson, err := json.Marshal(body.Title)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize title"})
+		c.JSON(409, gin.H{"message": "failed to serialize title"})
 		slog.Error("Error serializing title: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -187,14 +187,14 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
 	}
 	imageurlJson, err := json.Marshal(body.ImageUrl)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize image"})
+		c.JSON(409, gin.H{"message": "failed to serialize image"})
 		slog.Error("Error serializing image: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -217,7 +217,7 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Banner updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "banner updated"})
 }
 
 // Delete godoc
@@ -249,5 +249,5 @@ func (h *Handler) DeleteBanner(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Banner deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "banner deleted successfully"})
 }

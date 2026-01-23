@@ -36,7 +36,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 
 	questionJSON, err := json.Marshal(body.Question)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize question"})
+		c.JSON(409, gin.H{"message": "failed to serialize question"})
 		slog.Error("Error serializing question: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -44,7 +44,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 
 	answerJSON, err := json.Marshal(body.Answer)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize answer"})
+		c.JSON(409, gin.H{"message": "failed to serialize answer"})
 		slog.Error("Error serializing answer: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -66,7 +66,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 
 	slog.Info("Faq created successfully")
 	c.JSON(200, gin.H{
-		"message": "Faq created successfully",
+		"message": "faq created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -170,7 +170,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 
 	questionJSON, err := json.Marshal(body.Question)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize question"})
+		c.JSON(409, gin.H{"message": "failed to serialize question"})
 		slog.Error("Error serializing question: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -178,7 +178,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 
 	answerJSON, err := json.Marshal(body.Answer)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize answer"})
+		c.JSON(409, gin.H{"message": "failed to serialize answer"})
 		slog.Error("Error serializing answer: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -199,7 +199,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Faq updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "faq updated"})
 }
 
 // Delete godoc
@@ -231,5 +231,5 @@ func (h *Handler) DeleteFaq(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Faq deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "faq deleted successfully"})
 }

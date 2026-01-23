@@ -36,7 +36,7 @@ func (h *Handler) CreateAbout(c *gin.Context) {
 
 	titleJson, err := json.Marshal(body.Title)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize title"})
+		c.JSON(409, gin.H{"message": "failed to serialize title"})
 		slog.Error("Error serializing title: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -44,7 +44,7 @@ func (h *Handler) CreateAbout(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -67,7 +67,7 @@ func (h *Handler) CreateAbout(c *gin.Context) {
 
 	slog.Info("About created successfully")
 	c.JSON(200, gin.H{
-		"message": "About created successfully",
+		"message": "about created successfully",
 		"Id":      res.Id,
 	})
 }
@@ -171,7 +171,7 @@ func (h *Handler) UpdateAbout(c *gin.Context) {
 
 	titleJson, err := json.Marshal(body.Title)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize title"})
+		c.JSON(409, gin.H{"message": "failed to serialize title"})
 		slog.Error("Error serializing title: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -179,7 +179,7 @@ func (h *Handler) UpdateAbout(c *gin.Context) {
 
 	descriptionJson, err := json.Marshal(body.Description)
 	if err != nil {
-		c.JSON(409, gin.H{"message": "Failed to serialize description"})
+		c.JSON(409, gin.H{"message": "failed to serialize description"})
 		slog.Error("Error serializing description: ", err)
 		smssender(c, err, http.StatusConflict)
 		return
@@ -233,5 +233,5 @@ func (h *Handler) DeleteAbout(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "About deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "about deleted successfully"})
 }
