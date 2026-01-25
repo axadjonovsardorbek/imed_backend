@@ -814,6 +814,7 @@ func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes
 		u.name,
 		c.course_id,
 		co.name->> $1,
+		co.image_url,
 		(
 			c.started_at <= NOW()
 			AND (c.ended_at IS NULL OR c.ended_at > NOW())
@@ -845,6 +846,7 @@ func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes
 		&course.UserName,
 		&course.CourseId,
 		&course.CourseName,
+		&course.CourseImageUrl,
 		&course.IsActive,
 		&course.Type,
 		&course.StartedAt,
@@ -870,6 +872,7 @@ func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.Pa
 		u.name,
 		c.course_id,
 		co.name->> $1,
+		co.image_url,
 		(
 			c.started_at <= NOW()
 			AND (c.ended_at IS NULL OR c.ended_at > NOW())
@@ -936,6 +939,7 @@ func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.Pa
 			&course.UserName,
 			&course.CourseId,
 			&course.CourseName,
+			&course.CourseImageUrl,
 			&course.IsActive,
 			&course.Type,
 			&course.StartedAt,
