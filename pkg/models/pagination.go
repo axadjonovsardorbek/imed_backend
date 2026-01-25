@@ -44,6 +44,9 @@ type PaginationResponse struct {
 func NewPaginationResponse(pagination Pagination, total int, data interface{}) PaginationResponse {
 	if total == 0 {
 		data = []interface{}{}
+		return PaginationResponse{
+			Data: data,
+		}
 	}
 
 	totalPages := total / pagination.Limit
