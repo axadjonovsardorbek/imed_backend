@@ -33,3 +33,11 @@ func (s *BannerService) Update(ctx context.Context, req *m.BannerUpdateReq) (*m.
 func (s *BannerService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	return s.storage.BannerS.Delete(req)
 }
+
+func (s *BannerService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.BannerMobileRes, error) {
+	return s.storage.BannerS.GetByIdMobile(req)
+}
+
+func (s *BannerService) GetAllMobile(ctx context.Context, req *m.BannerGetListMobileReq) (*m.PaginationResponse, *m.BannerMobileList, error) {
+	return s.storage.BannerS.GetAllMobile(req)
+}

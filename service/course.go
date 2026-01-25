@@ -18,7 +18,7 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 	return s.storage.CourseS.Create(req)
 }
 
-func (s *CourseService) GetById(ctx context.Context, req *m.CourseById) (*m.CourseRes, error) {
+func (s *CourseService) GetById(ctx context.Context, req *m.ById) (*m.CourseRes, error) {
 	return s.storage.CourseS.GetById(req)
 }
 
@@ -48,4 +48,16 @@ func (s *CourseService) UserUpdateCourse(ctx context.Context, req *m.UserCourseU
 }
 func (s *CourseService) DeleteUserCourse(ctx context.Context, req *m.ById) (*m.Void, error) {
 	return s.storage.CourseS.DeleteUserCourse(req)
+}
+func (s *CourseService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.MobileCourseRes, error) {
+	return s.storage.CourseS.GetByIdMobile(req)
+}
+func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMobileReq) (*m.PaginationResponse, *m.CourseMobileList, error) {
+	return s.storage.CourseS.GetAllMobile(req)
+}
+func (s *CourseService) UserCourseMobile(ctx context.Context, req *m.ByIdMobile) (*m.UserCourseMobileRes, error) {
+	return s.storage.CourseS.UserCourseMobile(req)
+}
+func (s *CourseService) UserCoursesMobile(ctx context.Context, req *m.UserCourseGetListMobileReq) (*m.PaginationResponse, *m.UserCourseMobileList, error) {
+	return s.storage.CourseS.UserCoursesMobile(req)
 }

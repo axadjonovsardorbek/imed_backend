@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /subject [post]
+// @Router /web/subject [post]
 func (h *Handler) CreateSubject(c *gin.Context) {
 	req := m.SubjectCreateReq{}
 	body := m.SubjectCreateBody{}
@@ -74,7 +74,7 @@ func (h *Handler) CreateSubject(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /subject/{id} [get]
+// @Router /web/subject/{id} [get]
 func (h *Handler) GetByIdSubject(c *gin.Context) {
 	id := c.Param("id")
 
@@ -106,7 +106,7 @@ func (h *Handler) GetByIdSubject(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /subject [get]
+// @Router /web/subject [get]
 func (h *Handler) GetAllSubjects(c *gin.Context) {
 	name := c.Query("name")
 	limit := c.Query("limit")
@@ -146,7 +146,7 @@ func (h *Handler) GetAllSubjects(c *gin.Context) {
 // @Success 200 {object} string "Subject updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /subject/{id}/update [put]
+// @Router /web/subject/{id}/update [put]
 func (h *Handler) UpdateSubject(c *gin.Context) {
 	var req m.SubjectUpdateReq
 	var body m.SubjectUpdateBody
@@ -197,7 +197,7 @@ func (h *Handler) UpdateSubject(c *gin.Context) {
 // @Success 200 {object} string "Subject deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /subject/{id}/delete [delete]
+// @Router /web/subject/{id}/delete [delete]
 func (h *Handler) DeleteSubject(c *gin.Context) {
 	var req m.ById
 
@@ -216,4 +216,74 @@ func (h *Handler) DeleteSubject(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "subject deleted successfully"})
+}
+
+// GetById godoc
+// @Summary Get subject by ID
+// @Description Get a subject by their ID
+// @Tags subject
+// @Accept  json
+// @Produce  json
+// @Param id path string false "Subject ID"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.SubjectMobileRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/subject/{id} [get]
+func (h *Handler) GetByIdMobileSubject(c *gin.Context) {
+	id := c.Param("id")
+
+	lang := getLanguage(c)
+
+	slog.Info("Get subject with id", id)
+	res, err := h.Clients.Subject.GetByIdMobile(context.Background(), &m.ByIdMobile{Id: id, Language: lang})
+	slog.Info("Subject details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting subject by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Subject retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllSubjects godoc
+// @Summary Get all subject
+// @Description Get all subject with optional filtering
+// @Tags subject
+// @Accept  json
+// @Produce  json
+// @Param name query string false "Name"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.SubjectMobileList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/subject [get]
+func (h *Handler) GetAllMobileSubjects(c *gin.Context) {
+	name := c.Query("name")
+	lang := getLanguage(c)
+
+	req := &m.SubjectGetListMobileReq{
+		Name:     name,
+		Language: lang,
+	}
+
+	slog.Info("Get all subject with filtes", req)
+	data, _, err := h.Clients.Subject.GetAllMobile(context.Background(), req)
+	slog.Info("All subject", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting subject: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Subjects retrieved successfully")
+	c.JSON(200, data)
 }

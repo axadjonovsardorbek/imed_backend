@@ -57,13 +57,10 @@ func (r *CourseRepo) Create(req *m.CourseCreateReq) (*m.ById, error) {
 	return &m.ById{Id: id}, nil
 }
 
-func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
-
-	var query string
+func (r *CourseRepo) GetById(req *m.ById) (*m.CourseRes, error) {
 	var args []interface{}
 
-	if req.Role != "user" || req.UserId == "" {
-		query = `
+	query := `
 		SELECT 
 			c.id,
 			c.name,
@@ -77,7 +74,6 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 			c.teacher_id,
 			t.name,
 			t.phone_number,
-			1 AS has_access,
 			c.created_at,
 			c.updated_at
 		FROM
@@ -91,46 +87,7 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 		AND
 			c.id = $1
 		`
-		args = append(args, req.Id)
-	} else {
-		query = `
-		SELECT 
-			c.id,
-			c.name,
-			c.description,
-			c.price,
-			c.image_url,
-			c.is_public,
-			c.order_num,
-			c.subject_id,
-			s.name,
-			c.teacher_id,
-			t.name,
-			t.phone_number,
-			EXISTS (
-				SELECT 1
-				FROM user_courses uc
-				WHERE uc.user_id = $1
-				  AND uc.course_id = c.id
-				  AND uc.deleted_at = 0
-				  AND uc.started_at <= NOW()
-				  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
-			) AS has_access,
-			c.created_at,
-			c.updated_at
-		FROM
-			courses c
-		LEFT JOIN
-			subjects s ON c.subject_id = s.id
-		LEFT JOIN
-			teachers t ON c.teacher_id = t.id
-		WHERE
-			c.deleted_at = 0
-		AND
-			c.id = $2
-		`
-		args = append(args, req.UserId, req.Id)
-	}
+	args = append(args, req.Id)
 
 	row := r.db.QueryRow(query, args...)
 
@@ -152,7 +109,6 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 		&course.TeacherId,
 		&course.TeacherName,
 		&course.TeacherPhoneNumber,
-		&course.HasAccess,
 		&course.CreatedAt,
 		&course.UpdatedAt,
 	)
@@ -172,11 +128,9 @@ func (r *CourseRepo) GetById(req *m.CourseById) (*m.CourseRes, error) {
 
 func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.CourseList, error) {
 
-	var query string
 	var args []interface{}
 
-	if req.Role != "user" || req.UserId == "" {
-		query = `
+	query := `
 		SELECT 
 			COUNT(c.id) OVER() AS total_count,
 			c.id,
@@ -191,7 +145,6 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 			c.teacher_id,
 			t.name,
 			t.phone_number,
-			1 AS has_access,
 			c.created_at,
 			c.updated_at
 		FROM
@@ -203,44 +156,6 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 		WHERE
 			c.deleted_at = 0
 		`
-	} else {
-		query = `
-		SELECT 
-			COUNT(c.id) OVER() AS total_count,
-			c.id,
-			c.name,
-			c.description,
-			c.price,
-			c.image_url,
-			c.is_public,
-			c.order_num,
-			c.subject_id,
-			s.name,
-			c.teacher_id,
-			t.name,
-			t.phone_number,
-			EXISTS (
-				SELECT 1
-				FROM user_courses uc
-				WHERE uc.user_id = $1
-				  AND uc.course_id = c.id
-				  AND uc.deleted_at = 0
-				  AND uc.started_at <= NOW()
-				  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
-			) AS has_access,
-			c.created_at,
-			c.updated_at
-		FROM
-			courses c
-		LEFT JOIN
-			subjects s ON c.subject_id = s.id
-		LEFT JOIN
-			teachers t ON c.teacher_id = t.id
-		WHERE
-			c.deleted_at = 0
-		`
-		args = append(args, req.UserId)
-	}
 
 	if req.Name != "" && req.Name != "string" {
 		query += fmt.Sprintf(" AND c.name::text ILIKE $%d", len(args)+1)
@@ -295,7 +210,6 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 			&course.TeacherId,
 			&course.TeacherName,
 			&course.TeacherPhoneNumber,
-			&course.HasAccess,
 			&course.CreatedAt,
 			&course.UpdatedAt,
 		)
@@ -673,4 +587,369 @@ func (r *CourseRepo) DeleteUserCourse(req *m.ById) (*m.Void, error) {
 	}
 
 	return &m.Void{}, nil
+}
+
+func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error) {
+
+	query := `
+	WITH course_base AS (
+		SELECT
+			c.id,
+			c.teacher_id,
+			t.name AS teacher_name,
+			(c.name->> $1)        AS name,
+			(c.description->> $1) AS description,
+			(c.image_url)         AS image_url,
+			c.price 			  AS price,
+			EXISTS (
+				SELECT 1
+				FROM user_courses uc
+				WHERE uc.user_id = $2
+				  AND uc.course_id = c.id
+				  AND uc.deleted_at = 0
+				  AND uc.started_at <= NOW()
+				  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+			) AS has_access
+		FROM courses c
+		LEFT JOIN teachers t
+			ON t.id = c.teacher_id
+		WHERE c.deleted_at = 0
+		  AND c.id = $3
+	),
+	lesson_stats AS (
+		SELECT
+			m.course_id,
+			COALESCE(SUM(l.duration), 0)::int AS duration,
+			COUNT(l.id)::int                  AS lessons
+		FROM modules m
+		LEFT JOIN lessons l
+			ON l.module_id = m.id
+		   AND l.deleted_at = 0
+		WHERE m.deleted_at = 0
+		GROUP BY m.course_id
+	),
+	source_stats AS (
+		SELECT
+			m.course_id,
+			COALESCE(SUM(CASE WHEN s.type = 'test'     THEN 1 ELSE 0 END), 0)::int AS tests,
+			COALESCE(SUM(CASE WHEN s.type = 'document' THEN 1 ELSE 0 END), 0)::int AS documents
+		FROM modules m
+		LEFT JOIN lessons l
+			ON l.module_id = m.id
+		   AND l.deleted_at = 0
+		LEFT JOIN sources s
+			ON s.lesson_id = l.id
+		   AND s.deleted_at = 0
+		WHERE m.deleted_at = 0
+		GROUP BY m.course_id
+	),
+	modules_json AS (
+		SELECT
+			m.course_id,
+			jsonb_agg(
+				jsonb_build_object(
+					'id', m.id::text,
+					'name', (m.name->> $1),
+					'order_num', m.order_num,
+					'course_id', m.course_id::text,
+					'lessons', COALESCE((
+						SELECT jsonb_agg(
+							jsonb_build_object(
+								'id', l.id::text,
+								'name', (l.name->> $1),
+								'module_id', l.module_id::text,
+								'order_num', l.order_num
+							)
+							ORDER BY l.order_num
+						)
+						FROM lessons l
+						WHERE l.deleted_at = 0
+						  AND l.module_id = m.id
+					), '[]'::jsonb)
+				)
+				ORDER BY m.order_num
+			) AS modules
+		FROM modules m
+		WHERE m.deleted_at = 0
+		GROUP BY m.course_id
+	)
+	SELECT
+		cb.id		             AS id,
+		cb.name                  AS name,
+		cb.description           AS description,
+		cb.teacher_id            AS teacher_id,
+		cb.teacher_name 		 AS teacher_name,
+		cb.image_url             AS image_url,
+		cb.has_access            AS has_access,
+		cb.price                 AS price,
+	
+		COALESCE(ss.tests, 0)      AS tests,
+		COALESCE(ss.documents, 0)  AS documents,
+		COALESCE(ls.duration, 0)   AS duration,
+		COALESCE(ls.lessons, 0)    AS lessons,
+	
+		COALESCE(mj.modules, '[]'::jsonb) AS modules
+	FROM course_base cb
+	LEFT JOIN lesson_stats  ls ON ls.course_id = cb.id
+	LEFT JOIN source_stats  ss ON ss.course_id = cb.id
+	LEFT JOIN modules_json  mj ON mj.course_id = cb.id
+	`
+
+	row := r.db.QueryRow(query, req.Language, req.UserId, req.Id)
+
+	var res m.MobileCourseRes
+	var modulesRaw []byte
+
+	if err := row.Scan(
+		&res.Id,
+		&res.Name,
+		&res.Description,
+		&res.TeacherId,
+		&res.TeacherName,
+		&res.ImageUrl,
+		&res.HasAccess,
+		&res.Price,
+		&res.Tests,
+		&res.Documents,
+		&res.Duration,
+		&res.Lessons,
+		&modulesRaw,
+	); err != nil {
+		return nil, err
+	}
+
+	if len(modulesRaw) > 0 {
+		if err := json.Unmarshal(modulesRaw, &res.Modules); err != nil {
+			return nil, err
+		}
+	} else {
+		res.Modules = make([]m.MobileCourseModuleRes, 0)
+	}
+
+	return &res, nil
+}
+func (r *CourseRepo) GetAllMobile(req *m.CourseGetListMobileReq) (*m.PaginationResponse, *m.CourseMobileList, error) {
+	var args []interface{}
+
+	query := `
+	SELECT 
+		COUNT(c.id) OVER() AS total_count,
+		c.id,
+		c.name->> $1,
+		c.description->> $1,
+		c.image_url,
+		c.is_public,
+		c.order_num,
+		c.teacher_id,
+		t.name
+	FROM
+		courses c
+	LEFT JOIN
+		teachers t ON c.teacher_id = t.id
+	WHERE
+		c.deleted_at = 0
+	`
+	args = append(args, req.Language)
+
+	if req.Name != "" && req.Name != "string" {
+		query += fmt.Sprintf(" AND c.name::text ILIKE $%d", len(args)+1)
+		args = append(args, "%"+req.Name+"%")
+	}
+	if req.SubjectId != "" && req.SubjectId != "string" {
+		query += fmt.Sprintf(" AND c.subject_id = $%d", len(args)+1)
+		args = append(args, req.SubjectId)
+	}
+	if req.IsPublic != "" && req.IsPublic != "string" {
+		if req.IsPublic == "true" {
+			query += fmt.Sprintf(" AND c.is_public = $%d", len(args)+1)
+			args = append(args, true)
+		} else if req.IsPublic == "false" {
+			query += fmt.Sprintf(" AND c.is_public = $%d", len(args)+1)
+			args = append(args, false)
+		}
+	}
+
+	query += " ORDER BY c.order_num ASC"
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting courses: %w", err)
+	}
+	defer rows.Close()
+
+	courses := m.CourseMobileList{}
+	for rows.Next() {
+		course := m.CourseMobileRes{}
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&course.Id,
+			&course.Name,
+			&course.Description,
+			&course.ImageUrl,
+			&course.IsPublic,
+			&course.OrderNum,
+			&course.TeacherId,
+			&course.TeacherName,
+		)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning course row: %w", err)
+		}
+		courses.Courses = append(courses.Courses, &course)
+		courses.Count = totalCount
+	}
+
+	response := m.NewPaginationResponse(m.Pagination{Limit: courses.Count}, courses.Count, courses.Courses)
+
+	return &response, &courses, nil
+}
+func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes, error) {
+
+	query := `
+	SELECT 
+		c.id,
+		c.user_id,
+		u.name,
+		c.course_id,
+		co.name->> $1,
+		(
+			c.started_at <= NOW()
+			AND (c.ended_at IS NULL OR c.ended_at > NOW())
+		) AS is_active,
+		c.type,
+		c.started_at,
+		c.ended_at,
+		c.created_at,
+		c.updated_at
+	FROM
+		user_courses c
+	LEFT JOIN
+		users u ON c.user_id = u.id
+	LEFT JOIN
+		courses co ON c.course_id = co.id
+	WHERE
+		c.deleted_at = 0
+	AND
+		c.id = $2
+	`
+
+	row := r.db.QueryRow(query, req.Language, req.Id)
+
+	course := m.UserCourseMobileRes{}
+
+	err := row.Scan(
+		&course.Id,
+		&course.UserId,
+		&course.UserName,
+		&course.CourseId,
+		&course.CourseName,
+		&course.IsActive,
+		&course.Type,
+		&course.StartedAt,
+		&course.EndedAt,
+		&course.CreatedAt,
+		&course.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user course not found with id: %s", req.Id)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error while getting user course by id: %w", err)
+	}
+	return &course, nil
+}
+func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.PaginationResponse, *m.UserCourseMobileList, error) {
+	query := `
+	SELECT 
+		COUNT(c.id) OVER() AS total_count,
+		c.id,
+		c.user_id,
+		u.name,
+		c.course_id,
+		co.name->> $1,
+		(
+			c.started_at <= NOW()
+			AND (c.ended_at IS NULL OR c.ended_at > NOW())
+		) AS is_active,
+		c.type,
+		c.started_at,
+		c.ended_at,
+		c.created_at,
+		c.updated_at
+	FROM
+		user_courses c
+	LEFT JOIN
+		users u ON c.user_id = u.id
+	LEFT JOIN
+		courses co ON c.course_id = co.id
+	WHERE
+		c.deleted_at = 0
+	`
+
+	var args []interface{}
+	args = append(args, req.Language)
+
+	if req.UserId != "" && req.UserId != "string" {
+		query += fmt.Sprintf(" AND c.user_id = $%d", len(args)+1)
+		args = append(args, req.UserId)
+	}
+	if req.Type != "" && req.Type != "string" {
+		query += fmt.Sprintf(" AND c.type = $%d", len(args)+1)
+		args = append(args, req.Type)
+	}
+	if req.IsActive != "" && req.IsActive != "string" {
+		if req.IsActive == "true" {
+			query += `
+				AND c.started_at <= NOW()
+				AND (c.ended_at IS NULL OR c.ended_at > NOW())
+			`
+		} else if req.IsActive == "false" {
+			query += `
+				AND (
+					c.started_at > NOW()
+					OR (c.ended_at IS NOT NULL AND c.ended_at <= NOW())
+				)
+			`
+		}
+	}
+
+	query += " ORDER BY c.created_at DESC"
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting user courses: %w", err)
+	}
+	defer rows.Close()
+
+	courses := m.UserCourseMobileList{}
+	for rows.Next() {
+		course := m.UserCourseMobileRes{}
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&course.Id,
+			&course.UserId,
+			&course.UserName,
+			&course.CourseId,
+			&course.CourseName,
+			&course.IsActive,
+			&course.Type,
+			&course.StartedAt,
+			&course.EndedAt,
+			&course.CreatedAt,
+			&course.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning user course row: %w", err)
+		}
+		courses.UserCourses = append(courses.UserCourses, &course)
+		courses.Count = totalCount
+	}
+	response := m.NewPaginationResponse(m.Pagination{Limit: courses.Count}, courses.Count, courses.UserCourses)
+	return &response, &courses, nil
 }

@@ -50,12 +50,10 @@ func (r *LessonRepo) Create(req *m.LessonCreateReq) (*m.ById, error) {
 	return &m.ById{Id: id}, nil
 }
 
-func (r *LessonRepo) GetById(req *m.CourseById) (*m.LessonRes, error) {
-	var query string
+func (r *LessonRepo) GetById(req *m.ById) (*m.LessonRes, error) {
 	var args []interface{}
 
-	if req.Role != "user" || req.UserId == "" {
-		query = `
+	query := `
 		SELECT 
 			l.id,
 			l.name,
@@ -64,7 +62,6 @@ func (r *LessonRepo) GetById(req *m.CourseById) (*m.LessonRes, error) {
 			l.order_num,
 			l.module_id,
 			m.name,
-			1 AS is_completed,
 			l.created_at,
 			l.updated_at
 		FROM
@@ -76,37 +73,7 @@ func (r *LessonRepo) GetById(req *m.CourseById) (*m.LessonRes, error) {
 		AND 
 			l.id = $1
 		`
-		args = append(args, req.Id)
-	} else {
-		query = `
-		SELECT 
-			l.id,
-			l.name,
-			l.type,
-			l.duration,
-			l.order_num,
-			l.module_id,
-			m.name,
-			COALESCE(ul.is_completed, false) AS is_completed,
-			l.created_at,
-			l.updated_at
-		FROM
-			lessons l
-		LEFT JOIN
-			user_lessons ul
-		ON 
-			ul.lesson_id = l.id
-		AND
-			ul.user_id = $1
-		LEFT JOIN
-			modules m ON l.module_id = m.id
-		WHERE
-			l.deleted_at = 0
-		AND
-			l.id = $2
-		`
-		args = append(args, req.UserId, req.Id)
-	}
+	args = append(args, req.Id)
 
 	row := r.db.QueryRow(query, args...)
 
@@ -122,7 +89,6 @@ func (r *LessonRepo) GetById(req *m.CourseById) (*m.LessonRes, error) {
 		&lesson.OrderNum,
 		&lesson.ModuleId,
 		&moduleNameJSON,
-		&lesson.IsCompleted,
 		&lesson.CreatedAt,
 		&lesson.UpdatedAt,
 	)
@@ -140,11 +106,9 @@ func (r *LessonRepo) GetById(req *m.CourseById) (*m.LessonRes, error) {
 }
 
 func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.LessonList, error) {
-	var query string
 	var args []interface{}
 
-	if req.Role != "user" || req.UserId == "" {
-		query = `
+	query := `
 		SELECT 
 			COUNT(l.id) OVER() AS total_count,
 			l.id,
@@ -154,7 +118,6 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 			l.order_num,
 			l.module_id,
 			m.name,
-			1 AS is_completed,
 			l.created_at,
 			l.updated_at
 		FROM
@@ -164,35 +127,6 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 		WHERE
 			l.deleted_at = 0
 		`
-	} else {
-		query = `
-		SELECT 
-			COUNT(l.id) OVER() AS total_count,
-			l.id,
-			l.name,
-			l.type,
-			l.duration,
-			l.order_num,
-			l.module_id,
-			m.name,
-			COALESCE(ul.is_completed, false) AS is_completed,
-			l.created_at,
-			l.updated_at
-		FROM
-			lessons l
-		LEFT JOIN
-			user_lessons ul
-		ON 
-			ul.lesson_id = l.id
-		AND
-			ul.user_id = $1
-		LEFT JOIN
-			modules m ON l.module_id = m.id
-		WHERE
-			l.deleted_at = 0
-		`
-		args = append(args, req.UserId)
-	}
 
 	if req.Name != "" && req.Name != "string" {
 		query += fmt.Sprintf(" AND l.name::text ILIKE $%d", len(args)+1)
@@ -232,7 +166,6 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 			&lesson.OrderNum,
 			&lesson.ModuleId,
 			&moduleNameJSON,
-			&lesson.IsCompleted,
 			&lesson.CreatedAt,
 			&lesson.UpdatedAt,
 		)
@@ -348,4 +281,143 @@ func (r *LessonRepo) EndLesson(req *m.EndUserLessonReq) (*m.Void, error) {
 	}
 
 	return &m.Void{}, nil
+}
+
+func (r *LessonRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes, error) {
+	var args []interface{}
+
+	query := `
+	WITH l AS (
+		SELECT
+			le.id,
+			le.name ->> $3        AS name,
+			le.duration::int      AS duration,
+			le.order_num::int     AS order_num,
+			le.type AS type
+		FROM lessons le
+		WHERE le.deleted_at = 0
+		  AND le.id = $1
+	),
+	completed AS (
+		SELECT
+			EXISTS (
+				SELECT 1
+				FROM user_lessons ul
+				WHERE ul.lesson_id = $1
+				  AND ul.user_id = $2
+				  AND ul.is_completed = TRUE
+			) AS is_completed
+	),
+	src AS (
+		SELECT
+			s.id::text            AS id,
+			(s.name ->> $3)       AS name,
+			(s.url  ->> $3)       AS url,
+			s.type                AS type,
+			s.order_num::int      AS order_num
+		FROM sources s
+		WHERE s.deleted_at = 0
+		  AND s.lesson_id = $1
+	)
+	SELECT
+		l.id::text                           AS id,
+		l.name                               AS name,
+		l.type                               AS type,
+		l.duration                           AS duration,
+		l.order_num                          AS order_num,
+		c.is_completed                       AS is_completed,
+	
+		COALESCE((
+			SELECT jsonb_agg(
+				jsonb_build_object(
+					'id', id,
+					'name', name,
+					'url', url,
+					'type', type,
+					'order_num', order_num
+				)
+				ORDER BY order_num
+			)
+			FROM src
+			WHERE type = 'test'
+		), '[]'::jsonb) AS tests,
+	
+		COALESCE((
+			SELECT jsonb_agg(
+				jsonb_build_object(
+					'id', id,
+					'name', name,
+					'url', url,
+					'type', type,
+					'order_num', order_num
+				)
+				ORDER BY order_num
+			)
+			FROM src
+			WHERE type = 'document'
+		), '[]'::jsonb) AS documents,
+	
+		COALESCE((
+			SELECT jsonb_agg(
+				jsonb_build_object(
+					'id', id,
+					'name', name,
+					'url', url,
+					'type', type,
+					'order_num', order_num
+				)
+				ORDER BY order_num
+			)
+			FROM src
+			WHERE type = 'video'
+		), '[]'::jsonb) AS videos
+	
+	FROM l
+	CROSS JOIN completed c
+	`
+
+	args = append(args, req.Id, req.UserId, req.Language)
+
+	row := r.db.QueryRow(query, args...)
+
+	res := m.SourceLessonMobileRes{}
+
+	var (
+		testsRaw     []byte
+		documentsRaw []byte
+		videosRaw    []byte
+	)
+
+	if err := row.Scan(
+		&res.Id,
+		&res.Name,
+		&res.Type,
+		&res.Duration,
+		&res.OrderNum,
+		&res.IsCompleted,
+		&testsRaw,
+		&documentsRaw,
+		&videosRaw,
+	); err != nil {
+		return nil, err
+	}
+
+	res.Tests = make([]m.SourceMobile, 0)
+	res.Documents = make([]m.SourceMobile, 0)
+	res.Videos = make([]m.SourceMobile, 0)
+
+	if len(testsRaw) > 0 {
+		_ = json.Unmarshal(testsRaw, &res.Tests)
+	}
+	if len(documentsRaw) > 0 {
+		_ = json.Unmarshal(documentsRaw, &res.Documents)
+	}
+	if len(videosRaw) > 0 {
+		_ = json.Unmarshal(videosRaw, &res.Videos)
+	}
+
+	return &res, nil
+}
+func (r *LessonRepo) GetAllMobile(req *m.LessonGetListMobileReq) (*m.PaginationResponse, *m.LessonMobileList, error) {
+	return nil, nil, nil
 }

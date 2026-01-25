@@ -15,6 +15,8 @@ type BannerI interface {
 	GetAll(req *m.BannerGetListReq) (*m.PaginationResponse, *m.BannerList, error)
 	Update(req *m.BannerUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	GetByIdMobile(req *m.ByIdMobile) (*m.BannerMobileRes, error)
+	GetAllMobile(req *m.BannerGetListMobileReq) (*m.PaginationResponse, *m.BannerMobileList, error)
 }
 
 type TeacherI interface {
@@ -31,11 +33,13 @@ type SubjectI interface {
 	GetAll(req *m.SubjectGetListReq) (*m.PaginationResponse, *m.SubjectList, error)
 	Update(req *m.SubjectUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	GetByIdMobile(req *m.ByIdMobile) (*m.SubjectMobileRes, error)
+	GetAllMobile(req *m.SubjectGetListMobileReq) (*m.PaginationResponse, *m.SubjectMobileList, error)
 }
 
 type CourseI interface {
 	Create(req *m.CourseCreateReq) (*m.ById, error)
-	GetById(req *m.CourseById) (*m.CourseRes, error)
+	GetById(req *m.ById) (*m.CourseRes, error)
 	GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.CourseList, error)
 	Update(req *m.CourseUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
@@ -44,6 +48,10 @@ type CourseI interface {
 	UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResponse, *m.UserCourseList, error)
 	UserUpdateCourse(req *m.UserCourseUpdateReq) (*m.Void, error)
 	DeleteUserCourse(req *m.ById) (*m.Void, error)
+	GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error)
+	GetAllMobile(req *m.CourseGetListMobileReq) (*m.PaginationResponse, *m.CourseMobileList, error)
+	UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes, error)
+	UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.PaginationResponse, *m.UserCourseMobileList, error)
 }
 
 type ModuleI interface {
@@ -52,15 +60,19 @@ type ModuleI interface {
 	GetAll(req *m.ModuleGetListReq) (*m.PaginationResponse, *m.ModuleList, error)
 	Update(req *m.ModuleUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	// GetByIdMobile(req *m.ByIdMobile) (*m.ModuleMobileRes, error)
+	// GetAllMobile(req *m.ModuleGetListMobileReq) (*m.PaginationResponse, *m.ModuleMobileList, error)
 }
 
 type LessonI interface {
 	Create(req *m.LessonCreateReq) (*m.ById, error)
-	GetById(req *m.CourseById) (*m.LessonRes, error)
+	GetById(req *m.ById) (*m.LessonRes, error)
 	GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.LessonList, error)
 	Update(req *m.LessonUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
 	EndLesson(req *m.EndUserLessonReq) (*m.Void, error)
+	GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes, error)
+	// GetAllMobile(req *m.LessonGetListMobileReq) (*m.PaginationResponse, *m.LessonMobileList, error)
 }
 
 type ContactI interface {
@@ -77,9 +89,12 @@ type SourceI interface {
 	GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.SourceList, error)
 	Update(req *m.SourceUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	// GetByIdMobile(req *m.ByIdMobile) (*m.SourceMobileRes, error)
+	// GetAllMobile(req *m.SourceGetListMobileReq) (*m.PaginationResponse, *m.SourceMobileList, error)
 }
 
 type UserI interface {
+	CreateUser(req *m.UserLoginReq) (*m.ById, error)
 	Check(req *m.UserCheckReq) (*m.UserCheckRes, error)
 	Login(req *m.UserLoginReq) (*m.TokenRes, error)
 	GetById(req *m.ById) (*m.UserRes, error)
@@ -111,6 +126,8 @@ type FaqI interface {
 	GetAll(req *m.FaqGetListReq) (*m.PaginationResponse, *m.FaqList, error)
 	Update(req *m.FaqUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	GetByIdMobile(req *m.ByIdMobile) (*m.FaqMobileRes, error)
+	GetAllMobile(req *m.FaqGetListMobileReq) (*m.PaginationResponse, *m.FaqMobileList, error)
 }
 
 type AboutI interface {
@@ -119,4 +136,6 @@ type AboutI interface {
 	GetAll(req *m.AboutGetListReq) (*m.PaginationResponse, *m.AboutList, error)
 	Update(req *m.AboutUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	GetByIdMobile(req *m.ByIdMobile) (*m.AboutMobileRes, error)
+	GetAllMobile(req *m.AboutGetListMobileReq) (*m.PaginationResponse, *m.AboutMobileList, error)
 }

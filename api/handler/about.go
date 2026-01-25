@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /about [post]
+// @Router /web/about [post]
 func (h *Handler) CreateAbout(c *gin.Context) {
 	req := m.AboutCreateReq{}
 	body := m.AboutCreateBody{}
@@ -83,7 +83,7 @@ func (h *Handler) CreateAbout(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /about/{id} [get]
+// @Router /web/about/{id} [get]
 func (h *Handler) GetByIdAbout(c *gin.Context) {
 	id := c.Param("id")
 
@@ -115,7 +115,7 @@ func (h *Handler) GetByIdAbout(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /about [get]
+// @Router /web/about [get]
 func (h *Handler) GetAllAbouts(c *gin.Context) {
 	title := c.Query("title")
 	limit := c.Query("limit")
@@ -155,7 +155,7 @@ func (h *Handler) GetAllAbouts(c *gin.Context) {
 // @Success 200 {object} string "About updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /about/{id}/update [put]
+// @Router /web/about/{id}/update [put]
 func (h *Handler) UpdateAbout(c *gin.Context) {
 	var req m.AboutUpdateReq
 	var body m.AboutUpdateBody
@@ -215,7 +215,7 @@ func (h *Handler) UpdateAbout(c *gin.Context) {
 // @Success 200 {object} string "About deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /about/{id}/delete [delete]
+// @Router /web/about/{id}/delete [delete]
 func (h *Handler) DeleteAbout(c *gin.Context) {
 	var req m.ById
 
@@ -234,4 +234,75 @@ func (h *Handler) DeleteAbout(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "about deleted successfully"})
+}
+
+// GetById godoc
+// @Summary Get about by ID
+// @Description Get a about by their ID
+// @Tags about
+// @Accept  json
+// @Produce  json
+// @Param id path string false "About ID"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.AboutMobileRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/about/{id} [get]
+func (h *Handler) GetByIdMobileAbout(c *gin.Context) {
+	id := c.Param("id")
+
+	lang := getLanguage(c)
+
+	slog.Info("Get about with id", id)
+	res, err := h.Clients.About.GetByIdMobile(context.Background(), &m.ByIdMobile{Id: id, Language: lang})
+	slog.Info("About details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting about by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("About retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllAbouts godoc
+// @Summary Get all about
+// @Description Get all about with optional filtering
+// @Tags about
+// @Accept  json
+// @Produce  json
+// @Param title query string false "Title"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.AboutMobileList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/about [get]
+func (h *Handler) GetAllMobileAbouts(c *gin.Context) {
+	title := c.Query("title")
+
+	lang := getLanguage(c)
+
+	req := &m.AboutGetListMobileReq{
+		Title:    title,
+		Language: lang,
+	}
+
+	slog.Info("Get all about with filtes", req)
+	data, _, err := h.Clients.About.GetAllMobile(context.Background(), req)
+	slog.Info("All about", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting about: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Abouts retrieved successfully")
+	c.JSON(200, data)
 }

@@ -24,6 +24,32 @@ definitions:
       count:
         type: integer
     type: object
+  models.AboutMobileList:
+    properties:
+      abouts:
+        items:
+          $ref: '#/definitions/models.AboutMobileRes'
+        type: array
+      count:
+        type: integer
+    type: object
+  models.AboutMobileRes:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
   models.AboutRes:
     properties:
       created_at:
@@ -121,6 +147,34 @@ definitions:
         type: array
       count:
         type: integer
+    type: object
+  models.BannerMobileList:
+    properties:
+      banners:
+        items:
+          $ref: '#/definitions/models.BannerMobileRes'
+        type: array
+      count:
+        type: integer
+    type: object
+  models.BannerMobileRes:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      link_url:
+        type: string
+      order_num:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
     type: object
   models.BannerRes:
     properties:
@@ -251,10 +305,37 @@ definitions:
           $ref: '#/definitions/models.CourseRes'
         type: array
     type: object
+  models.CourseMobileList:
+    properties:
+      count:
+        type: integer
+      courses:
+        items:
+          $ref: '#/definitions/models.CourseMobileRes'
+        type: array
+    type: object
+  models.CourseMobileRes:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        type: string
+      order_num:
+        type: integer
+      teacher_id:
+        type: string
+      teacher_name:
+        type: string
+    type: object
   models.CoursePriceOption:
     properties:
       duration:
-        description: oy
         type: integer
       price:
         type: integer
@@ -267,8 +348,6 @@ definitions:
         additionalProperties:
           type: string
         type: object
-      has_access:
-        type: boolean
       id:
         type: string
       image_url:
@@ -347,6 +426,30 @@ definitions:
           $ref: '#/definitions/models.FaqRes'
         type: array
     type: object
+  models.FaqMobileList:
+    properties:
+      count:
+        type: integer
+      faqs:
+        items:
+          $ref: '#/definitions/models.FaqMobileRes'
+        type: array
+    type: object
+  models.FaqMobileRes:
+    properties:
+      answer:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      order_num:
+        type: integer
+      question:
+        type: string
+      updated_at:
+        type: string
+    type: object
   models.FaqRes:
     properties:
       answer:
@@ -411,8 +514,6 @@ definitions:
         type: integer
       id:
         type: string
-      is_completed:
-        type: boolean
       module_id:
         type: string
       module_name:
@@ -494,6 +595,65 @@ definitions:
         additionalProperties:
           type: string
         type: object
+    type: object
+  models.MobileCourseLessonRes:
+    properties:
+      id:
+        type: string
+      module_id:
+        type: string
+      name:
+        type: string
+      order_num:
+        type: integer
+    type: object
+  models.MobileCourseModuleRes:
+    properties:
+      course_id:
+        type: string
+      id:
+        type: string
+      lessons:
+        items:
+          $ref: '#/definitions/models.MobileCourseLessonRes'
+        type: array
+      name:
+        type: string
+      order_num:
+        type: integer
+    type: object
+  models.MobileCourseRes:
+    properties:
+      description:
+        type: string
+      documents:
+        type: integer
+      duration:
+        type: integer
+      has_access:
+        type: boolean
+      id:
+        type: string
+      image_url:
+        type: string
+      lessons:
+        type: integer
+      modules:
+        items:
+          $ref: '#/definitions/models.MobileCourseModuleRes'
+        type: array
+      name:
+        type: string
+      price:
+        items:
+          $ref: '#/definitions/models.CoursePriceOption'
+        type: array
+      teacher_id:
+        type: string
+      teacher_name:
+        type: string
+      tests:
+        type: integer
     type: object
   models.ModuleCreateBody:
     properties:
@@ -595,6 +755,8 @@ definitions:
         type: integer
       image_url:
         type: string
+      is_me:
+        type: boolean
       name:
         type: string
       rank:
@@ -633,6 +795,33 @@ definitions:
           type: string
         type: object
     type: object
+  models.SourceLessonMobileRes:
+    properties:
+      documents:
+        items:
+          $ref: '#/definitions/models.SourceMobile'
+        type: array
+      duration:
+        type: integer
+      id:
+        type: string
+      is_completed:
+        type: boolean
+      name:
+        type: string
+      order_num:
+        type: integer
+      tests:
+        items:
+          $ref: '#/definitions/models.SourceMobile'
+        type: array
+      type:
+        type: string
+      videos:
+        items:
+          $ref: '#/definitions/models.SourceMobile'
+        type: array
+    type: object
   models.SourceList:
     properties:
       count:
@@ -641,6 +830,19 @@ definitions:
         items:
           $ref: '#/definitions/models.SourceRes'
         type: array
+    type: object
+  models.SourceMobile:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      order_num:
+        type: integer
+      type:
+        type: string
+      url:
+        type: string
     type: object
   models.SourceRes:
     properties:
@@ -705,6 +907,30 @@ definitions:
         items:
           $ref: '#/definitions/models.SubjectRes'
         type: array
+    type: object
+  models.SubjectMobileList:
+    properties:
+      count:
+        type: integer
+      subjects:
+        items:
+          $ref: '#/definitions/models.SubjectMobileRes'
+        type: array
+    type: object
+  models.SubjectMobileRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      order_num:
+        type: integer
+      updated_at:
+        type: string
     type: object
   models.SubjectRes:
     properties:
@@ -824,6 +1050,40 @@ definitions:
           $ref: '#/definitions/models.UserCourseRes'
         type: array
     type: object
+  models.UserCourseMobileList:
+    properties:
+      count:
+        type: integer
+      user_courses:
+        items:
+          $ref: '#/definitions/models.UserCourseMobileRes'
+        type: array
+    type: object
+  models.UserCourseMobileRes:
+    properties:
+      course_id:
+        type: string
+      course_name:
+        type: string
+      created_at:
+        type: string
+      ended_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      started_at:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      user_name:
+        type: string
+    type: object
   models.UserCourseRes:
     properties:
       course_id:
@@ -931,7 +1191,947 @@ info:
   title: Imed API
   version: "1.0"
 paths:
-  /about:
+  /mobile/about:
+    get:
+      consumes:
+      - application/json
+      description: Get all about with optional filtering
+      parameters:
+      - description: Title
+        in: query
+        name: title
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AboutMobileList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all about
+      tags:
+      - about
+  /mobile/about/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a about by their ID
+      parameters:
+      - description: About ID
+        in: path
+        name: id
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AboutMobileRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get about by ID
+      tags:
+      - about
+  /mobile/auth/password/change:
+    put:
+      consumes:
+      - application/json
+      description: Change password
+      parameters:
+      - description: Change password credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangePasswordBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - auth
+  /mobile/auth/user/check:
+    post:
+      consumes:
+      - application/json
+      description: Check user
+      parameters:
+      - description: User check credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCheckReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserCheckRes'
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Check user
+      tags:
+      - auth
+  /mobile/auth/user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with login and password
+      parameters:
+      - description: User login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT tokens
+          schema:
+            $ref: '#/definitions/models.TokenRes'
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Login user
+      tags:
+      - auth
+  /mobile/banner:
+    get:
+      consumes:
+      - application/json
+      description: Get all banner with optional filtering
+      parameters:
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BannerMobileList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all banner
+      tags:
+      - banner
+  /mobile/banner/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a banner by their ID
+      parameters:
+      - description: Banner ID
+        in: path
+        name: id
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BannerMobileRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get banner by ID
+      tags:
+      - banner
+  /mobile/contact:
+    get:
+      consumes:
+      - application/json
+      description: Get all contact with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: PhoneNumber
+        in: query
+        name: phone_number
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ContactList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all contact
+      tags:
+      - contact
+  /mobile/contact/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a contact by their ID
+      parameters:
+      - description: Contact ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ContactRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get contact by ID
+      tags:
+      - contact
+  /mobile/course:
+    get:
+      consumes:
+      - application/json
+      description: Get all course with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Subject ID
+        in: query
+        name: subject_id
+        type: string
+      - description: Is Public
+        in: query
+        name: is_public
+        type: boolean
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseMobileList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all course
+      tags:
+      - course
+  /mobile/course/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a course by their ID
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MobileCourseRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get course by ID
+      tags:
+      - course
+  /mobile/course/permission:
+    get:
+      consumes:
+      - application/json
+      description: Get all user course with optional filtering
+      parameters:
+      - description: Type
+        in: query
+        name: type
+        type: string
+      - description: Is Active
+        in: query
+        name: is_active
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserCourseMobileList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all user course
+      tags:
+      - course
+  /mobile/course/permission/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a course by their ID
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserCourseMobileRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get course by ID
+      tags:
+      - course
+  /mobile/faq:
+    get:
+      consumes:
+      - application/json
+      description: Get all faq with optional filtering
+      parameters:
+      - description: Question
+        in: query
+        name: question
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FaqMobileList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all faq
+      tags:
+      - faq
+  /mobile/faq/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a faq by their ID
+      parameters:
+      - description: Faq ID
+        in: path
+        name: id
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FaqMobileRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get faq by ID
+      tags:
+      - faq
+  /mobile/lesson/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a lesson by their ID
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SourceLessonMobileRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get lesson by ID
+      tags:
+      - lesson
+  /mobile/lesson/{id}/end:
+    put:
+      consumes:
+      - application/json
+      description: End lesson
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson ended
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: End lesson
+      tags:
+      - lesson
+  /mobile/notification/{id}/read:
+    put:
+      consumes:
+      - application/json
+      description: Read notification
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Read notification
+      tags:
+      - notification
+  /mobile/notification/user:
+    get:
+      consumes:
+      - application/json
+      description: Get all notification with optional filtering
+      parameters:
+      - description: Is Read
+        in: query
+        name: is_read
+        type: boolean
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserNotificationList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all notification
+      tags:
+      - notification
+  /mobile/subject:
+    get:
+      consumes:
+      - application/json
+      description: Get all subject with optional filtering
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubjectMobileList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all subject
+      tags:
+      - subject
+  /mobile/subject/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a subject by their ID
+      parameters:
+      - description: Subject ID
+        in: path
+        name: id
+        type: string
+      - default: uz
+        description: Language (uz|ru|en)
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SubjectMobileRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get subject by ID
+      tags:
+      - subject
+  /mobile/user/activity:
+    get:
+      consumes:
+      - application/json
+      description: 'Returns user activity stats by type: day|week|month|year|range.
+        For day: optional ?date=YYYY-MM-DD. For range: required ?from=YYYY-MM-DD&to=YYYY-MM-DD'
+      parameters:
+      - description: 'Stats type: day|week|month|year|range'
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: 'For day only: YYYY-MM-DD (default: today)'
+        in: query
+        name: date
+        type: string
+      - description: 'For range only: YYYY-MM-DD'
+        in: query
+        name: from
+        type: string
+      - description: 'For range only: YYYY-MM-DD'
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity stats
+          schema:
+            $ref: '#/definitions/models.ActivityStatsResponse'
+        "400":
+          description: Invalid request params
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user activity stats
+      tags:
+      - profile
+    post:
+      consumes:
+      - application/json
+      description: Activity user
+      parameters:
+      - description: User activity credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserActivityCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Activity created
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Activity user
+      tags:
+      - profile
+  /mobile/user/delete/profile:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a profile
+      tags:
+      - profile
+  /mobile/user/get/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get user profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - profile
+  /mobile/user/rating:
+    get:
+      consumes:
+      - application/json
+      description: 'Reytingni qaytaradi: day|week|month|year|total. Default: total.
+        0 activity bo''lgan userlar avtomatik oxirida turadi. Response ichida TOP
+        list va "Me" (mening o''rnim) qaytadi.'
+      parameters:
+      - description: 'Filter type: day|week|month|year|total (default: total)'
+        enum:
+        - day
+        - week
+        - month
+        - year
+        - total
+        in: query
+        name: type
+        type: string
+      - description: 'Top list limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Rating response
+          schema:
+            $ref: '#/definitions/models.RatingResponse'
+        "400":
+          description: Invalid request params
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Reyting (leaderboard) olish
+      tags:
+      - profile
+  /mobile/user/update/profile:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates user profile fields via multipart/form-data. Image is optional.
+      parameters:
+      - description: User name
+        in: formData
+        name: name
+        type: string
+      - description: Phone number
+        in: formData
+        name: phone_number
+        type: string
+      - description: FCM token
+        in: formData
+        name: fcm_token
+        type: string
+      - description: Language (e.g. uz, ru, en)
+        in: formData
+        name: language
+        type: string
+      - description: Profile image (jpg/png/webp)
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update a user profile
+      tags:
+      - profile
+  /web/about:
     get:
       consumes:
       - application/json
@@ -1000,7 +2200,7 @@ paths:
       summary: Create a new about
       tags:
       - about
-  /about/{id}:
+  /web/about/{id}:
     get:
       consumes:
       - application/json
@@ -1030,7 +2230,7 @@ paths:
       summary: Get about by ID
       tags:
       - about
-  /about/{id}/delete:
+  /web/about/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -1061,7 +2261,7 @@ paths:
       summary: Delete about
       tags:
       - about
-  /about/{id}/update:
+  /web/about/{id}/update:
     put:
       consumes:
       - application/json
@@ -1097,7 +2297,7 @@ paths:
       summary: Update about
       tags:
       - about
-  /admin/{id}:
+  /web/admin/{id}:
     get:
       consumes:
       - application/json
@@ -1127,7 +2327,7 @@ paths:
       summary: Get admin by ID
       tags:
       - admin
-  /auth/admin/login:
+  /web/auth/admin/login:
     post:
       consumes:
       - application/json
@@ -1159,7 +2359,7 @@ paths:
       summary: Login admin
       tags:
       - auth
-  /auth/password/change:
+  /web/auth/password/change:
     put:
       consumes:
       - application/json
@@ -1191,7 +2391,7 @@ paths:
       summary: Change password
       tags:
       - auth
-  /auth/password/refresh:
+  /web/auth/password/refresh:
     put:
       consumes:
       - application/json
@@ -1223,45 +2423,13 @@ paths:
       summary: Refresh password
       tags:
       - auth
-  /auth/user/check:
+  /web/auth/user/create:
     post:
       consumes:
       - application/json
-      description: Check user
+      description: Create user with login and password
       parameters:
-      - description: User check credentials
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/models.UserCheckReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserCheckRes'
-        "400":
-          description: Invalid request payload
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Check user
-      tags:
-      - auth
-  /auth/user/login:
-    post:
-      consumes:
-      - application/json
-      description: Authenticate user with login and password
-      parameters:
-      - description: User login credentials
+      - description: User create credentials
         in: body
         name: credentials
         required: true
@@ -1271,9 +2439,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: JWT tokens
+          description: Created
           schema:
-            $ref: '#/definitions/models.TokenRes'
+            type: string
         "400":
           description: Invalid request payload
           schema:
@@ -1284,10 +2452,10 @@ paths:
             type: string
       security:
       - BearerAuth: []
-      summary: Login user
+      summary: Create user
       tags:
       - auth
-  /banner:
+  /web/banner:
     get:
       consumes:
       - application/json
@@ -1356,7 +2524,7 @@ paths:
       summary: Create a new banner
       tags:
       - banner
-  /banner/{id}:
+  /web/banner/{id}:
     get:
       consumes:
       - application/json
@@ -1386,7 +2554,7 @@ paths:
       summary: Get banner by ID
       tags:
       - banner
-  /banner/{id}/delete:
+  /web/banner/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -1417,7 +2585,7 @@ paths:
       summary: Delete banner
       tags:
       - banner
-  /banner/{id}/update:
+  /web/banner/{id}/update:
     put:
       consumes:
       - application/json
@@ -1453,7 +2621,7 @@ paths:
       summary: Update banner
       tags:
       - banner
-  /contact:
+  /web/contact:
     get:
       consumes:
       - application/json
@@ -1526,7 +2694,7 @@ paths:
       summary: Create a new contact
       tags:
       - contact
-  /contact/{id}:
+  /web/contact/{id}:
     get:
       consumes:
       - application/json
@@ -1556,7 +2724,7 @@ paths:
       summary: Get contact by ID
       tags:
       - contact
-  /contact/{id}/delete:
+  /web/contact/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -1587,7 +2755,7 @@ paths:
       summary: Delete contact
       tags:
       - contact
-  /contact/{id}/update:
+  /web/contact/{id}/update:
     put:
       consumes:
       - application/json
@@ -1623,7 +2791,7 @@ paths:
       summary: Update contact
       tags:
       - contact
-  /course:
+  /web/course:
     get:
       consumes:
       - application/json
@@ -1704,7 +2872,7 @@ paths:
       summary: Create a new course
       tags:
       - course
-  /course/{id}:
+  /web/course/{id}:
     get:
       consumes:
       - application/json
@@ -1734,7 +2902,7 @@ paths:
       summary: Get course by ID
       tags:
       - course
-  /course/{id}/delete:
+  /web/course/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -1765,7 +2933,7 @@ paths:
       summary: Delete course
       tags:
       - course
-  /course/{id}/update:
+  /web/course/{id}/update:
     put:
       consumes:
       - application/json
@@ -1801,7 +2969,7 @@ paths:
       summary: Update course
       tags:
       - course
-  /course/permission:
+  /web/course/permission:
     get:
       consumes:
       - application/json
@@ -1882,7 +3050,7 @@ paths:
       summary: Buy a course
       tags:
       - course
-  /course/permission/{id}:
+  /web/course/permission/{id}:
     get:
       consumes:
       - application/json
@@ -1912,7 +3080,7 @@ paths:
       summary: Get course by ID
       tags:
       - course
-  /course/permission/{id}/delete:
+  /web/course/permission/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -1943,7 +3111,7 @@ paths:
       summary: Delete course
       tags:
       - course
-  /course/permission{id}/update:
+  /web/course/permission{id}/update:
     put:
       consumes:
       - application/json
@@ -1979,7 +3147,7 @@ paths:
       summary: Update user course
       tags:
       - course
-  /faq:
+  /web/faq:
     get:
       consumes:
       - application/json
@@ -2048,7 +3216,7 @@ paths:
       summary: Create a new faq
       tags:
       - faq
-  /faq/{id}:
+  /web/faq/{id}:
     get:
       consumes:
       - application/json
@@ -2078,7 +3246,7 @@ paths:
       summary: Get faq by ID
       tags:
       - faq
-  /faq/{id}/delete:
+  /web/faq/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -2109,7 +3277,7 @@ paths:
       summary: Delete faq
       tags:
       - faq
-  /faq/{id}/update:
+  /web/faq/{id}/update:
     put:
       consumes:
       - application/json
@@ -2145,7 +3313,7 @@ paths:
       summary: Update faq
       tags:
       - faq
-  /file-upload:
+  /web/file-upload:
     post:
       consumes:
       - multipart/form-data
@@ -2169,7 +3337,7 @@ paths:
       summary: File upload
       tags:
       - file-upload
-  /lesson:
+  /web/lesson:
     get:
       consumes:
       - application/json
@@ -2249,7 +3417,7 @@ paths:
       summary: Create a new lesson
       tags:
       - lesson
-  /lesson/{id}:
+  /web/lesson/{id}:
     get:
       consumes:
       - application/json
@@ -2279,7 +3447,7 @@ paths:
       summary: Get lesson by ID
       tags:
       - lesson
-  /lesson/{id}/delete:
+  /web/lesson/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -2310,37 +3478,7 @@ paths:
       summary: Delete lesson
       tags:
       - lesson
-  /lesson/{id}/end:
-    put:
-      consumes:
-      - application/json
-      description: End lesson
-      parameters:
-      - description: Lesson ID
-        in: path
-        name: id
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Lesson ended
-          schema:
-            type: string
-        "400":
-          description: Invalid request payload
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: End lesson
-      tags:
-      - lesson
-  /lesson/{id}/update:
+  /web/lesson/{id}/update:
     put:
       consumes:
       - application/json
@@ -2376,7 +3514,7 @@ paths:
       summary: Update lesson
       tags:
       - lesson
-  /module:
+  /web/module:
     get:
       consumes:
       - application/json
@@ -2449,7 +3587,7 @@ paths:
       summary: Create a new module
       tags:
       - module
-  /module/{id}:
+  /web/module/{id}:
     get:
       consumes:
       - application/json
@@ -2479,7 +3617,7 @@ paths:
       summary: Get module by ID
       tags:
       - module
-  /module/{id}/delete:
+  /web/module/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -2510,7 +3648,7 @@ paths:
       summary: Delete module
       tags:
       - module
-  /module/{id}/update:
+  /web/module/{id}/update:
     put:
       consumes:
       - application/json
@@ -2546,7 +3684,7 @@ paths:
       summary: Update module
       tags:
       - module
-  /notification:
+  /web/notification:
     get:
       consumes:
       - application/json
@@ -2619,7 +3757,7 @@ paths:
       summary: Create a new notification
       tags:
       - notification
-  /notification/{id}:
+  /web/notification/{id}:
     get:
       consumes:
       - application/json
@@ -2649,7 +3787,7 @@ paths:
       summary: Get notification by ID
       tags:
       - notification
-  /notification/{id}/delete:
+  /web/notification/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -2680,37 +3818,7 @@ paths:
       summary: Delete notification
       tags:
       - notification
-  /notification/{id}/read:
-    put:
-      consumes:
-      - application/json
-      description: Read notification
-      parameters:
-      - description: Notification ID
-        in: path
-        name: id
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Notification updated
-          schema:
-            type: string
-        "400":
-          description: Invalid request payload
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Read notification
-      tags:
-      - notification
-  /notification/{id}/update:
+  /web/notification/{id}/update:
     put:
       consumes:
       - application/json
@@ -2746,45 +3854,7 @@ paths:
       summary: Update notification
       tags:
       - notification
-  /notification/user:
-    get:
-      consumes:
-      - application/json
-      description: Get all notification with optional filtering
-      parameters:
-      - description: Is Read
-        in: query
-        name: is_read
-        type: boolean
-      - description: Limit
-        in: query
-        name: limit
-        type: integer
-      - description: Page
-        in: query
-        name: page
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserNotificationList'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Get all notification
-      tags:
-      - notification
-  /source:
+  /web/source:
     get:
       consumes:
       - application/json
@@ -2865,7 +3935,7 @@ paths:
       summary: Create a new source
       tags:
       - source
-  /source/{id}:
+  /web/source/{id}:
     get:
       consumes:
       - application/json
@@ -2895,7 +3965,7 @@ paths:
       summary: Get source by ID
       tags:
       - source
-  /source/{id}/delete:
+  /web/source/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -2926,7 +3996,7 @@ paths:
       summary: Delete source
       tags:
       - source
-  /source/{id}/update:
+  /web/source/{id}/update:
     put:
       consumes:
       - application/json
@@ -2962,7 +4032,7 @@ paths:
       summary: Update source
       tags:
       - source
-  /subject:
+  /web/subject:
     get:
       consumes:
       - application/json
@@ -3031,7 +4101,7 @@ paths:
       summary: Create a new subject
       tags:
       - subject
-  /subject/{id}:
+  /web/subject/{id}:
     get:
       consumes:
       - application/json
@@ -3061,7 +4131,7 @@ paths:
       summary: Get subject by ID
       tags:
       - subject
-  /subject/{id}/delete:
+  /web/subject/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -3092,7 +4162,7 @@ paths:
       summary: Delete subject
       tags:
       - subject
-  /subject/{id}/update:
+  /web/subject/{id}/update:
     put:
       consumes:
       - application/json
@@ -3128,7 +4198,7 @@ paths:
       summary: Update subject
       tags:
       - subject
-  /teacher:
+  /web/teacher:
     get:
       consumes:
       - application/json
@@ -3201,7 +4271,7 @@ paths:
       summary: Create a new teacher
       tags:
       - teacher
-  /teacher/{id}:
+  /web/teacher/{id}:
     get:
       consumes:
       - application/json
@@ -3231,7 +4301,7 @@ paths:
       summary: Get teacher by ID
       tags:
       - teacher
-  /teacher/{id}/delete:
+  /web/teacher/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -3262,7 +4332,7 @@ paths:
       summary: Delete teacher
       tags:
       - teacher
-  /teacher/{id}/update:
+  /web/teacher/{id}/update:
     put:
       consumes:
       - application/json
@@ -3298,7 +4368,7 @@ paths:
       summary: Update teacher
       tags:
       - teacher
-  /user:
+  /web/user:
     get:
       consumes:
       - application/json
@@ -3340,7 +4410,7 @@ paths:
       summary: Get all user
       tags:
       - user
-  /user/{id}:
+  /web/user/{id}:
     get:
       consumes:
       - application/json
@@ -3370,7 +4440,7 @@ paths:
       summary: Get user by ID
       tags:
       - user
-  /user/{id}/delete:
+  /web/user/{id}/delete:
     delete:
       consumes:
       - application/json
@@ -3401,219 +4471,6 @@ paths:
       summary: Delete user
       tags:
       - user
-  /user/activity:
-    get:
-      consumes:
-      - application/json
-      description: 'Returns user activity stats by type: day|week|month|year|range.
-        For day: optional ?date=YYYY-MM-DD. For range: required ?from=YYYY-MM-DD&to=YYYY-MM-DD'
-      parameters:
-      - description: 'Stats type: day|week|month|year|range'
-        in: query
-        name: type
-        required: true
-        type: string
-      - description: 'For day only: YYYY-MM-DD (default: today)'
-        in: query
-        name: date
-        type: string
-      - description: 'For range only: YYYY-MM-DD'
-        in: query
-        name: from
-        type: string
-      - description: 'For range only: YYYY-MM-DD'
-        in: query
-        name: to
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Activity stats
-          schema:
-            $ref: '#/definitions/models.ActivityStatsResponse'
-        "400":
-          description: Invalid request params
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Get user activity stats
-      tags:
-      - profile
-    post:
-      consumes:
-      - application/json
-      description: Activity user
-      parameters:
-      - description: User activity credentials
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/models.UserActivityCreateBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Activity created
-          schema:
-            type: string
-        "400":
-          description: Invalid request payload
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Activity user
-      tags:
-      - profile
-  /user/delete/profile:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a profile
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Profile deleted
-          schema:
-            type: string
-        "400":
-          description: Invalid request payload
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Delete a profile
-      tags:
-      - profile
-  /user/get/profile:
-    get:
-      consumes:
-      - application/json
-      description: Get user profile
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.UserRes'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Get user profile
-      tags:
-      - profile
-  /user/rating:
-    get:
-      consumes:
-      - application/json
-      description: 'Reytingni qaytaradi: day|week|month|year|total. Default: total.
-        0 activity bo''lgan userlar avtomatik oxirida turadi. Response ichida TOP
-        list va "Me" (mening o''rnim) qaytadi.'
-      parameters:
-      - description: 'Filter type: day|week|month|year|total (default: total)'
-        enum:
-        - day
-        - week
-        - month
-        - year
-        - total
-        in: query
-        name: type
-        type: string
-      - description: 'Top list limit (default: 10, max: 100)'
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Rating response
-          schema:
-            $ref: '#/definitions/models.RatingResponse'
-        "400":
-          description: Invalid request params
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Reyting (leaderboard) olish
-      tags:
-      - profile
-  /user/update/profile:
-    put:
-      consumes:
-      - multipart/form-data
-      description: Updates user profile fields via multipart/form-data. Image is optional.
-      parameters:
-      - description: User name
-        in: formData
-        name: name
-        type: string
-      - description: Phone number
-        in: formData
-        name: phone_number
-        type: string
-      - description: FCM token
-        in: formData
-        name: fcm_token
-        type: string
-      - description: Language (e.g. uz, ru, en)
-        in: formData
-        name: language
-        type: string
-      - description: Profile image (jpg/png/webp)
-        in: formData
-        name: image
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Profile updated
-          schema:
-            type: string
-        "400":
-          description: Invalid request payload
-          schema:
-            type: string
-        "500":
-          description: Server error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Update a user profile
-      tags:
-      - profile
 securityDefinitions:
   BearerAuth:
     in: header

@@ -15,7 +15,1482 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/about": {
+        "/mobile/about": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all about with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "about"
+                ],
+                "summary": "Get all about",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Title",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AboutMobileList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/about/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a about by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "about"
+                ],
+                "summary": "Get about by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "About ID",
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AboutMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/auth/password/change": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Change password",
+                "parameters": [
+                    {
+                        "description": "Change password credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ChangePasswordBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/auth/user/check": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Check user",
+                "parameters": [
+                    {
+                        "description": "User check credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserCheckReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserCheckRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/auth/user/login": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Authenticate user with login and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login user",
+                "parameters": [
+                    {
+                        "description": "User login credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserLoginReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JWT tokens",
+                        "schema": {
+                            "$ref": "#/definitions/models.TokenRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/banner": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all banner with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "banner"
+                ],
+                "summary": "Get all banner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.BannerMobileList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/banner/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a banner by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "banner"
+                ],
+                "summary": "Get banner by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Banner ID",
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.BannerMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/contact": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all contact with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contact"
+                ],
+                "summary": "Get all contact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "PhoneNumber",
+                        "name": "phone_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContactList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/contact/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a contact by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contact"
+                ],
+                "summary": "Get contact by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact ID",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ContactRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/course": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all course with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "course"
+                ],
+                "summary": "Get all course",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Subject ID",
+                        "name": "subject_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Is Public",
+                        "name": "is_public",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CourseMobileList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/course/permission": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all user course with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "course"
+                ],
+                "summary": "Get all user course",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Is Active",
+                        "name": "is_active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserCourseMobileList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/course/permission/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a course by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "course"
+                ],
+                "summary": "Get course by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Course ID",
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserCourseMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/course/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a course by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "course"
+                ],
+                "summary": "Get course by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Course ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MobileCourseRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/faq": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all faq with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "faq"
+                ],
+                "summary": "Get all faq",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question",
+                        "name": "question",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FaqMobileList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/faq/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a faq by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "faq"
+                ],
+                "summary": "Get faq by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Faq ID",
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FaqMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/lesson/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a lesson by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lesson"
+                ],
+                "summary": "Get lesson by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lesson ID",
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SourceLessonMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/lesson/{id}/end": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "End lesson",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lesson"
+                ],
+                "summary": "End lesson",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lesson ID",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lesson ended",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/notification/user": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all notification with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Get all notification",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Is Read",
+                        "name": "is_read",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserNotificationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/notification/{id}/read": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Read notification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Read notification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification updated",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/subject": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all subject with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject"
+                ],
+                "summary": "Get all subject",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubjectMobileList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/subject/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a subject by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject"
+                ],
+                "summary": "Get subject by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Subject ID",
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "default": "uz",
+                        "description": "Language (uz|ru|en)",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubjectMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/user/activity": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns user activity stats by type: day|week|month|year|range. For day: optional ?date=YYYY-MM-DD. For range: required ?from=YYYY-MM-DD\u0026to=YYYY-MM-DD",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Get user activity stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stats type: day|week|month|year|range",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "For day only: YYYY-MM-DD (default: today)",
+                        "name": "date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "For range only: YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "For range only: YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activity stats",
+                        "schema": {
+                            "$ref": "#/definitions/models.ActivityStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request params",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Activity user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Activity user",
+                "parameters": [
+                    {
+                        "description": "User activity credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserActivityCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activity created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/user/delete/profile": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Delete a profile",
+                "responses": {
+                    "200": {
+                        "description": "Profile deleted",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/user/get/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get user profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Get user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/user/rating": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reytingni qaytaradi: day|week|month|year|total. Default: total. 0 activity bo'lgan userlar avtomatik oxirida turadi. Response ichida TOP list va \"Me\" (mening o'rnim) qaytadi.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Reyting (leaderboard) olish",
+                "parameters": [
+                    {
+                        "enum": [
+                            "day",
+                            "week",
+                            "month",
+                            "year",
+                            "total"
+                        ],
+                        "type": "string",
+                        "description": "Filter type: day|week|month|year|total (default: total)",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Top list limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rating response",
+                        "schema": {
+                            "$ref": "#/definitions/models.RatingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request params",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/user/update/profile": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates user profile fields via multipart/form-data. Image is optional.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Update a user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User name",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Phone number",
+                        "name": "phone_number",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "FCM token",
+                        "name": "fcm_token",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language (e.g. uz, ru, en)",
+                        "name": "language",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Profile image (jpg/png/webp)",
+                        "name": "image",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profile updated",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/about": {
             "get": {
                 "security": [
                     {
@@ -124,7 +1599,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/about/{id}": {
+        "/web/about/{id}": {
             "get": {
                 "security": [
                     {
@@ -172,7 +1647,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/about/{id}/delete": {
+        "/web/about/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -221,7 +1696,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/about/{id}/update": {
+        "/web/about/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -278,7 +1753,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/{id}": {
+        "/web/admin/{id}": {
             "get": {
                 "security": [
                     {
@@ -326,7 +1801,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/admin/login": {
+        "/web/auth/admin/login": {
             "post": {
                 "security": [
                     {
@@ -377,7 +1852,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/password/change": {
+        "/web/auth/password/change": {
             "put": {
                 "security": [
                     {
@@ -428,7 +1903,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/password/refresh": {
+        "/web/auth/password/refresh": {
             "put": {
                 "security": [
                     {
@@ -479,14 +1954,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/user/check": {
+        "/web/auth/user/create": {
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Check user",
+                "description": "Create user with login and password",
                 "consumes": [
                     "application/json"
                 ],
@@ -496,61 +1971,10 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Check user",
+                "summary": "Create user",
                 "parameters": [
                     {
-                        "description": "User check credentials",
-                        "name": "credentials",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserCheckReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.UserCheckRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/user/login": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Authenticate user with login and password",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Login user",
-                "parameters": [
-                    {
-                        "description": "User login credentials",
+                        "description": "User create credentials",
                         "name": "credentials",
                         "in": "body",
                         "required": true,
@@ -561,9 +1985,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "JWT tokens",
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.TokenRes"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -581,7 +2005,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/banner": {
+        "/web/banner": {
             "get": {
                 "security": [
                     {
@@ -690,7 +2114,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/banner/{id}": {
+        "/web/banner/{id}": {
             "get": {
                 "security": [
                     {
@@ -738,7 +2162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/banner/{id}/delete": {
+        "/web/banner/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -787,7 +2211,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/banner/{id}/update": {
+        "/web/banner/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -844,7 +2268,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/contact": {
+        "/web/contact": {
             "get": {
                 "security": [
                     {
@@ -959,7 +2383,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/contact/{id}": {
+        "/web/contact/{id}": {
             "get": {
                 "security": [
                     {
@@ -1007,7 +2431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/contact/{id}/delete": {
+        "/web/contact/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -1056,7 +2480,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/contact/{id}/update": {
+        "/web/contact/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -1113,7 +2537,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course": {
+        "/web/course": {
             "get": {
                 "security": [
                     {
@@ -1240,7 +2664,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course/permission": {
+        "/web/course/permission": {
             "get": {
                 "security": [
                     {
@@ -1367,7 +2791,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course/permission/{id}": {
+        "/web/course/permission/{id}": {
             "get": {
                 "security": [
                     {
@@ -1415,7 +2839,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course/permission/{id}/delete": {
+        "/web/course/permission/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -1464,7 +2888,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course/permission{id}/update": {
+        "/web/course/permission{id}/update": {
             "put": {
                 "security": [
                     {
@@ -1521,7 +2945,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course/{id}": {
+        "/web/course/{id}": {
             "get": {
                 "security": [
                     {
@@ -1569,7 +2993,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course/{id}/delete": {
+        "/web/course/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -1618,7 +3042,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/course/{id}/update": {
+        "/web/course/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -1675,7 +3099,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/faq": {
+        "/web/faq": {
             "get": {
                 "security": [
                     {
@@ -1784,7 +3208,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/faq/{id}": {
+        "/web/faq/{id}": {
             "get": {
                 "security": [
                     {
@@ -1832,7 +3256,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/faq/{id}/delete": {
+        "/web/faq/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -1881,7 +3305,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/faq/{id}/update": {
+        "/web/faq/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -1938,7 +3362,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/file-upload": {
+        "/web/file-upload": {
             "post": {
                 "security": [
                     {
@@ -1978,7 +3402,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lesson": {
+        "/web/lesson": {
             "get": {
                 "security": [
                     {
@@ -2103,7 +3527,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lesson/{id}": {
+        "/web/lesson/{id}": {
             "get": {
                 "security": [
                     {
@@ -2151,7 +3575,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lesson/{id}/delete": {
+        "/web/lesson/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -2200,55 +3624,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lesson/{id}/end": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "End lesson",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "lesson"
-                ],
-                "summary": "End lesson",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Lesson ID",
-                        "name": "id",
-                        "in": "path"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Lesson ended",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/lesson/{id}/update": {
+        "/web/lesson/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -2305,7 +3681,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/module": {
+        "/web/module": {
             "get": {
                 "security": [
                     {
@@ -2420,7 +3796,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/module/{id}": {
+        "/web/module/{id}": {
             "get": {
                 "security": [
                     {
@@ -2468,7 +3844,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/module/{id}/delete": {
+        "/web/module/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -2517,7 +3893,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/module/{id}/update": {
+        "/web/module/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -2574,7 +3950,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/notification": {
+        "/web/notification": {
             "get": {
                 "security": [
                     {
@@ -2689,67 +4065,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/notification/user": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get all notification with optional filtering",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "notification"
-                ],
-                "summary": "Get all notification",
-                "parameters": [
-                    {
-                        "type": "boolean",
-                        "description": "Is Read",
-                        "name": "is_read",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page",
-                        "name": "page",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.UserNotificationList"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/notification/{id}": {
+        "/web/notification/{id}": {
             "get": {
                 "security": [
                     {
@@ -2797,7 +4113,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/notification/{id}/delete": {
+        "/web/notification/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -2846,55 +4162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/notification/{id}/read": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Read notification",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "notification"
-                ],
-                "summary": "Read notification",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Notification ID",
-                        "name": "id",
-                        "in": "path"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Notification updated",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/notification/{id}/update": {
+        "/web/notification/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -2951,7 +4219,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source": {
+        "/web/source": {
             "get": {
                 "security": [
                     {
@@ -3077,7 +4345,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}": {
+        "/web/source/{id}": {
             "get": {
                 "security": [
                     {
@@ -3125,7 +4393,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/delete": {
+        "/web/source/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -3174,7 +4442,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/update": {
+        "/web/source/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -3231,7 +4499,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/subject": {
+        "/web/subject": {
             "get": {
                 "security": [
                     {
@@ -3340,7 +4608,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/subject/{id}": {
+        "/web/subject/{id}": {
             "get": {
                 "security": [
                     {
@@ -3388,7 +4656,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/subject/{id}/delete": {
+        "/web/subject/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -3437,7 +4705,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/subject/{id}/update": {
+        "/web/subject/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -3494,7 +4762,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/teacher": {
+        "/web/teacher": {
             "get": {
                 "security": [
                     {
@@ -3609,7 +4877,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/teacher/{id}": {
+        "/web/teacher/{id}": {
             "get": {
                 "security": [
                     {
@@ -3657,7 +4925,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/teacher/{id}/delete": {
+        "/web/teacher/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -3706,7 +4974,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/teacher/{id}/update": {
+        "/web/teacher/{id}/update": {
             "put": {
                 "security": [
                     {
@@ -3763,7 +5031,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user": {
+        "/web/user": {
             "get": {
                 "security": [
                     {
@@ -3829,336 +5097,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/activity": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns user activity stats by type: day|week|month|year|range. For day: optional ?date=YYYY-MM-DD. For range: required ?from=YYYY-MM-DD\u0026to=YYYY-MM-DD",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Get user activity stats",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Stats type: day|week|month|year|range",
-                        "name": "type",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "For day only: YYYY-MM-DD (default: today)",
-                        "name": "date",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "For range only: YYYY-MM-DD",
-                        "name": "from",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "For range only: YYYY-MM-DD",
-                        "name": "to",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Activity stats",
-                        "schema": {
-                            "$ref": "#/definitions/models.ActivityStatsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request params",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Activity user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Activity user",
-                "parameters": [
-                    {
-                        "description": "User activity credentials",
-                        "name": "credentials",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserActivityCreateBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Activity created",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/delete/profile": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete a profile",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Delete a profile",
-                "responses": {
-                    "200": {
-                        "description": "Profile deleted",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/get/profile": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get user profile",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Get user profile",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.UserRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/rating": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Reytingni qaytaradi: day|week|month|year|total. Default: total. 0 activity bo'lgan userlar avtomatik oxirida turadi. Response ichida TOP list va \"Me\" (mening o'rnim) qaytadi.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Reyting (leaderboard) olish",
-                "parameters": [
-                    {
-                        "enum": [
-                            "day",
-                            "week",
-                            "month",
-                            "year",
-                            "total"
-                        ],
-                        "type": "string",
-                        "description": "Filter type: day|week|month|year|total (default: total)",
-                        "name": "type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Top list limit (default: 10, max: 100)",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Rating response",
-                        "schema": {
-                            "$ref": "#/definitions/models.RatingResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request params",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/update/profile": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates user profile fields via multipart/form-data. Image is optional.",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile"
-                ],
-                "summary": "Update a user profile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User name",
-                        "name": "name",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Phone number",
-                        "name": "phone_number",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "FCM token",
-                        "name": "fcm_token",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Language (e.g. uz, ru, en)",
-                        "name": "language",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "file",
-                        "description": "Profile image (jpg/png/webp)",
-                        "name": "image",
-                        "in": "formData"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Profile updated",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request payload",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/{id}": {
+        "/web/user/{id}": {
             "get": {
                 "security": [
                     {
@@ -4206,7 +5145,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/{id}/delete": {
+        "/web/user/{id}/delete": {
             "delete": {
                 "security": [
                     {
@@ -4291,6 +5230,46 @@ const docTemplate = `{
                 },
                 "count": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.AboutMobileList": {
+            "type": "object",
+            "properties": {
+                "abouts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AboutMobileRes"
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.AboutMobileRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "link_url": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -4440,6 +5419,49 @@ const docTemplate = `{
                 },
                 "count": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.BannerMobileList": {
+            "type": "object",
+            "properties": {
+                "banners": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.BannerMobileRes"
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.BannerMobileRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "link_url": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -4641,11 +5663,53 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CourseMobileList": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "courses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CourseMobileRes"
+                    }
+                }
+            }
+        },
+        "models.CourseMobileRes": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "teacher_id": {
+                    "type": "string"
+                },
+                "teacher_name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CoursePriceOption": {
             "type": "object",
             "properties": {
                 "duration": {
-                    "description": "oy",
                     "type": "integer"
                 },
                 "price": {
@@ -4664,9 +5728,6 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
-                },
-                "has_access": {
-                    "type": "boolean"
                 },
                 "id": {
                     "type": "string"
@@ -4787,6 +5848,43 @@ const docTemplate = `{
                 }
             }
         },
+        "models.FaqMobileList": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "faqs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.FaqMobileRes"
+                    }
+                }
+            }
+        },
+        "models.FaqMobileRes": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "question": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.FaqRes": {
             "type": "object",
             "properties": {
@@ -4884,9 +5982,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
-                },
-                "is_completed": {
-                    "type": "boolean"
                 },
                 "module_id": {
                     "type": "string"
@@ -5011,6 +6106,96 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "models.MobileCourseLessonRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "module_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.MobileCourseModuleRes": {
+            "type": "object",
+            "properties": {
+                "course_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lessons": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MobileCourseLessonRes"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.MobileCourseRes": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "documents": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "has_access": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "lessons": {
+                    "type": "integer"
+                },
+                "modules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MobileCourseModuleRes"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CoursePriceOption"
+                    }
+                },
+                "teacher_id": {
+                    "type": "string"
+                },
+                "teacher_name": {
+                    "type": "string"
+                },
+                "tests": {
+                    "type": "integer"
                 }
             }
         },
@@ -5163,6 +6348,9 @@ const docTemplate = `{
                 "image_url": {
                     "type": "string"
                 },
+                "is_me": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -5222,6 +6410,47 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SourceLessonMobileRes": {
+            "type": "object",
+            "properties": {
+                "documents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SourceMobile"
+                    }
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_completed": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "tests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SourceMobile"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                },
+                "videos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SourceMobile"
+                    }
+                }
+            }
+        },
         "models.SourceList": {
             "type": "object",
             "properties": {
@@ -5233,6 +6462,26 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.SourceRes"
                     }
+                }
+            }
+        },
+        "models.SourceMobile": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -5331,6 +6580,43 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.SubjectRes"
                     }
+                }
+            }
+        },
+        "models.SubjectMobileList": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "subjects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectMobileRes"
+                    }
+                }
+            }
+        },
+        "models.SubjectMobileRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -5514,6 +6800,58 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.UserCourseRes"
                     }
+                }
+            }
+        },
+        "models.UserCourseMobileList": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "user_courses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserCourseMobileRes"
+                    }
+                }
+            }
+        },
+        "models.UserCourseMobileRes": {
+            "type": "object",
+            "properties": {
+                "course_id": {
+                    "type": "string"
+                },
+                "course_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "ended_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
                 }
             }
         },

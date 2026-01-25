@@ -272,3 +272,10 @@ func (r *SourceRepo) Delete(req *m.ById) (*m.Void, error) {
 
 	return &m.Void{}, nil
 }
+
+// func (r *SourceRepo)GetByIdMobile(req *m.ById) (*m.SourceMobileRes, error){
+// 	return nil, nil
+// }
+// func (r *SourceRepo)GetAllMobile(req *m.SourceGetListMobileReq) (*m.PaginationResponse, *m.SourceMobileList, error){
+// 	return nil, nil, nil
+// }

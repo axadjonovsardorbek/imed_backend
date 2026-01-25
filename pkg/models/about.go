@@ -48,3 +48,23 @@ type AboutGetListReq struct {
 	Title  string     `json:"title"`
 	Filter Pagination `json:"filter"`
 }
+
+type AboutMobileRes struct {
+	Id          string  `json:"id"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+	LinkUrl     *string `json:"link_url"`
+	OrderNum    *int    `json:"order_num"`
+	CreatedAt   *string `json:"created_at"`
+	UpdatedAt   *string `json:"updated_at"`
+}
+
+type AboutMobileList struct {
+	Abouts []*AboutMobileRes `json:"abouts"`
+	Count  int         `json:"count"`
+}
+
+type AboutGetListMobileReq struct {
+	Title    string `json:"title"`
+	Language string `json:"language"`
+}

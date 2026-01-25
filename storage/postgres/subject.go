@@ -221,3 +221,104 @@ func (r *SubjectRepo) Delete(req *m.ById) (*m.Void, error) {
 
 	return &m.Void{}, nil
 }
+
+func (r *SubjectRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SubjectMobileRes, error) {
+	query := `
+	SELECT 
+		id,
+		name->> $1,
+		image_url,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		subjects
+	WHERE
+		deleted_at = 0
+	AND
+		id = $2
+	`
+
+	row := r.db.QueryRow(query, req.Language, req.Id)
+
+	subject := m.SubjectMobileRes{}
+	err := row.Scan(
+		&subject.Id,
+		&subject.Name,
+		&subject.ImageUrl,
+		&subject.OrderNum,
+		&subject.CreatedAt,
+		&subject.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("subject not found with id: %s", req.Id)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting subject by id: %w", err)
+	}
+
+	return &subject, nil
+}
+func (r *SubjectRepo) GetAllMobile(req *m.SubjectGetListMobileReq) (*m.PaginationResponse, *m.SubjectMobileList, error) {
+	query := `
+	SELECT 
+		COUNT(id) OVER() AS total_count,
+		id,
+		name->> $1,
+		image_url,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		subjects
+	WHERE
+		deleted_at = 0
+	`
+
+	var args []interface{}
+	args = append(args, req.Language)
+
+	if req.Name != "" && req.Name != "string" {
+		query += fmt.Sprintf(" AND name::text ILIKE $%d", len(args)+1)
+		args = append(args, "%"+req.Name+"%")
+	}
+
+	query += " ORDER BY order_num ASC"
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting subject: %w", err)
+	}
+	defer rows.Close()
+
+	subjects := m.SubjectMobileList{}
+
+	for rows.Next() {
+
+		subject := m.SubjectMobileRes{}
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&subject.Id,
+			&subject.Name,
+			&subject.ImageUrl,
+			&subject.OrderNum,
+			&subject.CreatedAt,
+			&subject.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning subject row: %w", err)
+		}
+
+		subjects.Subjects = append(subjects.Subjects, &subject)
+		subjects.Count = totalCount
+	}
+
+	response := m.NewPaginationResponse(m.Pagination{Limit: subjects.Count}, subjects.Count, subjects.Subjects)
+
+	return &response, &subjects, nil
+}

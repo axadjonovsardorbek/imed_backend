@@ -21,7 +21,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /contact [post]
+// @Router /web/contact [post]
 func (h *Handler) CreateContact(c *gin.Context) {
 	req := m.ContactCreateReq{}
 	err := c.BindJSON(&req)
@@ -60,7 +60,8 @@ func (h *Handler) CreateContact(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /contact/{id} [get]
+// @Router /web/contact/{id} [get]
+// @Router /mobile/contact/{id} [get]
 func (h *Handler) GetByIdContact(c *gin.Context) {
 	id := c.Param("id")
 
@@ -93,7 +94,8 @@ func (h *Handler) GetByIdContact(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /contact [get]
+// @Router /web/contact [get]
+// @Router /mobile/contact [get]
 func (h *Handler) GetAllContacts(c *gin.Context) {
 	name := c.Query("name")
 	phoneNumber := c.Query("phone_number")
@@ -135,7 +137,7 @@ func (h *Handler) GetAllContacts(c *gin.Context) {
 // @Success 200 {object} string "Contact updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /contact/{id}/update [put]
+// @Router /web/contact/{id}/update [put]
 func (h *Handler) UpdateContact(c *gin.Context) {
 	var req m.ContactUpdateReq
 	var body m.ContactUpdateBody
@@ -178,7 +180,7 @@ func (h *Handler) UpdateContact(c *gin.Context) {
 // @Success 200 {object} string "Contact deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /contact/{id}/delete [delete]
+// @Router /web/contact/{id}/delete [delete]
 func (h *Handler) DeleteContact(c *gin.Context) {
 	var req m.ById
 

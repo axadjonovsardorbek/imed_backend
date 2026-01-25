@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /teacher [post]
+// @Router /web/teacher [post]
 func (h *Handler) CreateTeacher(c *gin.Context) {
 	req := m.TeacherCreateReq{}
 	err := c.BindJSON(&req)
@@ -71,7 +71,7 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /teacher/{id} [get]
+// @Router /web/teacher/{id} [get]
 func (h *Handler) GetByIdTeacher(c *gin.Context) {
 	id := c.Param("id")
 
@@ -104,7 +104,7 @@ func (h *Handler) GetByIdTeacher(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /teacher [get]
+// @Router /web/teacher [get]
 func (h *Handler) GetAllTeachers(c *gin.Context) {
 	name := c.Query("name")
 	phone_number := c.Query("phone_number")
@@ -146,7 +146,7 @@ func (h *Handler) GetAllTeachers(c *gin.Context) {
 // @Success 200 {object} string "Teacher updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /teacher/{id}/update [put]
+// @Router /web/teacher/{id}/update [put]
 func (h *Handler) UpdateTeacher(c *gin.Context) {
 	var req m.TeacherUpdateReq
 	var body m.TeacherUpdateBody
@@ -198,7 +198,7 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 // @Success 200 {object} string "Teacher deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /teacher/{id}/delete [delete]
+// @Router /web/teacher/{id}/delete [delete]
 func (h *Handler) DeleteTeacher(c *gin.Context) {
 	var req m.ById
 

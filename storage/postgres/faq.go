@@ -21,17 +21,6 @@ func NewFaqRepo(db *sql.DB) *FaqRepo {
 	}
 }
 
-// CREATE TABLE IF NOT EXISTS faqs (
-//
-//	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//	question JSONB NOT NULL,
-//	answer JSONB NOT NULL,
-//	order_num BIGINT DEFAULT 1,
-//	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-//	updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-//	deleted_at BIGINT DEFAULT 0
-//
-// );
 func (r *FaqRepo) Create(req *m.FaqCreateReq) (*m.ById, error) {
 	id := uuid.NewString()
 	query := `
@@ -236,4 +225,107 @@ func (r *FaqRepo) Delete(req *m.ById) (*m.Void, error) {
 	}
 
 	return &m.Void{}, nil
+}
+
+func (r *FaqRepo) GetByIdMobile(req *m.ByIdMobile) (*m.FaqMobileRes, error) {
+	query := `
+	SELECT 
+		id,
+		question->> $1,
+		answer->> $1,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		faqs
+	WHERE
+		deleted_at = 0
+	AND
+		id = $2
+	`
+
+	row := r.db.QueryRow(query, req.Language, req.Id)
+
+	faq := m.FaqMobileRes{}
+
+	err := row.Scan(
+		&faq.Id,
+		&faq.Question,
+		&faq.Answer,
+		&faq.OrderNum,
+		&faq.CreatedAt,
+		&faq.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("faq not found with id: %s", req.Id)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting faq by id: %w", err)
+	}
+
+	return &faq, nil
+}
+func (r *FaqRepo) GetAllMobile(req *m.FaqGetListMobileReq) (*m.PaginationResponse, *m.FaqMobileList, error) {
+	query := `
+	SELECT 
+		COUNT(id) OVER() AS total_count,
+		id,
+		question->> $1,
+		answer->> $1,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		faqs
+	WHERE
+		deleted_at = 0
+	`
+
+	var args []interface{}
+	args = append(args, req.Language)
+
+	if req.Question != "" && req.Question != "string" {
+		query += fmt.Sprintf(" AND question::text ILIKE $%d", len(args)+1)
+		args = append(args, "%"+req.Question+"%")
+	}
+
+	query += " ORDER BY order_num ASC"
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting faq: %w", err)
+	}
+	defer rows.Close()
+
+	faqs := m.FaqMobileList{}
+
+	for rows.Next() {
+
+		faq := m.FaqMobileRes{}
+
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&faq.Id,
+			&faq.Question,
+			&faq.Answer,
+			&faq.OrderNum,
+			&faq.CreatedAt,
+			&faq.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning faq row: %w", err)
+		}
+
+		faqs.Faqs = append(faqs.Faqs, &faq)
+		faqs.Count = totalCount
+	}
+
+	response := m.NewPaginationResponse(m.Pagination{Limit: faqs.Count}, faqs.Count, faqs.Faqs)
+
+	return &response, &faqs, nil
 }

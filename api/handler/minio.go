@@ -24,7 +24,7 @@ type File struct {
 // @Produce json
 // @Param file formData file true "File"
 // @Security BearerAuth
-// @Router /file-upload [post]
+// @Router /web/file-upload [post]
 // @Success 200 {object} string
 func (h *Handler) UploadFile(c *gin.Context) {
 	// Faylni olish

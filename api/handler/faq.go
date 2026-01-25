@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /faq [post]
+// @Router /web/faq [post]
 func (h *Handler) CreateFaq(c *gin.Context) {
 	req := m.FaqCreateReq{}
 	body := m.FaqCreateBody{}
@@ -82,7 +82,7 @@ func (h *Handler) CreateFaq(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /faq/{id} [get]
+// @Router /web/faq/{id} [get]
 func (h *Handler) GetByIdFaq(c *gin.Context) {
 	id := c.Param("id")
 
@@ -114,7 +114,7 @@ func (h *Handler) GetByIdFaq(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /faq [get]
+// @Router /web/faq [get]
 func (h *Handler) GetAllFaqs(c *gin.Context) {
 	question := c.Query("question")
 	limit := c.Query("limit")
@@ -154,7 +154,7 @@ func (h *Handler) GetAllFaqs(c *gin.Context) {
 // @Success 200 {object} string "Faq updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /faq/{id}/update [put]
+// @Router /web/faq/{id}/update [put]
 func (h *Handler) UpdateFaq(c *gin.Context) {
 	var req m.FaqUpdateReq
 	var body m.FaqUpdateBody
@@ -213,7 +213,7 @@ func (h *Handler) UpdateFaq(c *gin.Context) {
 // @Success 200 {object} string "Faq deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /faq/{id}/delete [delete]
+// @Router /web/faq/{id}/delete [delete]
 func (h *Handler) DeleteFaq(c *gin.Context) {
 	var req m.ById
 
@@ -232,4 +232,74 @@ func (h *Handler) DeleteFaq(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "faq deleted successfully"})
+}
+
+// GetById godoc
+// @Summary Get faq by ID
+// @Description Get a faq by their ID
+// @Tags faq
+// @Accept  json
+// @Produce  json
+// @Param id path string false "Faq ID"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.FaqMobileRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/faq/{id} [get]
+func (h *Handler) GetByIdMobileFaq(c *gin.Context) {
+	id := c.Param("id")
+	lang := getLanguage(c)
+
+	slog.Info("Get faq with id", id)
+	res, err := h.Clients.Faq.GetByIdMobile(context.Background(), &m.ByIdMobile{Id: id, Language: lang})
+	slog.Info("Faq details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting faq by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Faq retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllFaqs godoc
+// @Summary Get all faq
+// @Description Get all faq with optional filtering
+// @Tags faq
+// @Accept  json
+// @Produce  json
+// @Param question query string false "Question"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.FaqMobileList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/faq [get]
+func (h *Handler) GetAllMobileFaqs(c *gin.Context) {
+	question := c.Query("question")
+
+	lang := getLanguage(c)
+
+	req := &m.FaqGetListMobileReq{
+		Question: question,
+		Language: lang,
+	}
+
+	slog.Info("Get all faq with filtes", req)
+	data, _, err := h.Clients.Faq.GetAllMobile(context.Background(), req)
+	slog.Info("All faq", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting faq: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Faqs retrieved successfully")
+	c.JSON(200, data)
 }

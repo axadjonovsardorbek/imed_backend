@@ -50,145 +50,215 @@ func NewApi(h *handler.Handler) *gin.Engine {
 
 	router.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	auth := router.Group("auth")
+	router.POST("/web/auth/admin/login", h.Login)
+	router.POST("/mobile/auth/user/check", h.CheckUser)
+	router.POST("/mobile/auth/user/login", h.LoginUser)
+
+	web := router.Group("/web")
 	{
-		auth.POST("/admin/login", h.Login)
-		auth.POST("/user/check", h.CheckUser)
-		auth.POST("/user/login", h.LoginUser)
+		auth := web.Group("/auth").Use(mid.NewAuth(enforcer))
+		{
+			auth.POST("/user/create", h.CreateUser)
+			auth.PUT("/password/change", h.ChangePassword)
+			auth.PUT("/password/refresh", h.RefreshPassword)
+		}
+
+		user := web.Group("/user").Use(mid.NewAuth(enforcer))
+		{
+			user.GET("", h.GetAllUsers)
+			user.GET("/:id", h.GetByIdUser)
+			user.DELETE("/:id/delete", h.DeleteUser)
+		}
+
+		web.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer))
+
+		banner := web.Group("/banner").Use(mid.NewAuth(enforcer))
+		{
+			banner.POST("", h.CreateBanner)
+			banner.GET("", h.GetAllBanners)
+			banner.GET("/:id", h.GetByIdBanner)
+			banner.PUT("/:id/update", h.UpdateBanner)
+			banner.DELETE("/:id/delete", h.DeleteBanner)
+		}
+
+		about := web.Group("/about").Use(mid.NewAuth(enforcer))
+		{
+			about.POST("", h.CreateAbout)
+			about.GET("", h.GetAllAbouts)
+			about.GET("/:id", h.GetByIdAbout)
+			about.PUT("/:id/update", h.UpdateAbout)
+			about.DELETE("/:id/delete", h.DeleteAbout)
+		}
+
+		faq := web.Group("/faq").Use(mid.NewAuth(enforcer))
+		{
+			faq.POST("", h.CreateFaq)
+			faq.GET("", h.GetAllFaqs)
+			faq.GET("/:id", h.GetByIdFaq)
+			faq.PUT("/:id/update", h.UpdateFaq)
+			faq.DELETE("/:id/delete", h.DeleteFaq)
+		}
+
+		course := web.Group("/course").Use(mid.NewAuth(enforcer))
+		{
+			course.POST("", h.CreateCourse)
+			course.GET("", h.GetAllCourses)
+			course.GET("/:id", h.GetByIdCourse)
+			course.PUT("/:id/update", h.UpdateCourse)
+			course.DELETE("/:id/delete", h.DeleteCourse)
+			course.POST("/permission", h.BuyCourse)
+			course.GET("/permission/:id", h.UserCourse)
+			course.GET("/permission", h.UserCourses)
+			course.PUT("/permission/:id/update", h.UpdateUserCourse)
+			course.DELETE("/permission/:id/delete", h.DeleteUserCourse)
+		}
+
+		contact := web.Group("/contact").Use(mid.NewAuth(enforcer))
+		{
+			contact.POST("", h.CreateContact)
+			contact.GET("", h.GetAllContacts)
+			contact.GET("/:id", h.GetByIdContact)
+			contact.PUT("/:id/update", h.UpdateContact)
+			contact.DELETE("/:id/delete", h.DeleteContact)
+		}
+
+		lesson := web.Group("/lesson").Use(mid.NewAuth(enforcer))
+		{
+			lesson.POST("", h.CreateLesson)
+			lesson.GET("", h.GetAllLessons)
+			lesson.GET("/:id", h.GetByIdLesson)
+			lesson.PUT("/:id/update", h.UpdateLesson)
+			lesson.DELETE("/:id/delete", h.DeleteLesson)
+		}
+
+		module := web.Group("/module").Use(mid.NewAuth(enforcer))
+		{
+			module.POST("", h.CreateModule)
+			module.GET("", h.GetAllModules)
+			module.GET("/:id", h.GetByIdModule)
+			module.PUT("/:id/update", h.UpdateModule)
+			module.DELETE("/:id/delete", h.DeleteModule)
+		}
+
+		teacher := web.Group("/teacher").Use(mid.NewAuth(enforcer))
+		{
+			teacher.POST("", h.CreateTeacher)
+			teacher.GET("", h.GetAllTeachers)
+			teacher.GET("/:id", h.GetByIdTeacher)
+			teacher.PUT("/:id/update", h.UpdateTeacher)
+			teacher.DELETE("/:id/delete", h.DeleteTeacher)
+		}
+
+		source := web.Group("/source").Use(mid.NewAuth(enforcer))
+		{
+			source.POST("", h.CreateSource)
+			source.GET("", h.GetAllSources)
+			source.GET("/:id", h.GetByIdSource)
+			source.PUT("/:id/update", h.UpdateSource)
+			source.DELETE("/:id/delete", h.DeleteSource)
+		}
+
+		subject := web.Group("/subject").Use(mid.NewAuth(enforcer))
+		{
+			subject.POST("", h.CreateSubject)
+			subject.GET("", h.GetAllSubjects)
+			subject.GET("/:id", h.GetByIdSubject)
+			subject.PUT("/:id/update", h.UpdateSubject)
+			subject.DELETE("/:id/delete", h.DeleteSubject)
+		}
+
+		notification := web.Group("/notification").Use(mid.NewAuth(enforcer))
+		{
+			notification.POST("", h.CreateNotification)
+			notification.GET("", h.GetAllNotifications)
+			notification.GET("/:id", h.GetByIdNotification)
+			notification.PUT("/:id/update", h.UpdateNotification)
+			notification.DELETE("/:id/delete", h.DeleteNotification)
+			notification.PUT("/:id/read", h.ReadNotification)
+			notification.GET("/user", h.GetAllUserNotifications)
+		}
+
+		web.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer))
 	}
 
-	auth.PUT("/password/change", h.ChangePassword).Use(mid.NewAuth(enforcer))
-	auth.PUT("/password/refresh", h.RefreshPassword).Use(mid.NewAuth(enforcer))
-
-	user := router.Group("/user").Use(mid.NewAuth(enforcer))
+	mobile := router.Group("/mobile")
 	{
-		user.GET("", h.GetAllUsers)
-		user.GET("/:id", h.GetByIdUser)
-		user.DELETE("/:id/delete", h.DeleteUser)
-		user.GET("/get/profile", h.GetProfileUser)
-		user.PUT("/update/profile", h.UpdateProfileUser)
-		user.DELETE("/delete/profile", h.DeleteProfileUser)
-		user.POST("/activity", h.CreateActivity)
-		user.GET("/activity", h.GetActivityStats)
-		user.GET("/rating", h.GetRating)
+		mobile.PUT("/mobile/auth/password/change", h.ChangePassword).Use(mid.NewAuth(enforcer))
+
+		user := mobile.Group("/user").Use(mid.NewAuth(enforcer))
+		{
+			user.GET("/get/profile", h.GetProfileUser)
+			user.PUT("/update/profile", h.UpdateProfileUser)
+			user.DELETE("/delete/profile", h.DeleteProfileUser)
+			user.POST("/activity", h.CreateActivity)
+			user.GET("/activity", h.GetActivityStats)
+			user.GET("/rating", h.GetRating)
+		}
+
+		banner := mobile.Group("/banner").Use(mid.NewAuth(enforcer))
+		{
+			banner.GET("", h.GetAllMobileBanners)
+			banner.GET("/:id", h.GetByIdMobileBanner)
+		}
+
+		about := mobile.Group("/about").Use(mid.NewAuth(enforcer))
+		{
+			about.GET("", h.GetAllMobileAbouts)
+			about.GET("/:id", h.GetByIdMobileAbout)
+		}
+
+		faq := mobile.Group("/faq").Use(mid.NewAuth(enforcer))
+		{
+			faq.GET("", h.GetAllMobileFaqs)
+			faq.GET("/:id", h.GetByIdMobileFaq)
+		}
+
+		course := mobile.Group("/course").Use(mid.NewAuth(enforcer))
+		{
+			course.GET("", h.GetAllCourses)
+			course.GET("/:id", h.GetByIdMobileCourse)
+			course.POST("/permission", h.BuyCourse)
+			course.GET("/permission/:id", h.UserMobileCourse)
+			course.GET("/permission", h.UserMobileCourses)
+		}
+
+		contact := mobile.Group("/contact").Use(mid.NewAuth(enforcer))
+		{
+			contact.GET("", h.GetAllContacts)
+			contact.GET("/:id", h.GetByIdContact)
+		}
+
+		lesson := mobile.Group("/lesson").Use(mid.NewAuth(enforcer))
+		{
+			// lesson.GET("", h.GetAllLessons)
+			lesson.GET("/:id", h.GetByIdMobileLesson)
+			lesson.PUT("/:id/end", h.EndLesson)
+		}
+
+		// module := mobile.Group("/module").Use(mid.NewAuth(enforcer))
+		// {
+		// 	module.GET("", h.GetAllModules)
+		// 	module.GET("/:id", h.GetByIdModule)
+		// }
+
+		// source := mobile.Group("/source").Use(mid.NewAuth(enforcer))
+		// {
+		// 	source.GET("", h.GetAllSources)
+		// 	source.GET("/:id", h.GetByIdSource)
+		// }
+
+		subject := mobile.Group("/subject").Use(mid.NewAuth(enforcer))
+		{
+			subject.GET("", h.GetAllMobileSubjects)
+			subject.GET("/:id", h.GetByIdMobileSubject)
+		}
+
+		notification := mobile.Group("/notification").Use(mid.NewAuth(enforcer))
+		{
+			notification.PUT("/:id/read", h.ReadNotification)
+			notification.GET("/user", h.GetAllUserNotifications)
+		}
+
 	}
-
-	router.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer))
-
-	// user := auth.Group("/admin")
-	// // user := auth.Group("/admin").Use(mid.NewAuth(enforcer))
-	// {
-	// 	user.GET("/:id", h.GetByIdAdmin)
-	// }
-
-	banner := router.Group("/banner").Use(mid.NewAuth(enforcer))
-	{
-		banner.POST("", h.CreateBanner)
-		banner.GET("", h.GetAllBanners)
-		banner.GET("/:id", h.GetByIdBanner)
-		banner.PUT("/:id/update", h.UpdateBanner)
-		banner.DELETE("/:id/delete", h.DeleteBanner)
-	}
-
-	about := router.Group("/about").Use(mid.NewAuth(enforcer))
-	{
-		about.POST("", h.CreateAbout)
-		about.GET("", h.GetAllAbouts)
-		about.GET("/:id", h.GetByIdAbout)
-		about.PUT("/:id/update", h.UpdateAbout)
-		about.DELETE("/:id/delete", h.DeleteAbout)
-	}
-
-	faq := router.Group("/faq").Use(mid.NewAuth(enforcer))
-	{
-		faq.POST("", h.CreateFaq)
-		faq.GET("", h.GetAllFaqs)
-		faq.GET("/:id", h.GetByIdFaq)
-		faq.PUT("/:id/update", h.UpdateFaq)
-		faq.DELETE("/:id/delete", h.DeleteFaq)
-	}
-
-	course := router.Group("/course").Use(mid.NewAuth(enforcer))
-	{
-		course.POST("", h.CreateCourse)
-		course.GET("", h.GetAllCourses)
-		course.GET("/:id", h.GetByIdCourse)
-		course.PUT("/:id/update", h.UpdateCourse)
-		course.DELETE("/:id/delete", h.DeleteCourse)
-		course.POST("/permission", h.BuyCourse)
-		course.GET("/permission/:id", h.UserCourse)
-		course.GET("/permission", h.UserCourses)
-		course.PUT("/permission/:id/update", h.UpdateUserCourse)
-		course.DELETE("/permission/:id/delete", h.DeleteUserCourse)
-	}
-
-	contact := router.Group("/contact").Use(mid.NewAuth(enforcer))
-	{
-		contact.POST("", h.CreateContact)
-		contact.GET("", h.GetAllContacts)
-		contact.GET("/:id", h.GetByIdContact)
-		contact.PUT("/:id/update", h.UpdateContact)
-		contact.DELETE("/:id/delete", h.DeleteContact)
-	}
-
-	lesson := router.Group("/lesson").Use(mid.NewAuth(enforcer))
-	{
-		lesson.POST("", h.CreateLesson)
-		lesson.GET("", h.GetAllLessons)
-		lesson.GET("/:id", h.GetByIdLesson)
-		lesson.PUT("/:id/update", h.UpdateLesson)
-		lesson.DELETE("/:id/delete", h.DeleteLesson)
-		lesson.PUT("/:id/end", h.EndLesson)
-	}
-
-	module := router.Group("/module").Use(mid.NewAuth(enforcer))
-	{
-		module.POST("", h.CreateModule)
-		module.GET("", h.GetAllModules)
-		module.GET("/:id", h.GetByIdModule)
-		module.PUT("/:id/update", h.UpdateModule)
-		module.DELETE("/:id/delete", h.DeleteModule)
-	}
-
-	teacher := router.Group("/teacher").Use(mid.NewAuth(enforcer))
-	{
-		teacher.POST("", h.CreateTeacher)
-		teacher.GET("", h.GetAllTeachers)
-		teacher.GET("/:id", h.GetByIdTeacher)
-		teacher.PUT("/:id/update", h.UpdateTeacher)
-		teacher.DELETE("/:id/delete", h.DeleteTeacher)
-	}
-
-	source := router.Group("/source").Use(mid.NewAuth(enforcer))
-	{
-		source.POST("", h.CreateSource)
-		source.GET("", h.GetAllSources)
-		source.GET("/:id", h.GetByIdSource)
-		source.PUT("/:id/update", h.UpdateSource)
-		source.DELETE("/:id/delete", h.DeleteSource)
-	}
-
-	subject := router.Group("/subject").Use(mid.NewAuth(enforcer))
-	{
-		subject.POST("", h.CreateSubject)
-		subject.GET("", h.GetAllSubjects)
-		subject.GET("/:id", h.GetByIdSubject)
-		subject.PUT("/:id/update", h.UpdateSubject)
-		subject.DELETE("/:id/delete", h.DeleteSubject)
-	}
-
-	notification := router.Group("/notification").Use(mid.NewAuth(enforcer))
-	{
-		notification.POST("", h.CreateNotification)
-		notification.GET("", h.GetAllNotifications)
-		notification.GET("/:id", h.GetByIdNotification)
-		notification.PUT("/:id/update", h.UpdateNotification)
-		notification.DELETE("/:id/delete", h.DeleteNotification)
-		notification.PUT("/:id/read", h.ReadNotification)
-		notification.GET("/user", h.GetAllUserNotifications)
-	}
-
-	router.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer))
-
 	return router
 }

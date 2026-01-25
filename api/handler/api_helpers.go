@@ -68,6 +68,22 @@ func IsYYYYMMDD(s string) bool {
 	return err == nil
 }
 
+func getLanguage(c *gin.Context) string {
+
+	lang := c.GetHeader("Accept-Language")
+	if lang == "" {
+		lang = "uz"
+	}
+
+	switch lang {
+	case "uz", "ru", "en":
+	default:
+		lang = "uz"
+	}
+
+	return lang
+}
+
 func formStr(c *gin.Context, key string) string {
 	return strings.TrimSpace(c.PostForm(key))
 }

@@ -33,3 +33,11 @@ func (s *SubjectService) Update(ctx context.Context, req *m.SubjectUpdateReq) (*
 func (s *SubjectService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	return s.storage.SubjectS.Delete(req)
 }
+
+func (s *SubjectService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.SubjectMobileRes, error) {
+	return s.storage.SubjectS.GetByIdMobile(req)
+}
+
+func (s *SubjectService) GetAllMobile(ctx context.Context, req *m.SubjectGetListMobileReq) (*m.PaginationResponse, *m.SubjectMobileList, error) {
+	return s.storage.SubjectS.GetAllMobile(req)
+}

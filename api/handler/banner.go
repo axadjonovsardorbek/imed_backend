@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /banner [post]
+// @Router /web/banner [post]
 func (h *Handler) CreateBanner(c *gin.Context) {
 	req := m.BannerCreateReq{}
 	body := m.BannerCreateBody{}
@@ -91,7 +91,7 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /banner/{id} [get]
+// @Router /web/banner/{id} [get]
 func (h *Handler) GetByIdBanner(c *gin.Context) {
 	id := c.Param("id")
 
@@ -123,7 +123,7 @@ func (h *Handler) GetByIdBanner(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /banner [get]
+// @Router /web/banner [get]
 func (h *Handler) GetAllBanners(c *gin.Context) {
 	title := c.Query("title")
 	limit := c.Query("limit")
@@ -163,7 +163,7 @@ func (h *Handler) GetAllBanners(c *gin.Context) {
 // @Success 200 {object} string "Banner updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /banner/{id}/update [put]
+// @Router /web/banner/{id}/update [put]
 func (h *Handler) UpdateBanner(c *gin.Context) {
 	var req m.BannerUpdateReq
 	var body m.BannerUpdateBody
@@ -231,7 +231,7 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 // @Success 200 {object} string "Banner deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /banner/{id}/delete [delete]
+// @Router /web/banner/{id}/delete [delete]
 func (h *Handler) DeleteBanner(c *gin.Context) {
 	var req m.ById
 
@@ -250,4 +250,71 @@ func (h *Handler) DeleteBanner(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "banner deleted successfully"})
+}
+
+// GetById godoc
+// @Summary Get banner by ID
+// @Description Get a banner by their ID
+// @Tags banner
+// @Accept  json
+// @Produce  json
+// @Param id path string false "Banner ID"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.BannerMobileRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/banner/{id} [get]
+func (h *Handler) GetByIdMobileBanner(c *gin.Context) {
+	id := c.Param("id")
+
+	lang := getLanguage(c)
+
+	slog.Info("Get banner with id", id)
+	res, err := h.Clients.Banner.GetByIdMobile(context.Background(), &m.ByIdMobile{Id: id, Language: lang})
+	slog.Info("Banner details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting banner by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Banner retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllBanners godoc
+// @Summary Get all banner
+// @Description Get all banner with optional filtering
+// @Tags banner
+// @Accept  json
+// @Produce  json
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.BannerMobileList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/banner [get]
+func (h *Handler) GetAllMobileBanners(c *gin.Context) {
+	lang := getLanguage(c)
+
+	req := &m.BannerGetListMobileReq{
+		Language: lang,
+	}
+
+	slog.Info("Get all banner with filtes", req)
+	data, _, err := h.Clients.Banner.GetAllMobile(context.Background(), req)
+	slog.Info("All banner", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting banner: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Banners retrieved successfully")
+	c.JSON(200, data)
 }

@@ -29,3 +29,9 @@ func (s *AboutService) Update(ctx context.Context, req *m.AboutUpdateReq) (*m.Vo
 func (s *AboutService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	return s.storage.AboutS.Delete(req)
 }
+func (s *AboutService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.AboutMobileRes, error) {
+	return s.storage.AboutS.GetByIdMobile(req)
+}
+func (s *AboutService) GetAllMobile(ctx context.Context, req *m.AboutGetListMobileReq) (*m.PaginationResponse, *m.AboutMobileList, error) {
+	return s.storage.AboutS.GetAllMobile(req)
+}

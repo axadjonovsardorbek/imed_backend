@@ -17,16 +17,15 @@ type LessonCreateBody struct {
 }
 
 type LessonRes struct {
-	Id          string            `json:"id"`
-	Name        map[string]string `json:"name"`
-	ModuleId    *string           `json:"module_id"`
-	ModuleName  map[string]string `json:"module_name"`
-	Type        *string           `json:"type"`
-	Duration    *int              `json:"duration"`
-	OrderNum    *int              `json:"order_num"`
-	IsCompleted bool              `json:"is_completed"`
-	CreatedAt   *string           `json:"created_at"`
-	UpdatedAt   *string           `json:"updated_at"`
+	Id         string            `json:"id"`
+	Name       map[string]string `json:"name"`
+	ModuleId   *string           `json:"module_id"`
+	ModuleName map[string]string `json:"module_name"`
+	Type       *string           `json:"type"`
+	Duration   *int              `json:"duration"`
+	OrderNum   *int              `json:"order_num"`
+	CreatedAt  *string           `json:"created_at"`
+	UpdatedAt  *string           `json:"updated_at"`
 }
 
 type LessonList struct {
@@ -38,8 +37,6 @@ type LessonGetListReq struct {
 	ModuleId string     `json:"module_id"`
 	Name     string     `json:"name"`
 	Type     string     `json:"type"`
-	Role     string     `json:"role"`
-	UserId   string     `json:"user_id"`
 	Filter   Pagination `json:"filter"`
 }
 
@@ -63,4 +60,50 @@ type LessonUpdateReq struct {
 type EndUserLessonReq struct {
 	UserId   string `json:"user_id"`
 	LessonId string `json:"lesson_id"`
+}
+
+type LessonMobileRes struct {
+	Id          string  `json:"id"`
+	Name        *string `json:"name"`
+	ModuleId    *string `json:"module_id"`
+	ModuleName  *string `json:"module_name"`
+	Type        *string `json:"type"`
+	Duration    *int    `json:"duration"`
+	OrderNum    *int    `json:"order_num"`
+	IsCompleted bool    `json:"is_completed"`
+	CreatedAt   *string `json:"created_at"`
+	UpdatedAt   *string `json:"updated_at"`
+}
+
+type LessonMobileList struct {
+	Lessons []*LessonRes `json:"lessons"`
+	Count   int          `json:"count"`
+}
+
+type LessonGetListMobileReq struct {
+	ModuleId string `json:"module_id"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	UserId   string `json:"user_id"`
+	Language string `json:"language"`
+}
+
+type SourceLessonMobileRes struct {
+	Id          string         `json:"id"`
+	Name        *string        `json:"name"`
+	Type        *string        `json:"type"`
+	Duration    *int           `json:"duration"`
+	OrderNum    *int           `json:"order_num"`
+	IsCompleted bool           `json:"is_completed"`
+	Tests       []SourceMobile `json:"tests"`
+	Documents   []SourceMobile `json:"documents"`
+	Videos      []SourceMobile `json:"videos"`
+}
+
+type SourceMobile struct {
+	Id       string  `json:"id"`
+	Name     *string `json:"name"`
+	Url      *string `json:"url"`
+	Type     *string `json:"type"`
+	OrderNum *int    `json:"order_num"`
 }

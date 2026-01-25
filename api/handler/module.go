@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /module [post]
+// @Router /web/module [post]
 func (h *Handler) CreateModule(c *gin.Context) {
 	req := m.ModuleCreateReq{}
 	body := m.ModuleCreateBody{}
@@ -74,7 +74,7 @@ func (h *Handler) CreateModule(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /module/{id} [get]
+// @Router /web/module/{id} [get]
 func (h *Handler) GetByIdModule(c *gin.Context) {
 	id := c.Param("id")
 
@@ -107,7 +107,7 @@ func (h *Handler) GetByIdModule(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /module [get]
+// @Router /web/module [get]
 func (h *Handler) GetAllModules(c *gin.Context) {
 	name := c.Query("name")
 	course_id := c.Query("course_id")
@@ -149,7 +149,7 @@ func (h *Handler) GetAllModules(c *gin.Context) {
 // @Success 200 {object} string "Module updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /module/{id}/update [put]
+// @Router /web/module/{id}/update [put]
 func (h *Handler) UpdateModule(c *gin.Context) {
 	var req m.ModuleUpdateReq
 	var body m.ModuleUpdateBody
@@ -200,7 +200,7 @@ func (h *Handler) UpdateModule(c *gin.Context) {
 // @Success 200 {object} string "Module deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /module/{id}/delete [delete]
+// @Router /web/module/{id}/delete [delete]
 func (h *Handler) DeleteModule(c *gin.Context) {
 	var req m.ById
 

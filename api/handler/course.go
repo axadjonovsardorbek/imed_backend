@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /course [post]
+// @Router /web/course [post]
 func (h *Handler) CreateCourse(c *gin.Context) {
 	req := m.CourseCreateReq{}
 	body := m.CourseCreateBody{}
@@ -93,15 +93,12 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /course/{id} [get]
+// @Router /web/course/{id} [get]
 func (h *Handler) GetByIdCourse(c *gin.Context) {
 	id := c.Param("id")
 
-	user_id := claimData(c, "user_id")
-	role := claimData(c, "role")
-
 	slog.Info("Get course with id", id)
-	res, err := h.Clients.Course.GetById(context.Background(), &m.CourseById{Id: id, UserId: user_id, Role: role})
+	res, err := h.Clients.Course.GetById(context.Background(), &m.ById{Id: id})
 	slog.Info("Course details", res)
 
 	if err != nil {
@@ -131,7 +128,7 @@ func (h *Handler) GetByIdCourse(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /course [get]
+// @Router /web/course [get]
 func (h *Handler) GetAllCourses(c *gin.Context) {
 	name := c.Query("name")
 	subject_id := c.Query("subject_id")
@@ -142,16 +139,11 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 
 	pagination := m.ParsePagination(limit, page)
 
-	user_id := claimData(c, "user_id")
-	role := claimData(c, "role")
-
 	req := &m.CourseGetListReq{
 		Name:      name,
 		SubjectId: subject_id,
 		TeacherId: teacher_id,
 		IsPublic:  is_public,
-		UserId:    user_id,
-		Role:      role,
 		Filter:    pagination,
 	}
 
@@ -182,7 +174,7 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 // @Success 200 {object} string "Course updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /course/{id}/update [put]
+// @Router /web/course/{id}/update [put]
 func (h *Handler) UpdateCourse(c *gin.Context) {
 	var req m.CourseUpdateReq
 	var body m.CourseUpdateBody
@@ -245,7 +237,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 // @Success 200 {object} string "Course deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /course/{id}/delete [delete]
+// @Router /web/course/{id}/delete [delete]
 func (h *Handler) DeleteCourse(c *gin.Context) {
 	var req m.ById
 
@@ -277,7 +269,7 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /course/permission [post]
+// @Router /web/course/permission [post]
 func (h *Handler) BuyCourse(c *gin.Context) {
 	req := m.UserCourseCreateReq{}
 	err := c.BindJSON(&req)
@@ -315,7 +307,7 @@ func (h *Handler) BuyCourse(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /course/permission/{id} [get]
+// @Router /web/course/permission/{id} [get]
 func (h *Handler) UserCourse(c *gin.Context) {
 	id := c.Param("id")
 
@@ -350,7 +342,7 @@ func (h *Handler) UserCourse(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /course/permission [get]
+// @Router /web/course/permission [get]
 func (h *Handler) UserCourses(c *gin.Context) {
 	c_type := c.Query("type")
 	user_id := c.Query("user_id")
@@ -396,7 +388,7 @@ func (h *Handler) UserCourses(c *gin.Context) {
 // @Success 200 {object} string "Permission updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /course/permission{id}/update [put]
+// @Router /web/course/permission{id}/update [put]
 func (h *Handler) UpdateUserCourse(c *gin.Context) {
 	var req m.UserCourseUpdateReq
 	var body m.UserCourseUpdateBody
@@ -441,7 +433,7 @@ func (h *Handler) UpdateUserCourse(c *gin.Context) {
 // @Success 200 {object} string "Course deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /course/permission/{id}/delete [delete]
+// @Router /web/course/permission/{id}/delete [delete]
 func (h *Handler) DeleteUserCourse(c *gin.Context) {
 	var req m.ById
 
@@ -460,4 +452,172 @@ func (h *Handler) DeleteUserCourse(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "user course deleted successfully"})
+}
+
+// GetById godoc
+// @Summary Get course by ID
+// @Description Get a course by their ID
+// @Tags course
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Course ID"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.MobileCourseRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/course/{id} [get]
+func (h *Handler) GetByIdMobileCourse(c *gin.Context) {
+
+	id := c.Param("id")
+
+	lang := getLanguage(c)
+
+	user_id := claimData(c, "user_id")
+
+	slog.Info("Get course with id", id)
+	res, err := h.Clients.Course.GetByIdMobile(context.Background(), &m.ByIdMobile{Id: id, UserId: user_id, Language: lang})
+	slog.Info("Course details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting course by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Course retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllCourses godoc
+// @Summary Get all course
+// @Description Get all course with optional filtering
+// @Tags course
+// @Accept  json
+// @Produce  json
+// @Param name query string false "Name"
+// @Param subject_id query string false "Subject ID"
+// @Param is_public query bool false "Is Public"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.CourseMobileList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/course [get]
+func (h *Handler) GetAllMobileCourses(c *gin.Context) {
+	name := c.Query("name")
+	subject_id := c.Query("subject_id")
+	is_public := c.Query("is_public")
+
+	user_id := claimData(c, "user_id")
+
+	lang := getLanguage(c)
+
+	req := &m.CourseGetListMobileReq{
+		Name:      name,
+		SubjectId: subject_id,
+		IsPublic:  is_public,
+		UserId:    user_id,
+		Language:  lang,
+	}
+
+	slog.Info("Get all course with filtes", req)
+	data, _, err := h.Clients.Course.GetAllMobile(context.Background(), req)
+	slog.Info("All course", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting course: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Courses retrieved successfully")
+	c.JSON(200, data)
+}
+
+// GetById godoc
+// @Summary Get course by ID
+// @Description Get a course by their ID
+// @Tags course
+// @Accept  json
+// @Produce  json
+// @Param id path string false "Course ID"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.UserCourseMobileRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/course/permission/{id} [get]
+func (h *Handler) UserMobileCourse(c *gin.Context) {
+	id := c.Param("id")
+
+	user_id := claimData(c, "user_id")
+	if user_id == "" {
+		return
+	}
+
+	lang := getLanguage(c)
+
+	slog.Info("Get user course with id", id)
+	res, err := h.Clients.Course.UserCourseMobile(context.Background(), &m.ByIdMobile{Id: id, UserId: user_id, Language: lang})
+	slog.Info("User course details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting user course by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("User course retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllUserCourses godoc
+// @Summary Get all user course
+// @Description Get all user course with optional filtering
+// @Tags course
+// @Accept  json
+// @Produce  json
+// @Param type query string false "Type"
+// @Param is_active query string false "Is Active"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.UserCourseMobileList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/course/permission [get]
+func (h *Handler) UserMobileCourses(c *gin.Context) {
+	c_type := c.Query("type")
+	is_active := c.Query("is_active")
+
+	user_id := claimData(c, "user_id")
+	if user_id == "" {
+		return
+	}
+
+	lang := getLanguage(c)
+
+	req := &m.UserCourseGetListMobileReq{
+		Type:     c_type,
+		UserId:   user_id,
+		IsActive: is_active,
+		Language: lang,
+	}
+
+	slog.Info("Get all user course with filtes", req)
+	data, _, err := h.Clients.Course.UserCoursesMobile(context.Background(), req)
+	slog.Info("All user course", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting user course: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("User courses retrieved successfully")
+	c.JSON(200, data)
 }

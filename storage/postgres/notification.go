@@ -350,8 +350,8 @@ func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.
 		n.id,
 		n.is_read,
 		m.id,
-		m.title,
-		m.message,
+		m.title->> $1,
+		m.message->> $1,
 		n.created_at,
 		n.updated_at
 	FROM
@@ -359,11 +359,11 @@ func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.
 	JOIN
 		master_notifications m ON n.master_notification_id = m.id
 	WHERE
-		n.user_id = $1
+		n.user_id = $2
 	`
 
 	var args []interface{}
-	args = append(args, req.UserId)
+	args = append(args, req.Language, req.UserId)
 
 	if req.IsRead != "" && req.IsRead != "string" {
 		if req.IsRead == "true" {
@@ -377,9 +377,6 @@ func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.
 
 	query += " ORDER BY n.created_at DESC"
 
-	args = append(args, req.Filter.Limit, req.Filter.Page)
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
-
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error while getting notification: %w", err)
@@ -391,8 +388,6 @@ func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.
 	for rows.Next() {
 
 		notification := m.UserNotificationRes{}
-		var titleJSON []byte
-		var messageJSON []byte
 		var totalCount int
 		var master_notification_id string
 
@@ -401,14 +396,11 @@ func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.
 			&notification.Id,
 			&notification.IsRead,
 			&master_notification_id,
-			&titleJSON,
-			&messageJSON,
+			&notification.Title,
+			&notification.Message,
 			&notification.CreatedAt,
 			&notification.UpdatedAt,
 		)
-
-		json.Unmarshal(titleJSON, &notification.Title)
-		json.Unmarshal(messageJSON, &notification.Message)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning notification row: %w", err)
@@ -418,7 +410,7 @@ func (r *NotificationRepo) UserNotifications(req *m.NotificationGetListReq) (*m.
 		notifications.Count = totalCount
 	}
 
-	response := m.NewPaginationResponse(req.Filter, notifications.Count, notifications.Notifications)
+	response := m.NewPaginationResponse(m.Pagination{Limit: notifications.Count}, notifications.Count, notifications.Notifications)
 
 	return &response, &notifications, nil
 }

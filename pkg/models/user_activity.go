@@ -45,6 +45,7 @@ type RatingUserItem struct {
 	ImageUrl *string `json:"image_url"`
 	Activity int64   `json:"activity"`
 	Rank     int64   `json:"rank"`
+	IsMe     bool    `json:"is_me"`
 }
 
 type RatingResponse struct {

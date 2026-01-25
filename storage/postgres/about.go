@@ -235,3 +235,109 @@ func (r *AboutRepo) Delete(req *m.ById) (*m.Void, error) {
 
 	return &m.Void{}, nil
 }
+
+func (r *AboutRepo) GetByIdMobile(req *m.ByIdMobile) (*m.AboutMobileRes, error) {
+	query := `
+	SELECT 
+		id,
+		title->> $1,
+		description->> $1,
+		link_url,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		abouts
+	WHERE
+		deleted_at = 0
+	AND
+		id = $2
+	`
+
+	row := r.db.QueryRow(query, req.Language, req.Id)
+
+	about := m.AboutMobileRes{}
+	err := row.Scan(
+		&about.Id,
+		&about.Title,
+		&about.Description,
+		&about.LinkUrl,
+		&about.OrderNum,
+		&about.CreatedAt,
+		&about.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("about not found with id: %s", req.Id)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting about by id: %w", err)
+	}
+
+	return &about, nil
+}
+func (r *AboutRepo) GetAllMobile(req *m.AboutGetListMobileReq) (*m.PaginationResponse, *m.AboutMobileList, error) {
+	query := `
+	SELECT 
+		COUNT(id) OVER() AS total_count,
+		id,
+		title->> $1,
+		description->> $1,
+		link_url,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		abouts
+	WHERE
+		deleted_at = 0
+	`
+
+	var args []interface{}
+	args = append(args, req.Language)
+
+	if req.Title != "" && req.Title != "string" {
+		query += fmt.Sprintf(" AND title::text ILIKE $%d", len(args)+1)
+		args = append(args, "%"+req.Title+"%")
+	}
+
+	query += " ORDER BY order_num ASC"
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting about: %w", err)
+	}
+	defer rows.Close()
+
+	abouts := m.AboutMobileList{}
+
+	for rows.Next() {
+
+		about := m.AboutMobileRes{}
+
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&about.Id,
+			&about.Title,
+			&about.Description,
+			&about.LinkUrl,
+			&about.OrderNum,
+			&about.CreatedAt,
+			&about.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning about row: %w", err)
+		}
+
+		abouts.Abouts = append(abouts.Abouts, &about)
+		abouts.Count = totalCount
+	}
+
+	response := m.NewPaginationResponse(m.Pagination{Limit: abouts.Count}, abouts.Count, abouts.Abouts)
+
+	return &response, &abouts, nil
+}

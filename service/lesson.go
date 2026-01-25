@@ -18,7 +18,7 @@ func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.
 	return s.storage.LessonS.Create(req)
 }
 
-func (s *LessonService) GetById(ctx context.Context, req *m.CourseById) (*m.LessonRes, error) {
+func (s *LessonService) GetById(ctx context.Context, req *m.ById) (*m.LessonRes, error) {
 	return s.storage.LessonS.GetById(req)
 }
 
@@ -36,4 +36,7 @@ func (s *LessonService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 
 func (s *LessonService) EndLesson(ctx context.Context, req *m.EndUserLessonReq) (*m.Void, error) {
 	return s.storage.LessonS.EndLesson(req)
+}
+func (s *LessonService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.SourceLessonMobileRes, error) {
+	return s.storage.LessonS.GetByIdMobile(req)
 }

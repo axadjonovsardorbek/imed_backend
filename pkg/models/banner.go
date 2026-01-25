@@ -53,3 +53,23 @@ type BannerUpdateReq struct {
 	LinkUrl     string `json:"link_url"`
 	OrderNum    int    `json:"order_num"`
 }
+
+type BannerMobileRes struct {
+	Id          *string `json:"id"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+	ImageUrl    *string `json:"image_url"`
+	LinkUrl     *string `json:"link_url"`
+	OrderNum    *int    `json:"order_num"`
+	CreatedAt   *string `json:"created_at"`
+	UpdatedAt   *string `json:"updated_at"`
+}
+
+type BannerMobileList struct {
+	Banners []*BannerMobileRes `json:"banners"`
+	Count   int                `json:"count"`
+}
+
+type BannerGetListMobileReq struct {
+	Language string `json:"language"`
+}

@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /notification [post]
+// @Router /web/notification [post]
 func (h *Handler) CreateNotification(c *gin.Context) {
 	req := m.NotificationCreateReq{}
 	body := m.NotificationCreateBody{}
@@ -83,7 +83,7 @@ func (h *Handler) CreateNotification(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /notification/{id} [get]
+// @Router /web/notification/{id} [get]
 func (h *Handler) GetByIdNotification(c *gin.Context) {
 	id := c.Param("id")
 
@@ -116,7 +116,7 @@ func (h *Handler) GetByIdNotification(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /notification [get]
+// @Router /web/notification [get]
 func (h *Handler) GetAllNotifications(c *gin.Context) {
 	title := c.Query("title")
 	course_id := c.Query("course_id")
@@ -158,7 +158,7 @@ func (h *Handler) GetAllNotifications(c *gin.Context) {
 // @Success 200 {object} string "Notification updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /notification/{id}/update [put]
+// @Router /web/notification/{id}/update [put]
 func (h *Handler) UpdateNotification(c *gin.Context) {
 	var req m.MasterNotificationUpdateReq
 	var body m.MasterNotificationUpdateBody
@@ -216,7 +216,7 @@ func (h *Handler) UpdateNotification(c *gin.Context) {
 // @Success 200 {object} string "Notification deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /notification/{id}/delete [delete]
+// @Router /web/notification/{id}/delete [delete]
 func (h *Handler) DeleteNotification(c *gin.Context) {
 	var req m.ById
 
@@ -244,29 +244,26 @@ func (h *Handler) DeleteNotification(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param is_read query bool false "Is Read"
-// @Param limit query int false "Limit"
-// @Param page query int false "Page"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
 // @Success 200 {object} models.UserNotificationList
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /notification/user [get]
+// @Router /mobile/notification/user [get]
 func (h *Handler) GetAllUserNotifications(c *gin.Context) {
 	is_read := c.Query("is_read")
-	limit := c.Query("limit")
-	page := c.Query("page")
-
-	pagination := m.ParsePagination(limit, page)
 
 	user_id := claimData(c, "user_id")
 	if user_id == "" {
 		return
 	}
 
+	lang := getLanguage(c)
+
 	req := &m.NotificationGetListReq{
-		UserId: user_id,
-		IsRead: is_read,
-		Filter: pagination,
+		UserId:   user_id,
+		IsRead:   is_read,
+		Language: lang,
 	}
 
 	slog.Info("Get all notification with filtes", req)
@@ -295,7 +292,7 @@ func (h *Handler) GetAllUserNotifications(c *gin.Context) {
 // @Success 200 {object} string "Notification updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /notification/{id}/read [put]
+// @Router /mobile/notification/{id}/read [put]
 func (h *Handler) ReadNotification(c *gin.Context) {
 	var req m.NotificationMarkReadReq
 

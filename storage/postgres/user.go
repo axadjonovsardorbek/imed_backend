@@ -27,6 +27,41 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 	}
 }
 
+func (r *UserRepo) CreateUser(req *m.UserLoginReq) (*m.ById, error) {
+	if req.Password == "" {
+		password := req.PhoneNumber
+		req.Password = password
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	id := uuid.NewString()
+	query := `
+	INSERT INTO users (
+		id,
+		name,
+		phone_number,
+		password
+	) VALUES ($1, $2, $3, $4)
+	`
+
+	_, err = r.db.Exec(query,
+		id,
+		req.Name,
+		req.PhoneNumber,
+		string(hashedPassword),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while registering user: %w", err)
+	}
+
+	return &m.ById{Id: id}, nil
+}
+
 func (r *UserRepo) Check(req *m.UserCheckReq) (*m.UserCheckRes, error) {
 	var res m.UserCheckRes
 
@@ -348,7 +383,7 @@ func (r *UserRepo) ChangePassword(req *m.ChangePasswordReq) (*m.Void, error) {
 		return nil, fmt.Errorf("error while hashing password: %w", err)
 	}
 
-	queryUpdate := fmt.Sprintf("UPDATE users %s SET password = $1 WHERE id = $2 AND deleted_at = 0", req.Role+"s")
+	queryUpdate := fmt.Sprintf("UPDATE %s SET password = $1 WHERE id = $2 AND deleted_at = 0", req.Role+"s")
 
 	_, err = r.db.Exec(queryUpdate, string(hashedPassword), req.Id)
 
@@ -726,17 +761,17 @@ func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
 	    ROW_NUMBER() OVER (ORDER BY activity DESC, name ASC, user_id ASC) AS rank
 	  FROM scores
 	)
-	SELECT user_id, name, avatar, activity, rank
+	SELECT user_id, name, avatar, activity, rank, (user_id = $3) as is_me
 	FROM ranked
 	ORDER BY rank
-	LIMIT $3
+	LIMIT $4
 	`
 
 	loc := time.FixedZone("UTC+5", 5*3600)
 	rt := m.RatingType(req.Type)
 	start, end := calcRange(rt, loc)
 
-	rows, err := r.db.Query(qTopRating, start, end, req.Limit)
+	rows, err := r.db.Query(qTopRating, start, end, req.UserId, req.Limit)
 	if err != nil {
 		return nil, fmt.Errorf("top rating query: %w", err)
 	}
@@ -746,7 +781,7 @@ func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
 	for rows.Next() {
 		var it m.RatingUserItem
 
-		if err := rows.Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.Activity, &it.Rank); err != nil {
+		if err := rows.Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.Activity, &it.Rank, &it.IsMe); err != nil {
 			return nil, fmt.Errorf("top rating scan: %w", err)
 		}
 
@@ -802,6 +837,8 @@ func (r *UserRepo) GetMe(req *m.RatingRequest) (*m.RatingUserItem, error) {
 	if err != nil {
 		return nil, fmt.Errorf("me rating query: %w", err)
 	}
+
+	it.IsMe = true
 
 	slog.Debug("GetMe rating", "type", req.Type, "user_id", req.UserId, "activity", it.Activity, "rank", it.Rank)
 	fmt.Println("GetMe rating", "type", req.Type, "user_id", req.UserId, "activity", it.Activity, "rank", it.Rank)

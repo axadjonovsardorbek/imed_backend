@@ -43,3 +43,22 @@ type FaqUpdateReq struct {
 	Answer   string `json:"answer"`
 	OrderNum int    `json:"order_num"`
 }
+
+type FaqMobileRes struct {
+	Id        string  `json:"id"`
+	Question  *string `json:"question"`
+	Answer    *string `json:"answer"`
+	OrderNum  *int    `json:"order_num"`
+	CreatedAt *string `json:"created_at"`
+	UpdatedAt *string `json:"updated_at"`
+}
+
+type FaqMobileList struct {
+	Faqs  []*FaqMobileRes `json:"faqs"`
+	Count int             `json:"count"`
+}
+
+type FaqGetListMobileReq struct {
+	Question string `json:"question"`
+	Language string `json:"language"`
+}

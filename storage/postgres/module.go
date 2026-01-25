@@ -234,3 +234,10 @@ func (r *ModuleRepo) Delete(req *m.ById) (*m.Void, error) {
 
 	return &m.Void{}, nil
 }
+
+// func (r ModuleRepo) GetByIdMobile(req *m.ById) (*m.ModuleMobileRes, error) {
+// 	return nil, nil
+// }
+// func (r ModuleRepo) GetAllMobile(req *m.ModuleGetListMobileReq) (*m.PaginationResponse, *m.ModuleMobileList, error) {
+// 	return nil, nil, nil
+// }

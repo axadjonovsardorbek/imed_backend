@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /lesson [post]
+// @Router /web/lesson [post]
 func (h *Handler) CreateLesson(c *gin.Context) {
 	req := m.LessonCreateReq{}
 	body := m.LessonCreateBody{}
@@ -76,15 +76,12 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /lesson/{id} [get]
+// @Router /web/lesson/{id} [get]
 func (h *Handler) GetByIdLesson(c *gin.Context) {
 	id := c.Param("id")
 
-	role := claimData(c, "role")
-	user_id := claimData(c, "user_id")
-
 	slog.Info("Get lesson with id", id)
-	res, err := h.Clients.Lesson.GetById(context.Background(), &m.CourseById{Id: id, Role: role, UserId: user_id})
+	res, err := h.Clients.Lesson.GetById(context.Background(), &m.ById{Id: id})
 	slog.Info("Lesson details", res)
 
 	if err != nil {
@@ -113,7 +110,7 @@ func (h *Handler) GetByIdLesson(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /lesson [get]
+// @Router /web/lesson [get]
 func (h *Handler) GetAllLessons(c *gin.Context) {
 	name := c.Query("name")
 	module_id := c.Query("module_id")
@@ -157,7 +154,7 @@ func (h *Handler) GetAllLessons(c *gin.Context) {
 // @Success 200 {object} string "Lesson updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /lesson/{id}/update [put]
+// @Router /web/lesson/{id}/update [put]
 func (h *Handler) UpdateLesson(c *gin.Context) {
 	var req m.LessonUpdateReq
 	var body m.LessonUpdateBody
@@ -210,7 +207,7 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 // @Success 200 {object} string "Lesson deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /lesson/{id}/delete [delete]
+// @Router /web/lesson/{id}/delete [delete]
 func (h *Handler) DeleteLesson(c *gin.Context) {
 	var req m.ById
 
@@ -242,7 +239,7 @@ func (h *Handler) DeleteLesson(c *gin.Context) {
 // @Success 200 {object} string "Lesson ended"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /lesson/{id}/end [put]
+// @Router /mobile/lesson/{id}/end [put]
 func (h *Handler) EndLesson(c *gin.Context) {
 	req := m.EndUserLessonReq{}
 	id := c.Param("id")
@@ -266,4 +263,42 @@ func (h *Handler) EndLesson(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Lesson ended"})
+}
+
+// GetById godoc
+// @Summary Get lesson by ID
+// @Description Get a lesson by their ID
+// @Tags lesson
+// @Accept  json
+// @Produce  json
+// @Param id path string false "Lesson ID"
+// @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
+// @Success 200 {object} models.SourceLessonMobileRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /mobile/lesson/{id} [get]
+func (h *Handler) GetByIdMobileLesson(c *gin.Context) {
+	id := c.Param("id")
+
+	user_id := claimData(c, "user_id")
+	if user_id == "" {
+		return
+	}
+
+	lang := getLanguage(c)
+
+	slog.Info("Get lesson with id", id)
+	res, err := h.Clients.Lesson.GetByIdMobile(context.Background(), &m.ByIdMobile{Id: id, UserId: user_id, Language: lang})
+	slog.Info("Lesson details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting lesson by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Lesson retrieved successfully")
+	c.JSON(200, res)
 }

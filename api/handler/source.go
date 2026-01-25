@@ -22,7 +22,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /source [post]
+// @Router /web/source [post]
 func (h *Handler) CreateSource(c *gin.Context) {
 	req := m.SourceCreateReq{}
 	body := m.SourceCreateBody{}
@@ -84,7 +84,7 @@ func (h *Handler) CreateSource(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /source/{id} [get]
+// @Router /web/source/{id} [get]
 func (h *Handler) GetByIdSource(c *gin.Context) {
 	id := c.Param("id")
 
@@ -118,7 +118,7 @@ func (h *Handler) GetByIdSource(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /source [get]
+// @Router /web/source [get]
 func (h *Handler) GetAllSources(c *gin.Context) {
 	name := c.Query("name")
 	lesson_id := c.Query("lesson_id")
@@ -162,7 +162,7 @@ func (h *Handler) GetAllSources(c *gin.Context) {
 // @Success 200 {object} string "Source updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /source/{id}/update [put]
+// @Router /web/source/{id}/update [put]
 func (h *Handler) UpdateSource(c *gin.Context) {
 	var req m.SourceUpdateReq
 	var body m.SourceUpdateBody
@@ -223,7 +223,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 // @Success 200 {object} string "Source deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /source/{id}/delete [delete]
+// @Router /web/source/{id}/delete [delete]
 func (h *Handler) DeleteSource(c *gin.Context) {
 	var req m.ById
 

@@ -9,7 +9,7 @@ import (
 
 type CoursePriceOption struct {
 	Price    int `json:"price"`
-	Duration int `json:"duration"` // oy
+	Duration int `json:"duration"`
 }
 
 type CourseCreateReq struct {
@@ -47,7 +47,6 @@ type CourseRes struct {
 	ImageUrl           *string           `json:"image_url"`
 	IsPublic           *bool             `json:"is_public"`
 	OrderNum           *int              `json:"order_num"`
-	HasAccess          bool              `json:"has_access"`
 	CreatedAt          *string           `json:"created_at"`
 	UpdatedAt          *string           `json:"updated_at"`
 }
@@ -141,6 +140,87 @@ type UserCourseUpdateReq struct {
 	Type      string `json:"type"`
 	StartedAt string `json:"started_at"`
 	EndedAt   string `json:"ended_at"`
+}
+
+type CourseMobileRes struct {
+	Id          string  `json:"id"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	TeacherId   string  `json:"teacher_id"`
+	TeacherName string  `json:"teacher_name"`
+	ImageUrl    *string `json:"image_url"`
+	IsPublic    *bool   `json:"is_public"`
+	OrderNum    *int    `json:"order_num"`
+}
+
+type CourseMobileList struct {
+	Courses []*CourseMobileRes `json:"courses"`
+	Count   int                `json:"count"`
+}
+
+type CourseGetListMobileReq struct {
+	SubjectId string `json:"subject_id"`
+	Name      string `json:"name"`
+	IsPublic  string `json:"is_public"`
+	UserId    string `json:"user_id"`
+	Language  string `json:"language"`
+}
+
+type UserCourseMobileRes struct {
+	Id         *string `json:"id"`
+	UserId     *string `json:"user_id"`
+	UserName   *string `json:"user_name"`
+	CourseId   *string `json:"course_id"`
+	CourseName *string `json:"course_name"`
+	IsActive   *bool   `json:"is_active"`
+	Type       *string `json:"type"`
+	StartedAt  *string `json:"started_at"`
+	EndedAt    *string `json:"ended_at"`
+	CreatedAt  *string `json:"created_at"`
+	UpdatedAt  *string `json:"updated_at"`
+}
+
+type UserCourseMobileList struct {
+	UserCourses []*UserCourseMobileRes `json:"user_courses"`
+	Count       int                    `json:"count"`
+}
+
+type UserCourseGetListMobileReq struct {
+	UserId   string `json:"user_id"`
+	Type     string `json:"type"`
+	IsActive string `json:"is_active"`
+	Language string `json:"language"`
+}
+
+type MobileCourseRes struct {
+	Id          string                  `json:"id"`
+	Name        *string                 `json:"name"`
+	Description *string                 `json:"description"`
+	ImageUrl    *string                 `json:"image_url"`
+	TeacherId   string                  `json:"teacher_id"`
+	TeacherName *string                 `json:"teacher_name"`
+	HasAccess   bool                    `json:"has_access"`
+	Price       PriceField              `json:"price"`
+	Tests       int                     `json:"tests"`
+	Documents   int                     `json:"documents"`
+	Duration    int                     `json:"duration"`
+	Lessons     int                     `json:"lessons"`
+	Modules     []MobileCourseModuleRes `json:"modules"`
+}
+
+type MobileCourseModuleRes struct {
+	Id       string                  `json:"id"`
+	Name     *string                 `json:"name"`
+	OrderNum *int                    `json:"order_num"`
+	CourseId *string                 `json:"course_id"`
+	Lessons  []MobileCourseLessonRes `json:"lessons"`
+}
+
+type MobileCourseLessonRes struct {
+	Id       string  `json:"id"`
+	Name     *string `json:"name"`
+	ModuleId *string `json:"module_id"`
+	OrderNum *int    `json:"order_num"`
 }
 
 type PriceField []CoursePriceOption

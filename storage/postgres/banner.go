@@ -248,3 +248,108 @@ func (r *BannerRepo) Delete(req *m.ById) (*m.Void, error) {
 
 	return &m.Void{}, nil
 }
+
+func (r *BannerRepo) GetByIdMobile(req *m.ByIdMobile) (*m.BannerMobileRes, error) {
+	query := `
+	SELECT 
+		id,
+		title->> $1,
+		description->> $1,
+		image_url->> $1,
+		link_url,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		banners
+	WHERE
+		deleted_at = 0
+	AND
+		id = $2
+	`
+
+	row := r.db.QueryRow(query, req.Language, req.Id)
+
+	banner := m.BannerMobileRes{}
+	err := row.Scan(
+		&banner.Id,
+		&banner.Title,
+		&banner.Description,
+		&banner.ImageUrl,
+		&banner.LinkUrl,
+		&banner.OrderNum,
+		&banner.CreatedAt,
+		&banner.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("banner not found with id: %s", req.Id)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting banner by id: %w", err)
+	}
+
+	return &banner, nil
+}
+func (r *BannerRepo) GetAllMobile(req *m.BannerGetListMobileReq) (*m.PaginationResponse, *m.BannerMobileList, error) {
+	query := `
+	SELECT 
+		COUNT(id) OVER() AS total_count,
+		id,
+		title->> $1,
+		description->> $1,
+		image_url->> $1,
+		link_url,
+		order_num,
+		created_at,
+		updated_at
+	FROM
+		banners
+	WHERE
+		deleted_at = 0
+	`
+
+	var args []interface{}
+	args = append(args, req.Language)
+
+	query += " ORDER BY order_num ASC"
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting banner: %w", err)
+	}
+	defer rows.Close()
+
+	banners := m.BannerMobileList{}
+
+	for rows.Next() {
+
+		banner := m.BannerMobileRes{}
+
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&banner.Id,
+			&banner.Title,
+			&banner.Description,
+			&banner.ImageUrl,
+			&banner.LinkUrl,
+			&banner.OrderNum,
+			&banner.CreatedAt,
+			&banner.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning banner row: %w", err)
+		}
+
+		banners.Banners = append(banners.Banners, &banner)
+		banners.Count = totalCount
+	}
+
+	response := m.NewPaginationResponse(m.Pagination{Limit: banners.Count}, banners.Count, banners.Banners)
+
+	return &response, &banners, nil
+}

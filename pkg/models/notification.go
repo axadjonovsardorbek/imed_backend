@@ -49,6 +49,7 @@ type NotificationGetListReq struct {
 	UserId   string     `json:"user_id"`
 	Title    string     `json:"title"`
 	IsRead   string     `json:"is_read"`
+	Language string     `json:"language"`
 	Filter   Pagination `json:"filter"`
 }
 

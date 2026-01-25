@@ -56,3 +56,27 @@ type SourceUpdateReq struct {
 	Type     string `json:"type"`
 	OrderNum int    `json:"order_num"`
 }
+
+// type SourceMobileRes struct {
+// 	Id         string  `json:"id"`
+// 	Name       *string `json:"name"`
+// 	LessonId   string  `json:"lesson_id"`
+// 	LessonName *string `json:"lesson_name"`
+// 	Url        *string `json:"url"`
+// 	Type       *string `json:"type"`
+// 	OrderNum   *int    `json:"order_num"`
+// 	CreatedAt  *string `json:"created_at"`
+// 	UpdatedAt  *string `json:"updated_at"`
+// }
+
+// type SourceMobileList struct {
+// 	Sources []*SourceRes `json:"source"`
+// 	Count   int          `json:"count"`
+// }
+
+// type SourceGetListMobileReq struct {
+// 	LessonId string `json:"lesson_id"`
+// 	Name     string `json:"name"`
+// 	Type     string `json:"type"`
+// 	Language string `json:"language"`
+// }

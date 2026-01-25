@@ -11,6 +11,55 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+// Create godoc
+// @Summary Create user
+// @Description Create user with login and password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param credentials body models.UserLoginReq true "User create credentials"
+// @Success 200 {object} string "Created"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Server error"
+// @Router /web/auth/user/create [post]
+func (h *Handler) CreateUser(c *gin.Context) {
+	var req m.UserLoginReq
+
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		slog.Error("Error binding request body", err)
+		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	check := isValidPhone(req.PhoneNumber)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "phone number is not valid",
+		})
+		slog.Error("Error binding request body: Phone number is not valid")
+		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
+		return
+	}
+
+	slog.Info("User create credentials ", req)
+	res, err := h.Clients.User.Create(context.Background(), &req)
+	slog.Info("User create response", res)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		slog.Error("Error while creating", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "user created successfully",
+		"id":      res.Id,
+	})
+}
+
 // ChangePassword godoc
 // @Summary Change password
 // @Description Change password
@@ -22,7 +71,8 @@ import (
 // @Success 200 {object} string "Password changed successfully"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /auth/password/change [put]
+// @Router /web/auth/password/change [put]
+// @Router /mobile/auth/password/change [put]
 func (h *Handler) ChangePassword(c *gin.Context) {
 	var req m.ChangePasswordReq
 	var body m.ChangePasswordBody
@@ -90,7 +140,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 // @Success 200 {object} models.RefreshPassword
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /auth/password/refresh [put]
+// @Router /web/auth/password/refresh [put]
 func (h *Handler) RefreshPassword(c *gin.Context) {
 
 	var req m.RefreshPasswordReq
@@ -127,7 +177,7 @@ func (h *Handler) RefreshPassword(c *gin.Context) {
 // @Success 200 {object} models.UserCheckRes
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /auth/user/check [post]
+// @Router /mobile/auth/user/check [post]
 func (h *Handler) CheckUser(c *gin.Context) {
 	var req m.UserCheckReq
 
@@ -173,7 +223,7 @@ func (h *Handler) CheckUser(c *gin.Context) {
 // @Success 200 {object} models.TokenRes "JWT tokens"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /auth/user/login [post]
+// @Router /mobile/auth/user/login [post]
 func (h *Handler) LoginUser(c *gin.Context) {
 	var req m.UserLoginReq
 
@@ -219,7 +269,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /user/{id} [get]
+// @Router /web/user/{id} [get]
 func (h *Handler) GetByIdUser(c *gin.Context) {
 	id := c.Param("id")
 
@@ -252,7 +302,7 @@ func (h *Handler) GetByIdUser(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /user [get]
+// @Router /web/user [get]
 func (h *Handler) GetAllUsers(c *gin.Context) {
 	name := c.Query("name")
 	phone_number := c.Query("phone_number")
@@ -293,7 +343,7 @@ func (h *Handler) GetAllUsers(c *gin.Context) {
 // @Success 200 {object} string "User deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /user/{id}/delete [delete]
+// @Router /web/user/{id}/delete [delete]
 func (h *Handler) DeleteUser(c *gin.Context) {
 	var req m.ById
 
@@ -324,7 +374,7 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /user/get/profile [get]
+// @Router /mobile/user/get/profile [get]
 func (h *Handler) GetProfileUser(c *gin.Context) {
 
 	user_id := claimData(c, "user_id")
@@ -362,7 +412,7 @@ func (h *Handler) GetProfileUser(c *gin.Context) {
 // @Success 200 {object} string "Profile updated"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /user/update/profile [put]
+// @Router /mobile/user/update/profile [put]
 func (h *Handler) UpdateProfileUser(c *gin.Context) {
 
 	req := m.UserUpdateReq{
@@ -434,7 +484,7 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 // @Success 200 {object} string "Profile deleted"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /user/delete/profile [delete]
+// @Router /mobile/user/delete/profile [delete]
 func (h *Handler) DeleteProfileUser(c *gin.Context) {
 	var req m.ById
 
@@ -470,7 +520,7 @@ func (h *Handler) DeleteProfileUser(c *gin.Context) {
 // @Success 200 {object} string "Activity created"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /user/activity [post]
+// @Router /mobile/user/activity [post]
 func (h *Handler) CreateActivity(c *gin.Context) {
 	var req m.UserActivityCreateReq
 	var body m.UserActivityCreateBody
@@ -518,7 +568,7 @@ func (h *Handler) CreateActivity(c *gin.Context) {
 // @Success 200 {object} models.ActivityStatsResponse "Activity stats"
 // @Failure 400 {object} string "Invalid request params"
 // @Failure 500 {object} string "Server error"
-// @Router /user/activity [get]
+// @Router /mobile/user/activity [get]
 func (h *Handler) GetActivityStats(c *gin.Context) {
 	userID := claimData(c, "user_id")
 	if userID == "" {
@@ -592,7 +642,7 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 // @Success 200 {object} models.RatingResponse "Rating response"
 // @Failure 400 {object} string "Invalid request params"
 // @Failure 500 {object} string "Server error"
-// @Router /user/rating [get]
+// @Router /mobile/user/rating [get]
 func (h *Handler) GetRating(c *gin.Context) {
 	limit := c.Query("limit")
 	typ := c.Query("type")

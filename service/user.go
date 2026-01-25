@@ -20,6 +20,9 @@ func NewUserService(storage *st.Storage, rdb *redis.Client) *UserService {
 	return &UserService{storage: *storage, rdb: rdb}
 }
 
+func (s *UserService) Create(ctx context.Context, req *m.UserLoginReq) (*m.ById, error) {
+	return s.storage.UserS.CreateUser(req)
+}
 func (s *UserService) Check(ctx context.Context, req *m.UserCheckReq) (*m.UserCheckRes, error) {
 	return s.storage.UserS.Check(req)
 }

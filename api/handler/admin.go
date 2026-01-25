@@ -21,7 +21,7 @@ import (
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /admin/{id} [get]
+// @Router /web/admin/{id} [get]
 func (h *Handler) GetByIdAdmin(c *gin.Context) {
 	id := c.Param("id")
 
@@ -51,7 +51,7 @@ func (h *Handler) GetByIdAdmin(c *gin.Context) {
 // @Success 200 {object} models.TokenRes "JWT tokens"
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
-// @Router /auth/admin/login [post]
+// @Router /web/auth/admin/login [post]
 func (h *Handler) Login(c *gin.Context) {
 	var req m.LoginReq
 

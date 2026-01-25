@@ -52,10 +52,10 @@ type ById struct {
 	Id string `json:"id"`
 }
 
-type CourseById struct {
-	Id     string `json:"id"`
-	UserId string `json:"user_id"`
-	Role   string `json:"role"`
+type ByIdMobile struct {
+	Id       string `json:"id"`
+	UserId   string `json:"user_id"`
+	Language string `json:"language"`
 }
 
 type Location struct {
