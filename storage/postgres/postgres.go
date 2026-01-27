@@ -24,6 +24,7 @@ type Storage struct {
 	SubjectS      storage.SubjectI
 	TeacherS      storage.TeacherI
 	NotificationS storage.NotificationI
+	AppRouteS     storage.AppRouteI
 	UserS         storage.UserI
 }
 
@@ -52,6 +53,7 @@ func NewPostgresStorage(config config.Config) (*Storage, error) {
 	subject := NewSubjectRepo(db)
 	teacher := NewTeacherRepo(db)
 	notification := NewNotificationRepo(db)
+	app_route := NewAppRouteRepo(db)
 	user := NewUserRepo(db)
 
 	return &Storage{
@@ -68,6 +70,7 @@ func NewPostgresStorage(config config.Config) (*Storage, error) {
 		TeacherS:      teacher,
 		SubjectS:      subject,
 		NotificationS: notification,
+		AppRouteS:     app_route,
 		UserS:         user,
 	}, nil
 }

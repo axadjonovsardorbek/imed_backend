@@ -139,3 +139,11 @@ type AboutI interface {
 	GetByIdMobile(req *m.ByIdMobile) (*m.AboutMobileRes, error)
 	GetAllMobile(req *m.AboutGetListMobileReq) (*m.PaginationResponse, *m.AboutMobileList, error)
 }
+
+type AppRouteI interface {
+	Create(req *m.AppRouteCreateReq) (*m.ById, error)
+	GetById(req *m.ById) (*m.AppRouteRes, error)
+	GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse, *m.AppRouteList, error)
+	Update(req *m.AppRouteUpdateReq) (*m.Void, error)
+	Delete(req *m.ById) (*m.Void, error)
+}

@@ -120,6 +120,57 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.AppRouteCreateReq:
+    properties:
+      description:
+        type: string
+      key:
+        type: string
+      order_num:
+        type: integer
+      value:
+        type: object
+    required:
+    - key
+    - value
+    type: object
+  models.AppRouteList:
+    properties:
+      app_routes:
+        items:
+          $ref: '#/definitions/models.AppRouteRes'
+        type: array
+      count:
+        type: integer
+    type: object
+  models.AppRouteRes:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      order_num:
+        type: integer
+      updated_at:
+        type: string
+      value:
+        type: object
+    type: object
+  models.AppRouteUpdateBody:
+    properties:
+      description:
+        type: string
+      key:
+        type: string
+      order_num:
+        type: integer
+      value:
+        type: object
+    type: object
   models.BannerCreateBody:
     properties:
       description:
@@ -1061,7 +1112,11 @@ definitions:
     type: object
   models.UserCourseMobileRes:
     properties:
+      completed_lessons:
+        type: integer
       course_id:
+        type: string
+      course_image_url:
         type: string
       course_name:
         type: string
@@ -1075,6 +1130,8 @@ definitions:
         type: boolean
       started_at:
         type: string
+      total_lessons:
+        type: integer
       type:
         type: string
       updated_at:
@@ -1261,6 +1318,66 @@ paths:
       summary: Get about by ID
       tags:
       - about
+  /mobile/app-route:
+    get:
+      consumes:
+      - application/json
+      description: Get all appRoute with optional filtering
+      parameters:
+      - description: Key
+        in: query
+        name: key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AppRouteList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all appRoute
+      tags:
+      - appRoute
+  /mobile/app-route/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a appRoute by their ID
+      parameters:
+      - description: AppRoute ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AppRouteRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get appRoute by ID
+      tags:
+      - appRoute
   /mobile/auth/password/change:
     put:
       consumes:
@@ -2327,6 +2444,164 @@ paths:
       summary: Get admin by ID
       tags:
       - admin
+  /web/app-route:
+    get:
+      consumes:
+      - application/json
+      description: Get all appRoute with optional filtering
+      parameters:
+      - description: Key
+        in: query
+        name: key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AppRouteList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all appRoute
+      tags:
+      - appRoute
+    post:
+      consumes:
+      - application/json
+      description: Create a new appRoute with the provided details
+      parameters:
+      - description: AppRoute Details
+        in: body
+        name: appRoute
+        required: true
+        schema:
+          $ref: '#/definitions/models.AppRouteCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new appRoute
+      tags:
+      - appRoute
+  /web/app-route/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a appRoute by their ID
+      parameters:
+      - description: AppRoute ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AppRouteRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get appRoute by ID
+      tags:
+      - appRoute
+  /web/app-route/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete appRoute
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AppRoute deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete appRoute
+      tags:
+      - appRoute
+  /web/app-route/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update appRoute
+      parameters:
+      - description: AppRoute ID
+        in: path
+        name: id
+        type: string
+      - description: AppRoute update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.AppRouteUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AppRoute updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update appRoute
+      tags:
+      - appRoute
   /web/auth/admin/login:
     post:
       consumes:

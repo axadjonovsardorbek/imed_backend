@@ -28,7 +28,7 @@ type File struct {
 // @Success 200 {object} string
 func (h *Handler) UploadFile(c *gin.Context) {
 	// Faylni olish
-	file, header, err := c.Request.FormFile("file")
+	file, _, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "file not provided"})
 		smssender(c, err, http.StatusBadRequest)
@@ -39,7 +39,8 @@ func (h *Handler) UploadFile(c *gin.Context) {
 	id := uuid.New().String()
 
 	// Fayl nomini olish
-	fileName := id + header.Filename
+	// fileName := id + header.Filename
+	fileName := id
 
 	// Faylni vaqtinchalik joyga saqlash
 	tempFilePath := filepath.Join("/tmp", fileName)

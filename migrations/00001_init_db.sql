@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS user_courses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id),
     course_id UUID REFERENCES courses(id),
-    type VARCHAR(50) NOT NULL CHECK (type IN ('12months', '6months')),
+    type VARCHAR(50) NOT NULL,
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS user_lessons (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id),
     lesson_id UUID REFERENCES lessons(id),
-    is_completed BOOLEAN DEFAULT FALSE,
+    is_completed BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

@@ -594,105 +594,91 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 	query := `
 	WITH course_base AS (
 		SELECT
-			c.id,
-			c.teacher_id,
-			t.name AS teacher_name,
-			(c.name->> $1)        AS name,
-			(c.description->> $1) AS description,
-			(c.image_url)         AS image_url,
-			c.price 			  AS price,
-			EXISTS (
-				SELECT 1
-				FROM user_courses uc
-				WHERE uc.user_id = $2
-				  AND uc.course_id = c.id
-				  AND uc.deleted_at = 0
-				  AND uc.started_at <= NOW()
-				  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
-			) AS has_access
+		  c.id,
+		  c.teacher_id,
+		  t.name AS teacher_name,
+		  (c.name->>$1)        AS name,
+		  (c.description->>$1) AS description,
+		  c.image_url          AS image_url,
+		  c.price              AS price,
+	  
+		  c.total_lessons      AS lessons,
+		  c.total_sources      AS total_sources,
+		  c.total_tests        AS tests,
+		  c.total_documents    AS documents,
+		  c.total_videos       AS videos,
+		  c.total_duration     AS duration,
+	  
+		  EXISTS (
+			SELECT 1
+			FROM user_courses uc
+			WHERE uc.user_id = $2
+			  AND uc.course_id = c.id
+			  AND uc.deleted_at = 0
+			  AND uc.started_at <= NOW()
+			  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+		  ) AS has_access
 		FROM courses c
-		LEFT JOIN teachers t
-			ON t.id = c.teacher_id
+		LEFT JOIN teachers t ON t.id = c.teacher_id
 		WHERE c.deleted_at = 0
 		  AND c.id = $3
-	),
-	lesson_stats AS (
+	  ),
+	  lessons_json AS (
 		SELECT
-			m.course_id,
-			COALESCE(SUM(l.duration), 0)::int AS duration,
-			COUNT(l.id)::int                  AS lessons
-		FROM modules m
-		LEFT JOIN lessons l
-			ON l.module_id = m.id
-		   AND l.deleted_at = 0
-		WHERE m.deleted_at = 0
-		GROUP BY m.course_id
-	),
-	source_stats AS (
+		  l.module_id,
+		  jsonb_agg(
+			jsonb_build_object(
+			  'id',        l.id::text,
+			  'name',      (l.name->>$1),
+			  'module_id', l.module_id::text,
+			  'order_num', l.order_num
+			)
+			ORDER BY l.order_num
+		  ) AS lessons
+		FROM lessons l
+		JOIN modules m ON m.id = l.module_id
+		WHERE m.course_id = $3
+		  AND m.deleted_at = 0
+		  AND l.deleted_at = 0
+		GROUP BY l.module_id
+	  ),
+	  modules_json AS (
 		SELECT
-			m.course_id,
-			COALESCE(SUM(CASE WHEN s.type = 'test'     THEN 1 ELSE 0 END), 0)::int AS tests,
-			COALESCE(SUM(CASE WHEN s.type = 'document' THEN 1 ELSE 0 END), 0)::int AS documents
+		  m.course_id,
+		  jsonb_agg(
+			jsonb_build_object(
+			  'id',        m.id::text,
+			  'name',      (m.name->>$1),
+			  'order_num', m.order_num,
+			  'course_id', m.course_id::text,
+			  'lessons',   COALESCE(lj.lessons, '[]'::jsonb)
+			)
+			ORDER BY m.order_num
+		  ) AS modules
 		FROM modules m
-		LEFT JOIN lessons l
-			ON l.module_id = m.id
-		   AND l.deleted_at = 0
-		LEFT JOIN sources s
-			ON s.lesson_id = l.id
-		   AND s.deleted_at = 0
-		WHERE m.deleted_at = 0
+		LEFT JOIN lessons_json lj ON lj.module_id = m.id
+		WHERE m.course_id = $3
+		  AND m.deleted_at = 0
 		GROUP BY m.course_id
-	),
-	modules_json AS (
-		SELECT
-			m.course_id,
-			jsonb_agg(
-				jsonb_build_object(
-					'id', m.id::text,
-					'name', (m.name->> $1),
-					'order_num', m.order_num,
-					'course_id', m.course_id::text,
-					'lessons', COALESCE((
-						SELECT jsonb_agg(
-							jsonb_build_object(
-								'id', l.id::text,
-								'name', (l.name->> $1),
-								'module_id', l.module_id::text,
-								'order_num', l.order_num
-							)
-							ORDER BY l.order_num
-						)
-						FROM lessons l
-						WHERE l.deleted_at = 0
-						  AND l.module_id = m.id
-					), '[]'::jsonb)
-				)
-				ORDER BY m.order_num
-			) AS modules
-		FROM modules m
-		WHERE m.deleted_at = 0
-		GROUP BY m.course_id
-	)
-	SELECT
-		cb.id		             AS id,
-		cb.name                  AS name,
-		cb.description           AS description,
-		cb.teacher_id            AS teacher_id,
-		cb.teacher_name 		 AS teacher_name,
-		cb.image_url             AS image_url,
-		cb.has_access            AS has_access,
-		cb.price                 AS price,
-	
-		COALESCE(ss.tests, 0)      AS tests,
-		COALESCE(ss.documents, 0)  AS documents,
-		COALESCE(ls.duration, 0)   AS duration,
-		COALESCE(ls.lessons, 0)    AS lessons,
-	
+	  )
+	  SELECT
+		cb.id,
+		cb.name,
+		cb.description,
+		cb.teacher_id,
+		cb.teacher_name,
+		cb.image_url,
+		cb.has_access,
+		cb.price,
+	  
+		cb.tests,
+		cb.documents,
+		cb.duration,
+		cb.lessons,
+	  
 		COALESCE(mj.modules, '[]'::jsonb) AS modules
-	FROM course_base cb
-	LEFT JOIN lesson_stats  ls ON ls.course_id = cb.id
-	LEFT JOIN source_stats  ss ON ss.course_id = cb.id
-	LEFT JOIN modules_json  mj ON mj.course_id = cb.id
+	  FROM course_base cb
+	  LEFT JOIN modules_json mj ON mj.course_id = cb.id	  
 	`
 
 	row := r.db.QueryRow(query, req.Language, req.UserId, req.Id)
@@ -823,7 +809,7 @@ func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes
 		c.started_at,
 		c.ended_at,
 		c.created_at,
-		c.updated_at
+		c.updated_at,
 	FROM
 		user_courses c
 	LEFT JOIN
@@ -866,30 +852,36 @@ func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes
 func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.PaginationResponse, *m.UserCourseMobileList, error) {
 	query := `
 	SELECT 
-		COUNT(c.id) OVER() AS total_count,
-		c.id,
-		c.user_id,
-		u.name,
-		c.course_id,
-		co.name->> $1,
-		co.image_url,
-		(
-			c.started_at <= NOW()
-			AND (c.ended_at IS NULL OR c.ended_at > NOW())
-		) AS is_active,
-		c.type,
-		c.started_at,
-		c.ended_at,
-		c.created_at,
-		c.updated_at
-	FROM
-		user_courses c
-	LEFT JOIN
-		users u ON c.user_id = u.id
-	LEFT JOIN
-		courses co ON c.course_id = co.id
-	WHERE
-		c.deleted_at = 0
+	  COUNT(c.id) OVER() AS total_count,
+	  c.id,
+	  c.user_id,
+	  u.name AS user_name,
+
+	  c.course_id,
+	  (co.name->> $1) AS course_name,
+	  co.image_url,
+
+	  (c.started_at <= NOW() AND (c.ended_at IS NULL OR c.ended_at > NOW())) AS is_active,
+
+	  c.type,
+	  c.started_at,
+	  c.ended_at,
+	  c.created_at,
+	  c.updated_at,
+
+	  COALESCE(co.total_lessons, 0)::int AS total_lessons,
+	  COALESCE(ucp.completed_lessons, 0)::int AS completed_lessons
+
+	FROM user_courses c
+	LEFT JOIN users u
+	  ON c.user_id = u.id
+	LEFT JOIN courses co
+	  ON c.course_id = co.id
+	LEFT JOIN user_course_progress ucp
+	  ON ucp.user_id = c.user_id
+	 AND ucp.course_id = c.course_id
+
+	WHERE c.deleted_at = 0
 	`
 
 	var args []interface{}
@@ -946,6 +938,8 @@ func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.Pa
 			&course.EndedAt,
 			&course.CreatedAt,
 			&course.UpdatedAt,
+			&course.TotalLessons,
+			&course.CompletedLessons,
 		)
 
 		if err != nil {

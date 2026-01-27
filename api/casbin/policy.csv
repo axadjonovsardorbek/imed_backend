@@ -74,6 +74,11 @@ p, admin, /web/about, GET
 p, admin, /web/about/:id, GET
 p, admin, /web/about/:id/update, PUT
 p, admin, /web/about/:id/delete, DELETE
+p, admin, /web/app-route, POST
+p, admin, /web/app-route, GET
+p, admin, /web/app-route/:id, GET
+p, admin, /web/app-route/:id/update, PUT
+p, admin, /web/app-route/:id/delete, DELETE
 p, admin, /web/faq, POST
 p, admin, /web/faq, GET
 p, admin, /web/faq/:id, GET
@@ -116,6 +121,8 @@ p, user, /mobile/notification/:id/read, PUT
 p, user, /mobile/notification/user, GET
 p, user, /mobile/about, GET
 p, user, /mobile/about/:id, GET
+p, user, /mobile/app-route, GET
+p, user, /mobile/app-route/:id, GET
 p, user, /mobile/faq, GET
 p, user, /mobile/faq/:id, GET
 p, user, /web/file-upload, POST

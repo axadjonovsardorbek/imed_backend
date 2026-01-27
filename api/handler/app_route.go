@@ -1,0 +1,192 @@
+package handler
+
+import (
+	"context"
+	"net/http"
+
+	m "imed/pkg/models"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/exp/slog"
+)
+
+// Create godoc
+// @Summary Create a new appRoute
+// @Description Create a new appRoute with the provided details
+// @Tags appRoute
+// @Accept  json
+// @Produce  json
+// @Param appRoute body models.AppRouteCreateReq true "AppRoute Details"
+// @Success 200 {object} string
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /web/app-route [post]
+func (h *Handler) CreateAppRoute(c *gin.Context) {
+	req := m.AppRouteCreateReq{}
+	err := c.BindJSON(&req)
+	if err != nil {
+		c.JSON(400, gin.H{"message": err.Error()})
+		slog.Error("Error binding request body: ", err)
+		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	slog.Info("Create appRoute", "AppRoute", req)
+	res, err := h.Clients.AppRoute.Create(context.Background(), &req)
+	slog.Info("Create appRoute response", "AppRoute", res)
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error creating appRoute: ", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("AppRoute created successfully")
+	c.JSON(200, gin.H{
+		"message": "app route created successfully",
+		"Id":      res.Id,
+	})
+}
+
+// GetById godoc
+// @Summary Get appRoute by ID
+// @Description Get a appRoute by their ID
+// @Tags appRoute
+// @Accept  json
+// @Produce  json
+// @Param id path string false "AppRoute ID"
+// @Success 200 {object} models.AppRouteRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /web/app-route/{id} [get]
+// @Router /mobile/app-route/{id} [get]
+func (h *Handler) GetByIdAppRoute(c *gin.Context) {
+	id := c.Param("id")
+
+	slog.Info("Get appRoute with id", id)
+	res, err := h.Clients.AppRoute.GetById(context.Background(), &m.ById{Id: id})
+	slog.Info("AppRoute details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting appRoute by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("AppRoute retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllAppRoutes godoc
+// @Summary Get all appRoute
+// @Description Get all appRoute with optional filtering
+// @Tags appRoute
+// @Accept  json
+// @Produce  json
+// @Param key query string false "Key"
+// @Success 200 {object} models.AppRouteList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /web/app-route [get]
+// @Router /mobile/app-route [get]
+func (h *Handler) GetAllAppRoutes(c *gin.Context) {
+	key := c.Query("key")
+
+	var req m.AppRouteGetListReq
+	req.Key = key
+
+	slog.Info("Get all appRoute with filtes", req)
+	data, _, err := h.Clients.AppRoute.GetAll(context.Background(), &req)
+	slog.Info("All appRoute", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting appRoute: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("AppRoutes retrieved successfully")
+	c.JSON(200, data)
+}
+
+// Update godoc
+// @Summary Update appRoute
+// @Description Update appRoute
+// @Tags appRoute
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string false "AppRoute ID"
+// @Param credentials body models.AppRouteUpdateBody true "AppRoute update credentials"
+// @Success 200 {object} string "AppRoute updated"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Server error"
+// @Router /web/app-route/{id}/update [put]
+func (h *Handler) UpdateAppRoute(c *gin.Context) {
+	var req m.AppRouteUpdateReq
+	var body m.AppRouteUpdateBody
+
+	id := c.Param("id")
+
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		slog.Error("Error binding request body", err.Error())
+		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	req.Id = id
+	req.Key = body.Key
+	req.Description = body.Description
+	req.Value = body.Value
+	req.OrderNum = body.OrderNum
+
+	slog.Info("Update AppRoute", req)
+	_, err := h.Clients.AppRoute.Update(context.Background(), &req)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		slog.Error("Error updating AppRoute: ", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "app route updated"})
+}
+
+// Delete godoc
+// @Summary Delete appRoute
+// @Description Delete appRoute
+// @Tags appRoute
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Id"
+// @Success 200 {object} string "AppRoute deleted"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Server error"
+// @Router /web/app-route/{id}/delete [delete]
+func (h *Handler) DeleteAppRoute(c *gin.Context) {
+	var req m.ById
+
+	id := c.Param("id")
+
+	req.Id = id
+
+	slog.Info("AppRoute delete with id", req)
+	_, err := h.Clients.AppRoute.Delete(context.Background(), &req)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		slog.Error("Error deleting appRoute", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "app route deleted successfully"})
+}

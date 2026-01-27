@@ -167,18 +167,20 @@ type CourseGetListMobileReq struct {
 }
 
 type UserCourseMobileRes struct {
-	Id             *string `json:"id"`
-	UserId         *string `json:"user_id"`
-	UserName       *string `json:"user_name"`
-	CourseId       *string `json:"course_id"`
-	CourseName     *string `json:"course_name"`
-	CourseImageUrl *string `json:"course_image_url"`
-	IsActive       *bool   `json:"is_active"`
-	Type           *string `json:"type"`
-	StartedAt      *string `json:"started_at"`
-	EndedAt        *string `json:"ended_at"`
-	CreatedAt      *string `json:"created_at"`
-	UpdatedAt      *string `json:"updated_at"`
+	Id               *string `json:"id"`
+	UserId           *string `json:"user_id"`
+	UserName         *string `json:"user_name"`
+	CourseId         *string `json:"course_id"`
+	CourseName       *string `json:"course_name"`
+	CourseImageUrl   *string `json:"course_image_url"`
+	IsActive         *bool   `json:"is_active"`
+	Type             *string `json:"type"`
+	StartedAt        *string `json:"started_at"`
+	EndedAt          *string `json:"ended_at"`
+	CreatedAt        *string `json:"created_at"`
+	UpdatedAt        *string `json:"updated_at"`
+	TotalLessons     *int    `json:"total_lessons"`
+	CompletedLessons *int    `json:"completed_lessons"`
 }
 
 type UserCourseMobileList struct {
