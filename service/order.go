@@ -26,7 +26,11 @@ func (s *OrderService) GetPayURL(ctx context.Context, req *m.ById) (*m.PayURLRes
 	return s.storage.OrderS.GetPayURL(req)
 }
 func (s *OrderService) ApplyPrepare(ctx context.Context, req *m.ApplyPrepareParams) (*m.PrepareResult, error) {
-	return s.storage.OrderS.ApplyPrepare(req)
+	res, err := s.storage.OrderS.ApplyPrepare(req)
+	fmt.Println("ApplyPrepare result:", res, "error:", err)
+	fmt.Println("Request details:", req)
+	fmt.Println("Response details:", res)
+	return res, err
 }
 func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompleteParams) (*m.CompleteResult, error) {
 
