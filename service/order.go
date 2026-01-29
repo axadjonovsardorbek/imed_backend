@@ -34,12 +34,10 @@ func (s *OrderService) ApplyPrepare(ctx context.Context, req *m.ApplyPreparePara
 func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompleteParams) (*m.CompleteResult, error) {
 
 	res, err := s.storage.OrderS.ApplyComplete(req)
-	if err != nil {
-		return nil, err
-	}
+
 	fmt.Println("ApplyComplete result:", res, "error:", err)
 	fmt.Println("Request details:", req)
 	fmt.Println("Response details:", res)
 
-	return res, nil
+	return res, err
 }
