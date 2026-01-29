@@ -38,6 +38,9 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("ApplyComplete result:", res, "error:", err)
+	fmt.Println("Request details:", req)
+	fmt.Println("Response details:", res)
 
 	if res.Error == 0 {
 		order, _ := s.storage.OrderS.GetById(&m.ById{Id: req.OrderId})

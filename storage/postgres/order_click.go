@@ -136,10 +136,21 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		WHERE id=$1::uuid
 		FOR UPDATE
 	`, p.OrderId).Scan(&status, &prepare, &paidAt)
+
+
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK COMPLETE PARAMS:", p)
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK COMPLETE PREPARE IN DB:", prepare)
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK COMPLETE STATUS IN DB:", status)
+
 	if err != nil {
+		fmt.Println("Check complete 1")
 		return &m.CompleteResult{Error: ErrOrderNotExist, ErrorNote: "Order not found"}, nil
 	}
 	if !prepare.Valid || prepare.Int64 != p.MerchantPrepareId {
+		fmt.Println("Check complete 2")
 		return &m.CompleteResult{Error: ErrTransNotExist, ErrorNote: "Transaction does not exist"}, nil
 	}
 
@@ -151,6 +162,10 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		WHERE id=$1::uuid
 	`, p.OrderId, string(p.MetaPatchJSON))
 
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK COMPLETE ORDER META PATCH:", string(p.MetaPatchJSON))
+	fmt.Println("----------------------------------")
+
 	// idempotent
 	if status == "PAID" {
 		conf := int64(0)
@@ -158,6 +173,7 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 			conf = paidAt.Time.Unix()
 		}
 		_ = tx.Commit()
+		fmt.Println("Check complete 3")
 		return &m.CompleteResult{Error: ErrOK, ErrorNote: "Success", MerchantConfirmId: conf}, nil
 	}
 
@@ -167,9 +183,11 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 			WHERE id=$1::uuid
 		`, p.OrderId)
 		if err != nil {
+			fmt.Println("Check complete 4")
 			return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
 		}
 		_ = tx.Commit()
+		fmt.Println("Check complete 5")
 		return &m.CompleteResult{Error: ErrCancelled, ErrorNote: "Transaction cancelled", MerchantConfirmId: 0}, nil
 	}
 
@@ -183,10 +201,12 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		WHERE id=$1::uuid
 	`, p.OrderId, p.ClickTransId)
 	if err != nil {
+		fmt.Println("Check complete 6")
 		return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
 	}
 
 	if err := tx.Commit(); err != nil {
+		fmt.Println("Check complete 7")
 		return nil, fmt.Errorf("commit: %w", err)
 	}
 
