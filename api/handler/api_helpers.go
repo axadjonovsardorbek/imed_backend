@@ -103,7 +103,9 @@ func formFile(c *gin.Context, key string) (string, string, error) {
 	id := uuid.New().String()
 
 	// Fayl nomini olish
-	fileName := id + header.Filename
+	ext := filepath.Ext(header.Filename)
+
+	fileName := id + ext
 
 	// Faylni vaqtinchalik joyga saqlash
 	tempFilePath := filepath.Join("/tmp", fileName)

@@ -6537,6 +6537,9 @@ const docTemplate = `{
                 },
                 "price": {
                     "type": "integer"
+                },
+                "tariff_id": {
+                    "type": "string"
                 }
             }
         },

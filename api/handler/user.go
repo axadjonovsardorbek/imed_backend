@@ -442,7 +442,6 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 	}
 
 	fileName, tempFilePath, err := formFile(c, "image")
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err})
 		slog.Error("Error processing image: ", err)

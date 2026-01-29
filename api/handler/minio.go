@@ -1,14 +1,11 @@
 package handler
 
 import (
-	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"golang.org/x/exp/slog"
 )
 
 type File struct {
@@ -27,37 +24,17 @@ type File struct {
 // @Router /web/file-upload [post]
 // @Success 200 {object} string
 func (h *Handler) UploadFile(c *gin.Context) {
-	// Faylni olish
-	file, header, err := c.Request.FormFile("file")
+
+	fileName, tempFilePath, err := formFile(c, "file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "file not provided"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+		slog.Error("Error processing image: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
-	}
-	defer file.Close()
-
-	id := uuid.New().String()
-
-	// Fayl nomini olish
-	// fileName := id + header.Filename
-	ext := filepath.Ext(header.Filename)
-
-	fileName := id + ext
-
-	// Faylni vaqtinchalik joyga saqlash
-	tempFilePath := filepath.Join("/tmp", fileName)
-	out, err := os.Create(tempFilePath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "unable to create temporary file"})
-		smssender(c, err, http.StatusInternalServerError)
-		return
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, file)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to save file"})
-		smssender(c, err, http.StatusInternalServerError)
+	} else if fileName == "" && tempFilePath == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "file not provided"})
+		slog.Error("File not provided")
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

@@ -390,6 +390,8 @@ definitions:
         type: integer
       price:
         type: integer
+      tariff_id:
+        type: string
     type: object
   models.CourseRes:
     properties:

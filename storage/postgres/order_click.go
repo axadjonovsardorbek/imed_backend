@@ -42,16 +42,37 @@ func (r *OrderRepo) ApplyPrepare(p *m.ApplyPrepareParams) (*m.PrepareResult, err
 		WHERE id=$1::uuid
 		FOR UPDATE
 	`, p.OrderId).Scan(&amount, &status, &existingPrepare, &metaOld)
+
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK PREPARE ORDER META OLD:", string(metaOld))
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK PREPARE ORDER META PATCH:", string(p.MetaPatchJSON))
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK PREPARE PARAMS:", p)
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK PREPARE EXISTING PREPARE:", existingPrepare)
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK PREPARE STATUS:", status)
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK PREPARE AMOUNT:", amount)
+	fmt.Println("----------------------------------")
+	fmt.Println("CLICK PREPARE PARAM AMOUNT:", p.Amount)
+	fmt.Println("----------------------------------")
+
 	if err != nil {
+		fmt.Println("CHeck 1")
 		return &m.PrepareResult{Error: ErrOrderNotExist, ErrorNote: "Order not found"}, nil
 	}
 	if amount != p.Amount {
+		fmt.Println("CHeck 2")
 		return &m.PrepareResult{Error: ErrIncorrectAmount, ErrorNote: "Incorrect parameter amount"}, nil
 	}
 	if status == "PAID" {
+		fmt.Println("CHeck 2")
 		return &m.PrepareResult{Error: ErrAlreadyPaid, ErrorNote: "Already paid", MerchantPrepareId: existingPrepare.Int64}, nil
 	}
 	if status == "CANCELLED" {
+		fmt.Println("CHeck 4")
 		return &m.PrepareResult{Error: ErrCancelled, ErrorNote: "Transaction cancelled", MerchantPrepareId: existingPrepare.Int64}, nil
 	}
 
@@ -66,8 +87,10 @@ func (r *OrderRepo) ApplyPrepare(p *m.ApplyPrepareParams) (*m.PrepareResult, err
 	// idempotent prepare
 	if existingPrepare.Valid {
 		if err := tx.Commit(); err != nil {
+			fmt.Println("CHeck 5")
 			return nil, fmt.Errorf("commit: %w", err)
 		}
+		fmt.Println("CHeck 6")
 		return &m.PrepareResult{Error: ErrOK, ErrorNote: "Success", MerchantPrepareId: existingPrepare.Int64}, nil
 	}
 
@@ -81,10 +104,12 @@ func (r *OrderRepo) ApplyPrepare(p *m.ApplyPrepareParams) (*m.PrepareResult, err
 		WHERE id=$1::uuid
 	`, p.OrderId, p.ClickTransId, p.ClickPaydocId, p.MerchantPrepareId)
 	if err != nil {
+		fmt.Println("CHeck 7")
 		return &m.PrepareResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
 	}
 
 	if err := tx.Commit(); err != nil {
+		fmt.Println("CHeck 8")
 		return nil, fmt.Errorf("commit: %w", err)
 	}
 

@@ -8,8 +8,9 @@ import (
 )
 
 type CoursePriceOption struct {
-	Price    int `json:"price"`
-	Duration int `json:"duration"`
+	Price    int    `json:"price"`
+	Duration int    `json:"duration"`
+	TariffId string `json:"tariff_id"`
 }
 
 type CourseCreateReq struct {
