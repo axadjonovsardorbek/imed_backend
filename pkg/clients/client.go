@@ -22,6 +22,8 @@ type Clients struct {
 	Teacher      *service.TeacherService
 	Notification *service.NotificationService
 	AppRoute     *service.AppRouteService
+	Order        *service.OrderService
+	Tariff       *service.TariffService
 	User         *service.UserService
 }
 
@@ -40,6 +42,8 @@ func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client) (
 		Teacher:      service.NewTeacherService(conn),
 		Notification: service.NewNotificationService(conn),
 		AppRoute:     service.NewAppRouteService(conn),
+		Order:        service.NewOrderService(conn),
+		Tariff:       service.NewTariffService(conn),
 		User:         service.NewUserService(conn, rdb),
 	}, nil
 }

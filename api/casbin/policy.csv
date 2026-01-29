@@ -3,6 +3,8 @@ p, unauthorized, /,            GET
 p, unauthorized, /mobile/auth/user/check,        POST
 p, unauthorized, /mobile/auth/user/login,        POST
 p, unauthorized, /web/auth/admin/login,        POST
+p, unauthorized, /click/prepare, POST
+p, unauthorized, /click/complete, POST
 
 p, subject, object, action
 p, admin, /web/auth/admin/login, POST
@@ -36,6 +38,11 @@ p, admin, /web/contact, GET
 p, admin, /web/contact/:id, GET
 p, admin, /web/contact/:id/update, PUT
 p, admin, /web/contact/:id/delete, DELETE
+p, admin, /web/tariff, POST
+p, admin, /web/tariff, GET
+p, admin, /web/tariff/:id, GET
+p, admin, /web/tariff/:id/update, PUT
+p, admin, /web/tariff/:id/delete, DELETE
 p, admin, /web/lesson, POST
 p, admin, /web/lesson, GET
 p, admin, /web/lesson/:id, GET
@@ -125,6 +132,9 @@ p, user, /mobile/app-route, GET
 p, user, /mobile/app-route/:id, GET
 p, user, /mobile/faq, GET
 p, user, /mobile/faq/:id, GET
+p, user, /mobile/order, POST
+p, user, /mobile/tariff, GET
+p, user, /mobile/tariff/:id, GET
 p, user, /web/file-upload, POST
 
 g, user, unauthorized

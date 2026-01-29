@@ -52,7 +52,7 @@ func Run(cfg *config.Config) {
 		log.Fatalf("error while connecting clients. err: %s", err.Error())
 	}
 
-	handlers := handler.NewHandler(*services, minioClient)
+	handlers := handler.NewHandler(*services, minioClient, cfg)
 
 	router := api.NewApi(handlers)
 	log.Println("Server is running on port ", cf)

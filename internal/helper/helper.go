@@ -52,3 +52,9 @@ func GeneratePassword() string {
 	}
 	return string(b)
 }
+
+func GetStartEndDate(month int) (string, string) {
+	start := time.Now().UTC().Add(time.Hour * 5).Format("2006-01-02 15:04:05")
+	end := time.Now().UTC().AddDate(0, month, 0).Add(time.Hour * 5).Format("2006-01-02 15:04:05")
+	return start, end
+}

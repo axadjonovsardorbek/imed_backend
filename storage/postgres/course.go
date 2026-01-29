@@ -333,7 +333,7 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		id,
 		user_id,
 		course_id,
-		type,
+		tariff_id,
 		started_at,
 		ended_at
 	) VALUES ($1, $2, $3, $4, $5, $6)
@@ -343,7 +343,7 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		id,
 		req.UserId,
 		req.CourseId,
-		req.Type,
+		req.TariffId,
 		req.StartedAt,
 		req.EndedAt,
 	)
@@ -368,7 +368,9 @@ func (r *CourseRepo) UserCourse(req *m.ById) (*m.UserCourseRes, error) {
 			c.started_at <= NOW()
 			AND (c.ended_at IS NULL OR c.ended_at > NOW())
 		) AS is_active,
-		c.type,
+		c.tariff_id,
+		t.name,
+		t.duration,
 		c.started_at,
 		c.ended_at,
 		c.created_at,
@@ -379,6 +381,8 @@ func (r *CourseRepo) UserCourse(req *m.ById) (*m.UserCourseRes, error) {
 		users u ON c.user_id = u.id
 	LEFT JOIN
 		courses co ON c.course_id = co.id
+	LEFT JOIN
+		tariffs t ON c.tariff_id = t.id
 	WHERE
 		c.deleted_at = 0
 	AND
@@ -397,7 +401,9 @@ func (r *CourseRepo) UserCourse(req *m.ById) (*m.UserCourseRes, error) {
 		&course.CourseId,
 		&courseNameJSON,
 		&course.IsActive,
-		&course.Type,
+		&course.Tariffid,
+		&course.TariffName,
+		&course.Duration,
 		&course.StartedAt,
 		&course.EndedAt,
 		&course.CreatedAt,
@@ -427,7 +433,9 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 			c.started_at <= NOW()
 			AND (c.ended_at IS NULL OR c.ended_at > NOW())
 		) AS is_active,
-		c.type,
+		c.tariff_id,
+		t.name,
+		t.duration,
 		c.started_at,
 		c.ended_at,
 		c.created_at,
@@ -438,6 +446,8 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 		users u ON c.user_id = u.id
 	LEFT JOIN
 		courses co ON c.course_id = co.id
+	LEFT JOIN
+		tariffs t ON c.tariff_id = t.id
 	WHERE
 		c.deleted_at = 0
 	`
@@ -452,9 +462,9 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 		query += fmt.Sprintf(" AND c.user_id = $%d", len(args)+1)
 		args = append(args, req.UserId)
 	}
-	if req.Type != "" && req.Type != "string" {
-		query += fmt.Sprintf(" AND c.type = $%d", len(args)+1)
-		args = append(args, req.Type)
+	if req.TariffId != "" && req.TariffId != "string" {
+		query += fmt.Sprintf(" AND c.tariff_id = $%d", len(args)+1)
+		args = append(args, req.TariffId)
 	}
 	if req.IsActive != "" && req.IsActive != "string" {
 		if req.IsActive == "true" {
@@ -473,8 +483,10 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 	}
 
 	query += " ORDER BY c.created_at DESC"
+
 	args = append(args, req.Filter.Limit, req.Filter.Page)
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
+
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error while getting user courses: %w", err)
@@ -495,7 +507,9 @@ func (r *CourseRepo) UserCourses(req *m.UserCourseGetListReq) (*m.PaginationResp
 			&course.CourseId,
 			&courseNameJSON,
 			&course.IsActive,
-			&course.Type,
+			&course.Tariffid,
+			&course.TariffName,
+			&course.Duration,
 			&course.StartedAt,
 			&course.EndedAt,
 			&course.CreatedAt,
@@ -531,14 +545,20 @@ func (r *CourseRepo) UserUpdateCourse(req *m.UserCourseUpdateReq) (*m.Void, erro
 		args = append(args, req.CourseId)
 	}
 
-	conditions = append(conditions, " type = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.Type)
+	if req.TariffId != "" && req.TariffId != "string" {
+		conditions = append(conditions, " tariff_id = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.TariffId)
+	}
 
-	conditions = append(conditions, " started_at = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.StartedAt)
+	if req.StartedAt != "" && req.StartedAt != "string" {
+		conditions = append(conditions, " started_at = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.StartedAt)
+	}
+	if req.EndedAt != "" && req.EndedAt != "string" {
+		conditions = append(conditions, " ended_at = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.EndedAt)
 
-	conditions = append(conditions, " ended_at = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.EndedAt)
+	}
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")
@@ -805,7 +825,9 @@ func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes
 			c.started_at <= NOW()
 			AND (c.ended_at IS NULL OR c.ended_at > NOW())
 		) AS is_active,
-		c.type,
+		c.tariff_id,
+		t.name,
+		t.duration,
 		c.started_at,
 		c.ended_at,
 		c.created_at,
@@ -816,6 +838,8 @@ func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes
 		users u ON c.user_id = u.id
 	LEFT JOIN
 		courses co ON c.course_id = co.id
+	LEFT JOIN
+		tariffs t ON c.tariff_id = t.id
 	WHERE
 		c.deleted_at = 0
 	AND
@@ -834,7 +858,9 @@ func (r *CourseRepo) UserCourseMobile(req *m.ByIdMobile) (*m.UserCourseMobileRes
 		&course.CourseName,
 		&course.CourseImageUrl,
 		&course.IsActive,
-		&course.Type,
+		&course.TariffId,
+		&course.TariffName,
+		&course.Duration,
 		&course.StartedAt,
 		&course.EndedAt,
 		&course.CreatedAt,
@@ -863,14 +889,25 @@ func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.Pa
 
 	  (c.started_at <= NOW() AND (c.ended_at IS NULL OR c.ended_at > NOW())) AS is_active,
 
-	  c.type,
+	  c.tariff_id,
+	  t.name,
+	  t.duration,
 	  c.started_at,
 	  c.ended_at,
 	  c.created_at,
 	  c.updated_at,
 
 	  COALESCE(co.total_lessons, 0)::int AS total_lessons,
-	  COALESCE(ucp.completed_lessons, 0)::int AS completed_lessons
+	  COALESCE(ucp.completed_lessons, 0)::int AS completed_lessons,
+
+	  CASE
+	  WHEN COALESCE(co.total_lessons, 0) = 0 THEN 0
+	  ELSE ROUND(
+		(COALESCE(ucp.completed_lessons, 0)::numeric * 100)
+		/ co.total_lessons,
+		2
+	  )
+	END AS progress_percentage
 
 	FROM user_courses c
 	LEFT JOIN users u
@@ -891,9 +928,9 @@ func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.Pa
 		query += fmt.Sprintf(" AND c.user_id = $%d", len(args)+1)
 		args = append(args, req.UserId)
 	}
-	if req.Type != "" && req.Type != "string" {
-		query += fmt.Sprintf(" AND c.type = $%d", len(args)+1)
-		args = append(args, req.Type)
+	if req.TariffId != "" && req.TariffId != "string" {
+		query += fmt.Sprintf(" AND c.tariff_id = $%d", len(args)+1)
+		args = append(args, req.TariffId)
 	}
 	if req.IsActive != "" && req.IsActive != "string" {
 		if req.IsActive == "true" {
@@ -933,13 +970,16 @@ func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.Pa
 			&course.CourseName,
 			&course.CourseImageUrl,
 			&course.IsActive,
-			&course.Type,
+			&course.TariffId,
+			&course.TariffName,
+			&course.Duration,
 			&course.StartedAt,
 			&course.EndedAt,
 			&course.CreatedAt,
 			&course.UpdatedAt,
 			&course.TotalLessons,
 			&course.CompletedLessons,
+			&course.Percentage,
 		)
 
 		if err != nil {

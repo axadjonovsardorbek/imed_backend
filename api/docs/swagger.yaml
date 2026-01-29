@@ -773,6 +773,13 @@ definitions:
       type:
         type: string
     type: object
+  models.OrderCreateBody:
+    properties:
+      course_id:
+        type: string
+      tariff_id:
+        type: string
+    type: object
   models.RatingResponse:
     properties:
       items:
@@ -1011,6 +1018,48 @@ definitions:
       order_num:
         type: integer
     type: object
+  models.TariffCreateReq:
+    properties:
+      description:
+        type: string
+      duration:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.TariffList:
+    properties:
+      count:
+        type: integer
+      tariffs:
+        items:
+          $ref: '#/definitions/models.TariffRes'
+        type: array
+    type: object
+  models.TariffRes:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TariffUpdateBody:
+    properties:
+      description:
+        type: string
+      duration:
+        type: integer
+      name:
+        type: string
+    type: object
   models.TeacherCreateReq:
     properties:
       login:
@@ -1087,7 +1136,7 @@ definitions:
         type: string
       started_at:
         type: string
-      type:
+      tariff_id:
         type: string
       user_id:
         type: string
@@ -1122,18 +1171,24 @@ definitions:
         type: string
       created_at:
         type: string
+      duration:
+        type: integer
       ended_at:
         type: string
       id:
         type: string
       is_active:
         type: boolean
+      percentage:
+        type: number
       started_at:
+        type: string
+      tariff_id:
+        type: string
+      tariff_name:
         type: string
       total_lessons:
         type: integer
-      type:
-        type: string
       updated_at:
         type: string
       user_id:
@@ -1151,6 +1206,8 @@ definitions:
         type: object
       created_at:
         type: string
+      duration:
+        type: integer
       ended_at:
         type: string
       id:
@@ -1159,7 +1216,9 @@ definitions:
         type: boolean
       started_at:
         type: string
-      type:
+      tariff_id:
+        type: string
+      tariff_name:
         type: string
       updated_at:
         type: string
@@ -1176,7 +1235,7 @@ definitions:
         type: string
       started_at:
         type: string
-      type:
+      tariff_id:
         type: string
       user_id:
         type: string
@@ -1697,9 +1756,9 @@ paths:
       - application/json
       description: Get all user course with optional filtering
       parameters:
-      - description: Type
+      - description: Tariff ID
         in: query
-        name: type
+        name: tariff_id
         type: string
       - description: Is Active
         in: query
@@ -1965,6 +2024,38 @@ paths:
       summary: Get all notification
       tags:
       - notification
+  /mobile/order:
+    post:
+      consumes:
+      - application/json
+      description: Create a new order with the provided details
+      parameters:
+      - description: Order Details
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/models.OrderCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new order
+      tags:
+      - order
   /mobile/subject:
     get:
       consumes:
@@ -2035,6 +2126,66 @@ paths:
       summary: Get subject by ID
       tags:
       - subject
+  /mobile/tariff:
+    get:
+      consumes:
+      - application/json
+      description: Get all tariff with optional filtering
+      parameters:
+      - description: Duration
+        in: query
+        name: duration
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TariffList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all tariff
+      tags:
+      - tariff
+  /mobile/tariff/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a tariff by their ID
+      parameters:
+      - description: Tariff ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TariffRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get tariff by ID
+      tags:
+      - tariff
   /mobile/user/activity:
     get:
       consumes:
@@ -3250,13 +3401,13 @@ paths:
       - application/json
       description: Get all user course with optional filtering
       parameters:
-      - description: Type
-        in: query
-        name: type
-        type: string
       - description: Is Active
         in: query
         name: is_active
+        type: string
+      - description: Tariff ID
+        in: query
+        name: tariff_id
         type: string
       - description: User ID
         in: query
@@ -4473,6 +4624,164 @@ paths:
       summary: Update subject
       tags:
       - subject
+  /web/tariff:
+    get:
+      consumes:
+      - application/json
+      description: Get all tariff with optional filtering
+      parameters:
+      - description: Duration
+        in: query
+        name: duration
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TariffList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all tariff
+      tags:
+      - tariff
+    post:
+      consumes:
+      - application/json
+      description: Create a new tariff with the provided details
+      parameters:
+      - description: Tariff Details
+        in: body
+        name: tariff
+        required: true
+        schema:
+          $ref: '#/definitions/models.TariffCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new tariff
+      tags:
+      - tariff
+  /web/tariff/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a tariff by their ID
+      parameters:
+      - description: Tariff ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TariffRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get tariff by ID
+      tags:
+      - tariff
+  /web/tariff/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete tariff
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tariff deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete tariff
+      tags:
+      - tariff
+  /web/tariff/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update tariff
+      parameters:
+      - description: Tariff ID
+        in: path
+        name: id
+        type: string
+      - description: Tariff update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.TariffUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tariff updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update tariff
+      tags:
+      - tariff
   /web/teacher:
     get:
       consumes:

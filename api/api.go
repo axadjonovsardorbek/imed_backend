@@ -53,6 +53,8 @@ func NewApi(h *handler.Handler) *gin.Engine {
 	router.POST("/web/auth/admin/login", h.Login)
 	router.POST("/mobile/auth/user/check", h.CheckUser)
 	router.POST("/mobile/auth/user/login", h.LoginUser)
+	router.POST("/click/prepare", h.ClickPrepare)
+	router.POST("/click/complete", h.ClickComplete)
 
 	web := router.Group("/web")
 	{
@@ -129,6 +131,15 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			contact.GET("/:id", h.GetByIdContact)
 			contact.PUT("/:id/update", h.UpdateContact)
 			contact.DELETE("/:id/delete", h.DeleteContact)
+		}
+
+		tariff := web.Group("/tariff").Use(mid.NewAuth(enforcer))
+		{
+			tariff.POST("", h.CreateTariff)
+			tariff.GET("", h.GetAllTariffs)
+			tariff.GET("/:id", h.GetByIdTariff)
+			tariff.PUT("/:id/update", h.UpdateTariff)
+			tariff.DELETE("/:id/delete", h.DeleteTariff)
 		}
 
 		lesson := web.Group("/lesson").Use(mid.NewAuth(enforcer))
@@ -272,6 +283,17 @@ func NewApi(h *handler.Handler) *gin.Engine {
 		{
 			notification.PUT("/:id/read", h.ReadNotification)
 			notification.GET("/user", h.GetAllUserNotifications)
+		}
+
+		tariff := mobile.Group("/tariff").Use(mid.NewAuth(enforcer))
+		{
+			tariff.GET("", h.GetAllTariffs)
+			tariff.GET("/:id", h.GetByIdTariff)
+		}
+
+		order := mobile.Group("/order").Use(mid.NewAuth(enforcer))
+		{
+			order.POST("", h.CreateOrder)
 		}
 
 	}

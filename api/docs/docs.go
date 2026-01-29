@@ -680,8 +680,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Type",
-                        "name": "type",
+                        "description": "Tariff ID",
+                        "name": "tariff_id",
                         "in": "query"
                     },
                     {
@@ -1147,6 +1147,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/mobile/order": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new order with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "order"
+                ],
+                "summary": "Create a new order",
+                "parameters": [
+                    {
+                        "description": "Order Details",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.OrderCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/mobile/subject": {
             "get": {
                 "security": [
@@ -1240,6 +1291,102 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.SubjectMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/tariff": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all tariff with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tariff"
+                ],
+                "summary": "Get all tariff",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Duration",
+                        "name": "duration",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TariffList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/tariff/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a tariff by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tariff"
+                ],
+                "summary": "Get tariff by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tariff ID",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TariffRes"
                         }
                     },
                     "400": {
@@ -3032,14 +3179,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Type",
-                        "name": "type",
+                        "description": "Is Active",
+                        "name": "is_active",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Is Active",
-                        "name": "is_active",
+                        "description": "Tariff ID",
+                        "name": "tariff_id",
                         "in": "query"
                     },
                     {
@@ -5109,6 +5256,257 @@ const docTemplate = `{
                 }
             }
         },
+        "/web/tariff": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all tariff with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tariff"
+                ],
+                "summary": "Get all tariff",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Duration",
+                        "name": "duration",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TariffList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new tariff with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tariff"
+                ],
+                "summary": "Create a new tariff",
+                "parameters": [
+                    {
+                        "description": "Tariff Details",
+                        "name": "tariff",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TariffCreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/tariff/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a tariff by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tariff"
+                ],
+                "summary": "Get tariff by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tariff ID",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TariffRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/tariff/{id}/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete tariff",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tariff"
+                ],
+                "summary": "Delete tariff",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tariff deleted",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/tariff/{id}/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update tariff",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tariff"
+                ],
+                "summary": "Update tariff",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tariff ID",
+                        "name": "id",
+                        "in": "path"
+                    },
+                    {
+                        "description": "Tariff update credentials",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TariffUpdateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tariff updated",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/web/teacher": {
             "get": {
                 "security": [
@@ -6727,6 +7125,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.OrderCreateBody": {
+            "type": "object",
+            "properties": {
+                "course_id": {
+                    "type": "string"
+                },
+                "tariff_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.RatingResponse": {
             "type": "object",
             "properties": {
@@ -7088,6 +7497,71 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TariffCreateReq": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TariffList": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "tariffs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TariffRes"
+                    }
+                }
+            }
+        },
+        "models.TariffRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TariffUpdateBody": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.TeacherCreateReq": {
             "type": "object",
             "properties": {
@@ -7206,7 +7680,7 @@ const docTemplate = `{
                 "started_at": {
                     "type": "string"
                 },
-                "type": {
+                "tariff_id": {
                     "type": "string"
                 },
                 "user_id": {
@@ -7260,6 +7734,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "duration": {
+                    "type": "integer"
+                },
                 "ended_at": {
                     "type": "string"
                 },
@@ -7269,14 +7746,20 @@ const docTemplate = `{
                 "is_active": {
                     "type": "boolean"
                 },
+                "percentage": {
+                    "type": "number"
+                },
                 "started_at": {
+                    "type": "string"
+                },
+                "tariff_id": {
+                    "type": "string"
+                },
+                "tariff_name": {
                     "type": "string"
                 },
                 "total_lessons": {
                     "type": "integer"
-                },
-                "type": {
-                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -7304,6 +7787,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "duration": {
+                    "type": "integer"
+                },
                 "ended_at": {
                     "type": "string"
                 },
@@ -7316,7 +7802,10 @@ const docTemplate = `{
                 "started_at": {
                     "type": "string"
                 },
-                "type": {
+                "tariff_id": {
+                    "type": "string"
+                },
+                "tariff_name": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -7342,7 +7831,7 @@ const docTemplate = `{
                 "started_at": {
                     "type": "string"
                 },
-                "type": {
+                "tariff_id": {
                     "type": "string"
                 },
                 "user_id": {

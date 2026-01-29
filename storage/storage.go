@@ -147,3 +147,21 @@ type AppRouteI interface {
 	Update(req *m.AppRouteUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
 }
+
+type TariffI interface {
+	Create(req *m.TariffCreateReq) (*m.ById, error)
+	GetById(req *m.ById) (*m.TariffRes, error)
+	GetAll(req *m.TariffGetListReq) (*m.PaginationResponse, *m.TariffList, error)
+	Update(req *m.TariffUpdateReq) (*m.Void, error)
+	Delete(req *m.ById) (*m.Void, error)
+}
+
+type OrderI interface {
+	Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error)
+	GetById(req *m.ById) (*m.OrderRes, error)
+	GetPayURL(req *m.ById) (*m.PayURLRes, error)
+
+	// Click callbacks uchun
+	ApplyPrepare(req *m.ApplyPrepareParams) (*m.PrepareResult, error)
+	ApplyComplete(req *m.ApplyCompleteParams) (*m.CompleteResult, error)
+}

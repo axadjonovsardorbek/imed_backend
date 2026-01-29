@@ -93,7 +93,7 @@ type CourseUpdateReq struct {
 type UserCourseCreateReq struct {
 	UserId    string `json:"user_id"`
 	CourseId  string `json:"course_id"`
-	Type      string `json:"type"`
+	TariffId  string `json:"tariff_id"`
 	StartedAt string `json:"started_at"`
 	EndedAt   string `json:"ended_at"`
 }
@@ -105,7 +105,9 @@ type UserCourseRes struct {
 	CourseId   *string           `json:"course_id"`
 	CourseName map[string]string `json:"course_name"`
 	IsActive   *bool             `json:"is_active"`
-	Type       *string           `json:"type"`
+	Tariffid   *string           `json:"tariff_id"`
+	TariffName *string           `json:"tariff_name"`
+	Duration   *int              `json:"duration"`
 	StartedAt  *string           `json:"started_at"`
 	EndedAt    *string           `json:"ended_at"`
 	CreatedAt  *string           `json:"created_at"`
@@ -120,7 +122,7 @@ type UserCourseList struct {
 type UserCourseGetListReq struct {
 	UserId   string     `json:"user_id"`
 	CourseId string     `json:"course_id"`
-	Type     string     `json:"type"`
+	TariffId string     `json:"tariff_id"`
 	IsActive string     `json:"is_active"`
 	Filter   Pagination `json:"filter"`
 }
@@ -128,7 +130,7 @@ type UserCourseGetListReq struct {
 type UserCourseUpdateBody struct {
 	UserId    string `json:"user_id"`
 	CourseId  string `json:"course_id"`
-	Type      string `json:"type"`
+	TariffId  string `json:"tariff_id"`
 	StartedAt string `json:"started_at"`
 	EndedAt   string `json:"ended_at"`
 }
@@ -137,7 +139,7 @@ type UserCourseUpdateReq struct {
 	Id        string `json:"id"`
 	UserId    string `json:"user_id"`
 	CourseId  string `json:"course_id"`
-	Type      string `json:"type"`
+	TariffId  string `json:"tariff_id"`
 	StartedAt string `json:"started_at"`
 	EndedAt   string `json:"ended_at"`
 }
@@ -167,20 +169,23 @@ type CourseGetListMobileReq struct {
 }
 
 type UserCourseMobileRes struct {
-	Id               *string `json:"id"`
-	UserId           *string `json:"user_id"`
-	UserName         *string `json:"user_name"`
-	CourseId         *string `json:"course_id"`
-	CourseName       *string `json:"course_name"`
-	CourseImageUrl   *string `json:"course_image_url"`
-	IsActive         *bool   `json:"is_active"`
-	Type             *string `json:"type"`
-	StartedAt        *string `json:"started_at"`
-	EndedAt          *string `json:"ended_at"`
-	CreatedAt        *string `json:"created_at"`
-	UpdatedAt        *string `json:"updated_at"`
-	TotalLessons     *int    `json:"total_lessons"`
-	CompletedLessons *int    `json:"completed_lessons"`
+	Id               *string  `json:"id"`
+	UserId           *string  `json:"user_id"`
+	UserName         *string  `json:"user_name"`
+	CourseId         *string  `json:"course_id"`
+	CourseName       *string  `json:"course_name"`
+	CourseImageUrl   *string  `json:"course_image_url"`
+	IsActive         *bool    `json:"is_active"`
+	TariffId         *string  `json:"tariff_id"`
+	TariffName       *string  `json:"tariff_name"`
+	Duration         *int     `json:"duration"`
+	StartedAt        *string  `json:"started_at"`
+	EndedAt          *string  `json:"ended_at"`
+	CreatedAt        *string  `json:"created_at"`
+	UpdatedAt        *string  `json:"updated_at"`
+	TotalLessons     *int     `json:"total_lessons"`
+	CompletedLessons *int     `json:"completed_lessons"`
+	Percentage       *float64 `json:"percentage"`
 }
 
 type UserCourseMobileList struct {
@@ -190,7 +195,7 @@ type UserCourseMobileList struct {
 
 type UserCourseGetListMobileReq struct {
 	UserId   string `json:"user_id"`
-	Type     string `json:"type"`
+	TariffId string `json:"tariff_id"`
 	IsActive string `json:"is_active"`
 	Language string `json:"language"`
 }

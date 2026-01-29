@@ -332,8 +332,8 @@ func (h *Handler) UserCourse(c *gin.Context) {
 // @Tags course
 // @Accept  json
 // @Produce  json
-// @Param type query string false "Type"
 // @Param is_active query string false "Is Active"
+// @Param tariff_id query string false "Tariff ID"
 // @Param user_id query string false "User ID"
 // @Param course_id query string false "Course ID"
 // @Param limit query int false "Limit"
@@ -344,7 +344,7 @@ func (h *Handler) UserCourse(c *gin.Context) {
 // @Security BearerAuth
 // @Router /web/course/permission [get]
 func (h *Handler) UserCourses(c *gin.Context) {
-	c_type := c.Query("type")
+	tariff_id := c.Query("tariff_id")
 	user_id := c.Query("user_id")
 	course_id := c.Query("course_id")
 	is_active := c.Query("is_active")
@@ -354,7 +354,7 @@ func (h *Handler) UserCourses(c *gin.Context) {
 	pagination := m.ParsePagination(limit, page)
 
 	req := &m.UserCourseGetListReq{
-		Type:     c_type,
+		TariffId: tariff_id,
 		UserId:   user_id,
 		CourseId: course_id,
 		IsActive: is_active,
@@ -406,7 +406,7 @@ func (h *Handler) UpdateUserCourse(c *gin.Context) {
 	req.CourseId = body.CourseId
 	req.EndedAt = body.EndedAt
 	req.StartedAt = body.StartedAt
-	req.Type = body.Type
+	req.TariffId = body.TariffId
 	req.UserId = body.UserId
 
 	slog.Info("Update user course", req)
@@ -581,7 +581,7 @@ func (h *Handler) UserMobileCourse(c *gin.Context) {
 // @Tags course
 // @Accept  json
 // @Produce  json
-// @Param type query string false "Type"
+// @Param tariff_id query string false "Tariff ID"
 // @Param is_active query string false "Is Active"
 // @Param Accept-Language header string false "Language (uz|ru|en)" default(uz)
 // @Success 200 {object} models.UserCourseMobileList
@@ -590,7 +590,7 @@ func (h *Handler) UserMobileCourse(c *gin.Context) {
 // @Security BearerAuth
 // @Router /mobile/course/permission [get]
 func (h *Handler) UserMobileCourses(c *gin.Context) {
-	c_type := c.Query("type")
+	tariff_id := c.Query("tariff_id")
 	is_active := c.Query("is_active")
 
 	user_id := claimData(c, "user_id")
@@ -601,7 +601,7 @@ func (h *Handler) UserMobileCourses(c *gin.Context) {
 	lang := getLanguage(c)
 
 	req := &m.UserCourseGetListMobileReq{
-		Type:     c_type,
+		TariffId: tariff_id,
 		UserId:   user_id,
 		IsActive: is_active,
 		Language: lang,

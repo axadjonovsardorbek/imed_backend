@@ -119,11 +119,21 @@ CREATE TABLE IF NOT EXISTS users (
     UNIQUE (phone_number, deleted_at)
 );
 
+CREATE TABLE IF NOT EXISTS tariffs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(64) NOT NULL,
+    duration BIGINT NOT NULL,
+    description VARCHAR(128) DEFAULT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at BIGINT DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS user_courses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id),
     course_id UUID REFERENCES courses(id),
-    type VARCHAR(50) NOT NULL,
+    tariff_id UUID REFERENCES tariffs(id),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
