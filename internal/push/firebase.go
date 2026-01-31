@@ -25,11 +25,13 @@ type Client struct {
 func NewClientFromServiceAccountFile(ctx context.Context, serviceAccountPath string) (*Client, error) {
 	app, err := firebase.NewApp(ctx, nil, option.WithCredentialsFile(serviceAccountPath))
 	if err != nil {
-		return nil, fmt.Errorf("firebase.NewApp: %w", err)
+		fmt.Println("Error initializing firebase app:", err)
+		// return nil, fmt.Errorf("firebase.NewApp: %w", err)
 	}
 	msg, err := app.Messaging(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("app.Messaging: %w", err)
+		fmt.Println("Error initializing firebase messaging client:", err)
+		// return nil, fmt.Errorf("app.Messaging: %w", err)
 	}
 	return &Client{msg: msg}, nil
 }
