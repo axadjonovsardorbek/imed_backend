@@ -241,7 +241,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 
 		course := mobile.Group("/course").Use(mid.NewAuth(enforcer))
 		{
-			course.GET("", h.GetAllCourses)
+			course.GET("", h.GetAllMobileCourses)
 			course.GET("/:id", h.GetByIdMobileCourse)
 			course.POST("/permission", h.BuyCourse)
 			course.GET("/permission/:id", h.UserMobileCourse)

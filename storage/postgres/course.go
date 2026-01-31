@@ -912,6 +912,8 @@ func (r *CourseRepo) UserCoursesMobile(req *m.UserCourseGetListMobileReq) (*m.Pa
 	FROM user_courses c
 	LEFT JOIN users u
 	  ON c.user_id = u.id
+	LEFT JOIN tariffs t
+	  ON c.tariff_id = t.id
 	LEFT JOIN courses co
 	  ON c.course_id = co.id
 	LEFT JOIN user_course_progress ucp
