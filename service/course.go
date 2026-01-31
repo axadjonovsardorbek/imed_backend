@@ -2,20 +2,42 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"imed/internal/helper"
+	"imed/internal/push"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 )
 
 type CourseService struct {
 	storage st.Storage
+	push    *push.Client
 }
 
-func NewCourseService(storage *st.Storage) *CourseService {
-	return &CourseService{storage: *storage}
+func NewCourseService(storage *st.Storage, push *push.Client) *CourseService {
+	return &CourseService{storage: *storage, push: push}
 }
 
 func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.ById, error) {
-	return s.storage.CourseS.Create(req)
+	res, err := s.storage.CourseS.Create(req)
+	if err != nil {
+		return nil, err
+	}
+
+	tokens, err := s.storage.UserS.GetTokens()
+	if err != nil {
+		fmt.Println("Error getting tokens:", err)
+	} else {
+		fmt.Println("Tokens retrieved:", tokens)
+		_, err = s.push.SendToManyTokens(ctx, tokens, "Yangi kurs!", "Yangi kurs qo‘shildi 🔥", map[string]string{
+			"type": "new_course",
+		})
+		if err != nil {
+			fmt.Println("Error sending push to many tokens:", err)
+		}
+	}
+
+	return res, nil
 }
 
 func (s *CourseService) GetById(ctx context.Context, req *m.ById) (*m.CourseRes, error) {
@@ -35,7 +57,40 @@ func (s *CourseService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 }
 
 func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateReq) (*m.Void, error) {
-	return s.storage.CourseS.BuyCourse(req)
+
+	if req.StartedAt == "" || req.EndedAt == "" {
+		tariff, err := s.storage.TariffS.GetById(&m.ById{Id: req.TariffId})
+		if err != nil {
+			fmt.Println("Error getting tariff by ID:", err)
+			return nil, err
+		}
+		start, end := helper.GetStartEndDate(*tariff.Duration)
+		req.StartedAt = start
+		req.EndedAt = end
+	}
+
+	fmt.Println("Buying course with details:", req)
+	res, err := s.storage.CourseS.BuyCourse(req)
+	if err != nil {
+		fmt.Println("Error buying course:", err)
+		return nil, err
+	}
+
+	token, err := s.storage.UserS.GetToken(req.UserId)
+	if err != nil {
+		fmt.Println("Error getting token:", err)
+	} else {
+		fmt.Println("Token retrieved:", token)
+		err = s.push.SendToToken(ctx, *token, "Kurs sotib olindi", "Kursingiz aktivlashtirildi ✅", map[string]string{
+			"type": "course_purchased",
+		})
+
+		if err != nil {
+			fmt.Println("Error sending push to token:", err)
+		}
+	}
+
+	return res, nil
 }
 func (s *CourseService) UserCourse(ctx context.Context, req *m.ById) (*m.UserCourseRes, error) {
 	return s.storage.CourseS.UserCourse(req)

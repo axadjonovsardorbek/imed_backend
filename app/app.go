@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"log/slog"
@@ -8,6 +9,7 @@ import (
 	"imed/api"
 	"imed/api/handler"
 	"imed/internal/config"
+	"imed/internal/push"
 	"imed/pkg/clients"
 	"imed/pkg/minio"
 	"imed/storage/postgres"
@@ -15,10 +17,10 @@ import (
 	"github.com/go-redis/redis"
 )
 
-func Run(cfg *config.Config) {
-	cf := config.Load()
+func Run(cf *config.Config) {
+	ctx := context.Background()
 
-	conn, err := postgres.NewPostgresStorage(cf)
+	conn, err := postgres.NewPostgresStorage(*cf)
 
 	if err != nil {
 		slog.Error("Failed to connect postgres:", "err", err)
@@ -39,20 +41,28 @@ func Run(cfg *config.Config) {
 	}
 	slog.Info("Redis connected successfully")
 
+	pushClient, err := push.NewClientFromServiceAccountFile(
+		ctx,
+		cf.FIREBASE_CREDENTIALS,
+	)
+	if err != nil {
+		log.Fatal("firebase init failed:", err)
+	}
+
 	//MinIO
-	minioClient, err := minio.MinIOConnect(cfg)
+	minioClient, err := minio.MinIOConnect(cf)
 	if err != nil {
 		slog.Error("Failed to connect to MinIO", "err", err)
 		return
 	}
 
 	// services
-	services, err := clients.NewClients(cfg, conn, rdb)
+	services, err := clients.NewClients(cf, conn, rdb, pushClient)
 	if err != nil {
 		log.Fatalf("error while connecting clients. err: %s", err.Error())
 	}
 
-	handlers := handler.NewHandler(*services, minioClient, cfg)
+	handlers := handler.NewHandler(*services, minioClient, cf)
 
 	router := api.NewApi(handlers)
 	log.Println("Server is running on port ", cf)

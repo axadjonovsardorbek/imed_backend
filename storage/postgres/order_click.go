@@ -137,7 +137,6 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		FOR UPDATE
 	`, p.OrderId).Scan(&status, &prepare, &paidAt)
 
-
 	fmt.Println("----------------------------------")
 	fmt.Println("CLICK COMPLETE PARAMS:", p)
 	fmt.Println("----------------------------------")
@@ -203,6 +202,38 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 	if err != nil {
 		fmt.Println("Check complete 6")
 		return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
+	}
+
+	_, err = tx.ExecContext(ctx, `
+  		INSERT INTO user_courses (
+  		  user_id, course_id, tariff_id,
+  		  started_at, ended_at,
+  		  created_at, updated_at, deleted_at
+  		)
+  		SELECT
+  		  o.user_id,
+  		  o.course_id,
+  		  o.tariff_id,
+  		  now(),
+  		  now() + (o.duration || ' months')::interval,
+  		  now(), now(), 0
+  		FROM orders o
+  		WHERE o.id = $1::uuid
+  		  AND o.status = 'PAID'
+  		  AND NOT EXISTS (
+  		    SELECT 1
+  		    FROM user_courses uc
+  		    WHERE uc.user_id = o.user_id
+  		      AND uc.course_id = o.course_id
+  		      AND uc.deleted_at = 0
+  		      AND (uc.ended_at IS NULL OR uc.ended_at > now())
+  		  )
+  		ON CONFLICT (user_id, course_id)
+  		WHERE deleted_at = 0
+  		DO NOTHING
+	`, p.OrderId)
+	if err != nil {
+		return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to create user course"}, nil
 	}
 
 	if err := tx.Commit(); err != nil {

@@ -19,7 +19,12 @@ func (s *OrderService) Create(ctx context.Context, req *m.OrderCreateReq) (*m.Or
 	return s.storage.OrderS.Create(req)
 }
 func (s *OrderService) GetById(ctx context.Context, req *m.ById) (*m.OrderRes, error) {
-	return s.storage.OrderS.GetById(req)
+	order, err := s.storage.OrderS.GetById(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return order, err
 }
 func (s *OrderService) GetPayURL(ctx context.Context, req *m.ById) (*m.PayURLRes, error) {
 	return s.storage.OrderS.GetPayURL(req)

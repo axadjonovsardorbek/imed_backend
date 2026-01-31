@@ -24,14 +24,15 @@ type Config struct {
 	GROUP_ID          string
 	GROUP_FOR_INFO_ID string
 
-	BASE_URL          string
-	CLICK_MERCHANT_ID int
-	CLICK_SERVICE_ID  int
-	CLICK_SECRET_KEY  string
-
+	BASE_URL               string
+	CLICK_MERCHANT_ID      int
+	CLICK_SERVICE_ID       int
+	CLICK_SECRET_KEY       string
 	PAYMENT_PROVIDER_TOKEN string
 	PAYMENT_CURRENCY       string
 	PAYMENT_BOT_TOKEN      string
+
+	FIREBASE_CREDENTIALS string
 }
 
 func Load() Config {
@@ -64,6 +65,8 @@ func Load() Config {
 	config.PAYMENT_PROVIDER_TOKEN = cast.ToString(coalesce("PAYMENT_PROVIDER_TOKEN", "TEST:631330408:TEST:631330408"))
 	config.PAYMENT_CURRENCY = cast.ToString(coalesce("PAYMENT_CURRENCY", "UZS"))
 	config.PAYMENT_BOT_TOKEN = cast.ToString(coalesce("PAYMENT_BOT_TOKEN", "8468636479:AAGEqQi-hQSWs7dQSiH-YX9e-ORqyNIw1sc"))
+
+	config.FIREBASE_CREDENTIALS = cast.ToString(coalesce("FIREBASE_CREDENTIALS", "firebase"))
 
 	return config
 }

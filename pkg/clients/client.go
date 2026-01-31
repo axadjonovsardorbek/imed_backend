@@ -2,6 +2,7 @@ package clients
 
 import (
 	"imed/internal/config"
+	"imed/internal/push"
 	"imed/service"
 	"imed/storage/postgres"
 
@@ -27,13 +28,13 @@ type Clients struct {
 	User         *service.UserService
 }
 
-func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client) (*Clients, error) {
+func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, push *push.Client) (*Clients, error) {
 	return &Clients{
 		Admin:        service.NewAdminService(conn),
 		About:        service.NewAboutService(conn),
 		Banner:       service.NewBannerService(conn),
 		Contact:      service.NewContactService(conn),
-		Course:       service.NewCourseService(conn),
+		Course:       service.NewCourseService(conn, push),
 		Faq:          service.NewFaqService(conn),
 		Lesson:       service.NewLessonService(conn),
 		Module:       service.NewModuleService(conn),

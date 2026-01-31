@@ -27,6 +27,52 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 	}
 }
 
+func (r *UserRepo) GetTokens() ([]string, error) {
+	query := `
+	SELECT fcm_token
+	FROM users
+	WHERE deleted_at = 0
+	AND fcm_token IS NOT NULL
+	AND fcm_token <> ''
+	`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting fcm tokens: %w", err)
+	}
+	defer rows.Close()
+
+	var tokens []string
+
+	for rows.Next() {
+		var token string
+		if err := rows.Scan(&token); err != nil {
+			return nil, fmt.Errorf("error while scanning fcm token: %w", err)
+		}
+		tokens = append(tokens, token)
+	}
+
+	return tokens, nil
+}
+
+func (r *UserRepo) GetToken(user_id string) (*string, error) {
+	query := `
+	SELECT fcm_token
+	FROM users
+	WHERE deleted_at = 0
+	AND id = $1
+	AND fcm_token IS NOT NULL
+	AND fcm_token <> ''
+	`
+
+	var token *string
+	err := r.db.QueryRow(query, user_id).Scan(&token)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting fcm token: %w", err)
+	}
+
+	return token, nil
+}
 func (r *UserRepo) CreateUser(req *m.UserLoginReq) (*m.ById, error) {
 	if req.Password == "" {
 		password := req.PhoneNumber

@@ -94,6 +94,8 @@ type SourceI interface {
 }
 
 type UserI interface {
+	GetToken(user_id string) (*string, error)
+	GetTokens() ([]string, error)
 	CreateUser(req *m.UserLoginReq) (*m.ById, error)
 	Check(req *m.UserCheckReq) (*m.UserCheckRes, error)
 	Login(req *m.UserLoginReq) (*m.TokenRes, error)
