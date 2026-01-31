@@ -102,8 +102,6 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 			course_id = $1
 		AND 
 			deleted_at = 0
-		AND
-			is_active = true
 		`
 		row, err = tz.Query(user_query, req.CourseId)
 		if err != nil {
