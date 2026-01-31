@@ -53,7 +53,7 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 		query += fmt.Sprintf(`
 		,
 		course_id
-		) VALUES ($1, $2, $3, $4, %s)
+		) VALUES ($1, $2, $3, $4, '%s')
 	`, req.CourseId)
 	} else {
 		query += `
