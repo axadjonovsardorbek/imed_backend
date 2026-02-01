@@ -122,6 +122,8 @@ definitions:
     type: object
   models.AppRouteCreateReq:
     properties:
+      app_links:
+        type: object
       app_version:
         type: object
       call_center:
@@ -129,6 +131,7 @@ definitions:
       support_url:
         type: string
     required:
+    - app_links
     - app_version
     - call_center
     - support_url
@@ -144,6 +147,8 @@ definitions:
     type: object
   models.AppRouteRes:
     properties:
+      app_links:
+        type: object
       app_version:
         type: object
       call_center:
@@ -159,6 +164,8 @@ definitions:
     type: object
   models.AppRouteUpdateBody:
     properties:
+      app_links:
+        type: object
       app_version:
         type: object
       call_center:
@@ -166,6 +173,7 @@ definitions:
       support_url:
         type: string
     required:
+    - app_links
     - app_version
     - call_center
     - support_url

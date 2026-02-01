@@ -6114,11 +6114,15 @@
         "models.AppRouteCreateReq": {
             "type": "object",
             "required": [
+                "app_links",
                 "app_version",
                 "call_center",
                 "support_url"
             ],
             "properties": {
+                "app_links": {
+                    "type": "object"
+                },
                 "app_version": {
                     "type": "object"
                 },
@@ -6147,6 +6151,9 @@
         "models.AppRouteRes": {
             "type": "object",
             "properties": {
+                "app_links": {
+                    "type": "object"
+                },
                 "app_version": {
                     "type": "object"
                 },
@@ -6170,11 +6177,15 @@
         "models.AppRouteUpdateBody": {
             "type": "object",
             "required": [
+                "app_links",
                 "app_version",
                 "call_center",
                 "support_url"
             ],
             "properties": {
+                "app_links": {
+                    "type": "object"
+                },
                 "app_version": {
                     "type": "object"
                 },

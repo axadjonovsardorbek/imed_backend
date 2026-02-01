@@ -6121,11 +6121,15 @@ const docTemplate = `{
         "models.AppRouteCreateReq": {
             "type": "object",
             "required": [
+                "app_links",
                 "app_version",
                 "call_center",
                 "support_url"
             ],
             "properties": {
+                "app_links": {
+                    "type": "object"
+                },
                 "app_version": {
                     "type": "object"
                 },
@@ -6154,6 +6158,9 @@ const docTemplate = `{
         "models.AppRouteRes": {
             "type": "object",
             "properties": {
+                "app_links": {
+                    "type": "object"
+                },
                 "app_version": {
                     "type": "object"
                 },
@@ -6177,11 +6184,15 @@ const docTemplate = `{
         "models.AppRouteUpdateBody": {
             "type": "object",
             "required": [
+                "app_links",
                 "app_version",
                 "call_center",
                 "support_url"
             ],
             "properties": {
+                "app_links": {
+                    "type": "object"
+                },
                 "app_version": {
                     "type": "object"
                 },

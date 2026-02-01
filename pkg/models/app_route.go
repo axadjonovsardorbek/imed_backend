@@ -1,8 +1,18 @@
 package models
 
+import (
+	"database/sql/driver"
+	"fmt"
+)
+
 type AppVersionRes struct {
 	Android string `json:"android" db:"android"`
 	IOS     string `json:"ios" db:"ios"`
+}
+
+type AppLinksRes struct {
+	Google string `json:"google" db:"google"`
+	Apple  string `json:"apple" db:"apple"`
 }
 
 type AppRouteRes struct {
@@ -10,6 +20,7 @@ type AppRouteRes struct {
 	CallCenter string        `json:"call_center" db:"call_center"`
 	SupportUrl string        `json:"support_url" db:"support_url"`
 	AppVersion AppVersionRes `json:"app_version" db:"app_version" swaggertype:"object"`
+	AppLinks   AppLinksRes   `json:"app_links" db:"app_links" swaggertype:"object"`
 	CreatedAt  string        `json:"created_at" db:"created_at"`
 	UpdatedAt  string        `json:"updated_at" db:"updated_at"`
 }
@@ -18,6 +29,7 @@ type AppRouteCreateReq struct {
 	CallCenter string        `json:"call_center" binding:"required"`
 	SupportUrl string        `json:"support_url" binding:"required"`
 	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
+	AppLinks   AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
 }
 
 type AppRouteUpdateReq struct {
@@ -25,12 +37,14 @@ type AppRouteUpdateReq struct {
 	CallCenter string        `json:"call_center" binding:"required"`
 	SupportUrl string        `json:"support_url" binding:"required"`
 	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
+	AppLinks   AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
 }
 
 type AppRouteUpdateBody struct {
 	CallCenter string        `json:"call_center" binding:"required"`
 	SupportUrl string        `json:"support_url" binding:"required"`
 	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
+	AppLinks   AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
 }
 
 type AppRouteGetListReq struct {
@@ -53,4 +67,29 @@ func (j JSONRaw) MarshalJSON() ([]byte, error) {
 func (j *JSONRaw) UnmarshalJSON(b []byte) error {
 	*j = append((*j)[:0], b...)
 	return nil
+}
+
+// DB -> Go
+func (j *JSONRaw) Scan(src any) error {
+	switch v := src.(type) {
+	case nil:
+		*j = nil
+		return nil
+	case []byte:
+		*j = append((*j)[:0], v...)
+		return nil
+	case string:
+		*j = append((*j)[:0], v...)
+		return nil
+	default:
+		return fmt.Errorf("JSONRaw: cannot scan %T", src)
+	}
+}
+
+// Go -> DB
+func (j JSONRaw) Value() (driver.Value, error) {
+	if len(j) == 0 {
+		return []byte(`{}`), nil
+	}
+	return []byte(j), nil
 }

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	m "imed/pkg/models"
 	"strconv"
@@ -22,20 +23,32 @@ func NewAppRouteRepo(db *sql.DB) *AppRouteRepo {
 
 func (r *AppRouteRepo) Create(req *m.AppRouteCreateReq) (*m.ById, error) {
 	id := uuid.NewString()
+
+	appVersionBytes, err := json.Marshal(req.AppVersion)
+	if err != nil {
+		return nil, fmt.Errorf("marshal app_version: %w", err)
+	}
+
+	appLinksBytes, err := json.Marshal(req.AppLinks)
+	if err != nil {
+		return nil, fmt.Errorf("marshal app_links: %w", err)
+	}
 	query := `
 	INSERT INTO app_routes (
 		id,
 		call_center,
 		support_url,
 		app_version,
-	) VALUES ($1, $2, $3, $4)
+		app_links
+	) VALUES ($1, $2, $3, $4, $5)
 	`
 
-	_, err := r.db.Exec(query,
+	_, err = r.db.Exec(query,
 		id,
 		req.CallCenter,
 		req.SupportUrl,
-		req.AppVersion,
+		appVersionBytes,
+		appLinksBytes,
 	)
 
 	if err != nil {
@@ -51,6 +64,7 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		call_center,
 		support_url,
 		app_version,
+		app_links,
 		created_at,
 		updated_at
 	FROM
@@ -64,11 +78,16 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 	row := r.db.QueryRow(query, req.Id)
 
 	app_route := m.AppRouteRes{}
+
+	var rawAppVersion []byte
+	var rawAppLinks []byte
+
 	err := row.Scan(
 		&app_route.Id,
 		&app_route.CallCenter,
 		&app_route.SupportUrl,
-		&app_route.AppVersion,
+		&rawAppVersion,
+		&rawAppLinks,
 		&app_route.CreatedAt,
 		&app_route.UpdatedAt,
 	)
@@ -81,6 +100,14 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		return nil, fmt.Errorf("error while getting app route by id: %w", err)
 	}
 
+	if err := json.Unmarshal(rawAppVersion, &app_route.AppVersion); err != nil {
+		return nil, fmt.Errorf("unmarshal app_version: %w", err)
+	}
+
+	if err := json.Unmarshal(rawAppLinks, &app_route.AppLinks); err != nil {
+		return nil, fmt.Errorf("unmarshal app_links: %w", err)
+	}
+
 	return &app_route, nil
 }
 func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse, *m.AppRouteList, error) {
@@ -91,6 +118,7 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 		call_center,
 		support_url,
 		app_version,
+		app_links,
 		created_at,
 		updated_at
 	FROM
@@ -117,18 +145,30 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 
 		var totalCount int
 
+		var rawAppVersion []byte
+		var rawAppLinks []byte
+
 		err := rows.Scan(
 			&totalCount,
 			&app_route.Id,
 			&app_route.CallCenter,
 			&app_route.SupportUrl,
-			&app_route.AppVersion,
+			&rawAppVersion,
+			&rawAppLinks,
 			&app_route.CreatedAt,
 			&app_route.UpdatedAt,
 		)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning app route row: %w", err)
+		}
+
+		if err := json.Unmarshal(rawAppVersion, &app_route.AppVersion); err != nil {
+			return nil, nil, fmt.Errorf("unmarshal app_version: %w", err)
+		}
+
+		if err := json.Unmarshal(rawAppLinks, &app_route.AppLinks); err != nil {
+			return nil, nil, fmt.Errorf("unmarshal app_links: %w", err)
 		}
 
 		app_routes.AppRoutes = append(app_routes.AppRoutes, &app_route)
@@ -140,6 +180,15 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 	return &response, &app_routes, nil
 }
 func (r *AppRouteRepo) Update(req *m.AppRouteUpdateReq) (*m.Void, error) {
+	appVersionBytes, err := json.Marshal(req.AppVersion)
+	if err != nil {
+		return nil, fmt.Errorf("marshal app_version: %w", err)
+	}
+
+	appLinksBytes, err := json.Marshal(req.AppLinks)
+	if err != nil {
+		return nil, fmt.Errorf("marshal app_links: %w", err)
+	}
 	query := `
 	UPDATE app_routes
 	SET
@@ -155,7 +204,10 @@ func (r *AppRouteRepo) Update(req *m.AppRouteUpdateReq) (*m.Void, error) {
 	args = append(args, req.SupportUrl)
 
 	conditions = append(conditions, " app_version = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.AppVersion)
+	args = append(args, appVersionBytes)
+
+	conditions = append(conditions, " app_links = $"+strconv.Itoa(len(args)+1))
+	args = append(args, appLinksBytes)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")
