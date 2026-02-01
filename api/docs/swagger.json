@@ -3922,6 +3922,16 @@
                     },
                     {
                         "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "Is Public",
+                        "name": "is_public",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
                             "lesson",
                             "test"
                         ],
@@ -6759,6 +6769,9 @@
                 "duration": {
                     "type": "integer"
                 },
+                "is_public": {
+                    "type": "boolean"
+                },
                 "module_id": {
                     "type": "string"
                 },
@@ -6802,6 +6815,9 @@
                 "id": {
                     "type": "string"
                 },
+                "is_public": {
+                    "type": "boolean"
+                },
                 "module_id": {
                     "type": "string"
                 },
@@ -6833,6 +6849,9 @@
             "properties": {
                 "duration": {
                     "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
                 },
                 "module_id": {
                     "type": "string"
@@ -6933,6 +6952,9 @@
             "properties": {
                 "id": {
                     "type": "string"
+                },
+                "is_public": {
+                    "type": "boolean"
                 },
                 "module_id": {
                     "type": "string"

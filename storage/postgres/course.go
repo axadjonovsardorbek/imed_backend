@@ -651,12 +651,17 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 			  'id',        l.id::text,
 			  'name',      (l.name->>$1),
 			  'module_id', l.module_id::text,
-			  'order_num', l.order_num
+			  'order_num', l.order_num,
+			  'is_public', CASE
+							 WHEN cb.has_access THEN true
+							 ELSE COALESCE(l.is_public, false)
+						   END
 			)
 			ORDER BY l.order_num
 		  ) AS lessons
 		FROM lessons l
 		JOIN modules m ON m.id = l.module_id
+		CROSS JOIN course_base cb
 		WHERE m.course_id = $3
 		  AND m.deleted_at = 0
 		  AND l.deleted_at = 0

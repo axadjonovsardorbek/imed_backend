@@ -5,6 +5,7 @@ type LessonCreateReq struct {
 	Name     string `json:"name"`
 	Type     string `json:"type"`
 	Duration int    `json:"duration"`
+	IsPublic bool   `json:"is_public"`
 	OrderNum int    `json:"order_num"`
 }
 
@@ -13,6 +14,7 @@ type LessonCreateBody struct {
 	Name     map[string]string `json:"name"`
 	Type     string            `json:"type"`
 	Duration int               `json:"duration"`
+	IsPublic bool              `json:"is_public"`
 	OrderNum int               `json:"order_num"`
 }
 
@@ -23,6 +25,7 @@ type LessonRes struct {
 	ModuleName map[string]string `json:"module_name"`
 	Type       *string           `json:"type"`
 	Duration   *int              `json:"duration"`
+	IsPublic   bool              `json:"is_public"`
 	OrderNum   *int              `json:"order_num"`
 	CreatedAt  *string           `json:"created_at"`
 	UpdatedAt  *string           `json:"updated_at"`
@@ -37,6 +40,7 @@ type LessonGetListReq struct {
 	ModuleId string     `json:"module_id"`
 	Name     string     `json:"name"`
 	Type     string     `json:"type"`
+	IsPublic string     `json:"is_public"`
 	Filter   Pagination `json:"filter"`
 }
 
@@ -45,6 +49,7 @@ type LessonUpdateBody struct {
 	ModuleId string            `json:"module_id"`
 	Type     string            `json:"type"`
 	Duration int               `json:"duration"`
+	IsPublic bool              `json:"is_public"`
 	OrderNum int               `json:"order_num"`
 }
 
@@ -54,6 +59,7 @@ type LessonUpdateReq struct {
 	ModuleId string `json:"module_id"`
 	Type     string `json:"type"`
 	Duration int    `json:"duration"`
+	IsPublic bool   `json:"is_public"`
 	OrderNum int    `json:"order_num"`
 }
 

@@ -30,8 +30,9 @@ func (r *LessonRepo) Create(req *m.LessonCreateReq) (*m.ById, error) {
 		module_id,
 		type,
 		duration,
-		order_num
-	) VALUES ($1, $2, $3, $4, $5, $6)
+		order_num,
+		is_public
+	) VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 
 	_, err := r.db.Exec(query,
@@ -41,6 +42,7 @@ func (r *LessonRepo) Create(req *m.LessonCreateReq) (*m.ById, error) {
 		req.Type,
 		req.Duration,
 		req.OrderNum,
+		req.IsPublic,
 	)
 
 	if err != nil {
@@ -62,6 +64,7 @@ func (r *LessonRepo) GetById(req *m.ById) (*m.LessonRes, error) {
 			l.order_num,
 			l.module_id,
 			m.name,
+			l.is_public,
 			l.created_at,
 			l.updated_at
 		FROM
@@ -89,6 +92,7 @@ func (r *LessonRepo) GetById(req *m.ById) (*m.LessonRes, error) {
 		&lesson.OrderNum,
 		&lesson.ModuleId,
 		&moduleNameJSON,
+		&lesson.IsPublic,
 		&lesson.CreatedAt,
 		&lesson.UpdatedAt,
 	)
@@ -118,6 +122,7 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 			l.order_num,
 			l.module_id,
 			m.name,
+			l.is_public,
 			l.created_at,
 			l.updated_at
 		FROM
@@ -139,6 +144,13 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 	if req.Type != "" && req.Type != "string" {
 		query += fmt.Sprintf(" AND l.type = $%d", len(args)+1)
 		args = append(args, req.Type)
+	}
+	if req.IsPublic != "" && req.IsPublic != "string" {
+		if req.IsPublic == "true" {
+			query += fmt.Sprintf(" AND l.is_public = TRUE")
+		} else if req.IsPublic == "false" {
+			query += fmt.Sprintf(" AND l.is_public = FALSE")
+		}
 	}
 
 	query += " ORDER BY l.order_num ASC"
@@ -166,6 +178,7 @@ func (r *LessonRepo) GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.
 			&lesson.OrderNum,
 			&lesson.ModuleId,
 			&moduleNameJSON,
+			&lesson.IsPublic,
 			&lesson.CreatedAt,
 			&lesson.UpdatedAt,
 		)
@@ -208,6 +221,9 @@ func (r *LessonRepo) Update(req *m.LessonUpdateReq) (*m.Void, error) {
 
 	conditions = append(conditions, " order_num = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.OrderNum)
+
+	conditions = append(conditions, " is_public = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.IsPublic)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")

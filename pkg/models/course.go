@@ -229,6 +229,7 @@ type MobileCourseLessonRes struct {
 	Id       string  `json:"id"`
 	Name     *string `json:"name"`
 	ModuleId *string `json:"module_id"`
+	IsPublic *bool   `json:"is_public"`
 	OrderNum *int    `json:"order_num"`
 }
 

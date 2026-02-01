@@ -3929,6 +3929,16 @@ const docTemplate = `{
                     },
                     {
                         "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "Is Public",
+                        "name": "is_public",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
                             "lesson",
                             "test"
                         ],
@@ -6766,6 +6776,9 @@ const docTemplate = `{
                 "duration": {
                     "type": "integer"
                 },
+                "is_public": {
+                    "type": "boolean"
+                },
                 "module_id": {
                     "type": "string"
                 },
@@ -6809,6 +6822,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_public": {
+                    "type": "boolean"
+                },
                 "module_id": {
                     "type": "string"
                 },
@@ -6840,6 +6856,9 @@ const docTemplate = `{
             "properties": {
                 "duration": {
                     "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
                 },
                 "module_id": {
                     "type": "string"
@@ -6940,6 +6959,9 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "string"
+                },
+                "is_public": {
+                    "type": "boolean"
                 },
                 "module_id": {
                     "type": "string"

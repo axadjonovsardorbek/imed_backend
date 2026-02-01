@@ -539,6 +539,8 @@ definitions:
     properties:
       duration:
         type: integer
+      is_public:
+        type: boolean
       module_id:
         type: string
       name:
@@ -567,6 +569,8 @@ definitions:
         type: integer
       id:
         type: string
+      is_public:
+        type: boolean
       module_id:
         type: string
       module_name:
@@ -588,6 +592,8 @@ definitions:
     properties:
       duration:
         type: integer
+      is_public:
+        type: boolean
       module_id:
         type: string
       name:
@@ -653,6 +659,8 @@ definitions:
     properties:
       id:
         type: string
+      is_public:
+        type: boolean
       module_id:
         type: string
       name:
@@ -3778,6 +3786,13 @@ paths:
       - description: Module ID
         in: query
         name: module_id
+        type: string
+      - description: Is Public
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: is_public
         type: string
       - description: Type
         enum:

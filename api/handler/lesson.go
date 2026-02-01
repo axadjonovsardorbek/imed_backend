@@ -47,6 +47,7 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 	req.Type = body.Type
 	req.OrderNum = body.OrderNum
 	req.Duration = body.Duration
+	req.IsPublic = body.IsPublic
 
 	slog.Info("Create lesson", "Lesson", req)
 	res, err := h.Clients.Lesson.Create(context.Background(), &req)
@@ -103,6 +104,7 @@ func (h *Handler) GetByIdLesson(c *gin.Context) {
 // @Produce  json
 // @Param name query string false "Name"
 // @Param module_id query string false "Module ID"
+// @Param is_public query string false "Is Public" Enums(true, false)
 // @Param type query string false "Type" Enums(lesson, test)
 // @Param limit query int false "Limit"
 // @Param page query int false "Page"
@@ -115,6 +117,7 @@ func (h *Handler) GetAllLessons(c *gin.Context) {
 	name := c.Query("name")
 	module_id := c.Query("module_id")
 	l_type := c.Query("type")
+	is_public := c.Query("is_public")
 	limit := c.Query("limit")
 	page := c.Query("page")
 
@@ -124,6 +127,7 @@ func (h *Handler) GetAllLessons(c *gin.Context) {
 		Name:     name,
 		ModuleId: module_id,
 		Type:     l_type,
+		IsPublic: is_public,
 		Filter:   pagination,
 	}
 
@@ -181,6 +185,7 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 	req.ModuleId = body.ModuleId
 	req.Type = body.Type
 	req.OrderNum = body.OrderNum
+	req.IsPublic = body.IsPublic
 	req.Duration = body.Duration
 
 	slog.Info("Update Lesson", req)

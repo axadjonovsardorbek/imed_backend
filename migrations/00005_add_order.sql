@@ -69,7 +69,6 @@ RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- active deb: ended_at IS NULL yoki ended_at > NOW()
   IF EXISTS (
     SELECT 1
     FROM user_courses uc
