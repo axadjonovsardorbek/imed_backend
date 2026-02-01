@@ -1,39 +1,39 @@
 package models
 
+type AppVersionRes struct {
+	Android string `json:"android" db:"android"`
+	IOS     string `json:"ios" db:"ios"`
+}
+
 type AppRouteRes struct {
-	Id          string  `json:"id" db:"id"`
-	Key         string  `json:"key" db:"key"`
-	Value       JSONRaw `json:"value" db:"value" swaggertype:"object"`
-	Description string  `json:"description,omitempty" db:"description"`
-	OrderNum    int     `json:"order_num" db:"order_num"`
-	CreatedAt   string  `json:"created_at" db:"created_at"`
-	UpdatedAt   string  `json:"updated_at" db:"updated_at"`
+	Id         string        `json:"id" db:"id"`
+	CallCenter string        `json:"call_center" db:"call_center"`
+	SupportUrl string        `json:"support_url" db:"support_url"`
+	AppVersion AppVersionRes `json:"app_version" db:"app_version" swaggertype:"object"`
+	CreatedAt  string        `json:"created_at" db:"created_at"`
+	UpdatedAt  string        `json:"updated_at" db:"updated_at"`
 }
 
 type AppRouteCreateReq struct {
-	Key         string  `json:"key" binding:"required"`
-	Value       JSONRaw `json:"value" binding:"required" swaggertype:"object"`
-	Description string  `json:"description" binding:"omitempty"`
-	OrderNum    int     `json:"order_num" binding:"omitempty"`
+	CallCenter string        `json:"call_center" binding:"required"`
+	SupportUrl string        `json:"support_url" binding:"required"`
+	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
 }
 
 type AppRouteUpdateReq struct {
-	Id          string  `json:"id" binding:"required"`
-	Key         string  `json:"key" binding:"required"`
-	Value       JSONRaw `json:"value" binding:"required" swaggertype:"object"`
-	Description string  `json:"description" binding:"omitempty"`
-	OrderNum    int     `json:"order_num" binding:"omitempty"`
+	Id         string        `json:"id" binding:"required"`
+	CallCenter string        `json:"call_center" binding:"required"`
+	SupportUrl string        `json:"support_url" binding:"required"`
+	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
 }
 
 type AppRouteUpdateBody struct {
-	Key         string  `json:"key"`
-	Value       JSONRaw `json:"value" swaggertype:"object"`
-	Description string  `json:"description"`
-	OrderNum    int     `json:"order_num"`
+	CallCenter string        `json:"call_center" binding:"required"`
+	SupportUrl string        `json:"support_url" binding:"required"`
+	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
 }
 
 type AppRouteGetListReq struct {
-	Key string `json:"key"`
 }
 
 type AppRouteList struct {

@@ -122,17 +122,16 @@ definitions:
     type: object
   models.AppRouteCreateReq:
     properties:
-      description:
-        type: string
-      key:
-        type: string
-      order_num:
-        type: integer
-      value:
+      app_version:
         type: object
+      call_center:
+        type: string
+      support_url:
+        type: string
     required:
-    - key
-    - value
+    - app_version
+    - call_center
+    - support_url
     type: object
   models.AppRouteList:
     properties:
@@ -145,31 +144,31 @@ definitions:
     type: object
   models.AppRouteRes:
     properties:
-      created_at:
+      app_version:
+        type: object
+      call_center:
         type: string
-      description:
+      created_at:
         type: string
       id:
         type: string
-      key:
+      support_url:
         type: string
-      order_num:
-        type: integer
       updated_at:
         type: string
-      value:
-        type: object
     type: object
   models.AppRouteUpdateBody:
     properties:
-      description:
-        type: string
-      key:
-        type: string
-      order_num:
-        type: integer
-      value:
+      app_version:
         type: object
+      call_center:
+        type: string
+      support_url:
+        type: string
+    required:
+    - app_version
+    - call_center
+    - support_url
     type: object
   models.BannerCreateBody:
     properties:
@@ -1392,11 +1391,6 @@ paths:
       consumes:
       - application/json
       description: Get all appRoute with optional filtering
-      parameters:
-      - description: Key
-        in: query
-        name: key
-        type: string
       produces:
       - application/json
       responses:
@@ -2610,11 +2604,6 @@ paths:
       consumes:
       - application/json
       description: Get all appRoute with optional filtering
-      parameters:
-      - description: Key
-        in: query
-        name: key
-        type: string
       produces:
       - application/json
       responses:

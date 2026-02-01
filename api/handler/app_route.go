@@ -86,7 +86,6 @@ func (h *Handler) GetByIdAppRoute(c *gin.Context) {
 // @Tags appRoute
 // @Accept  json
 // @Produce  json
-// @Param key query string false "Key"
 // @Success 200 {object} models.AppRouteList
 // @Failure 400 {object} string
 // @Failure 500 {object} string
@@ -94,10 +93,8 @@ func (h *Handler) GetByIdAppRoute(c *gin.Context) {
 // @Router /web/app-route [get]
 // @Router /mobile/app-route [get]
 func (h *Handler) GetAllAppRoutes(c *gin.Context) {
-	key := c.Query("key")
 
 	var req m.AppRouteGetListReq
-	req.Key = key
 
 	slog.Info("Get all appRoute with filtes", req)
 	data, _, err := h.Clients.AppRoute.GetAll(context.Background(), &req)
@@ -141,10 +138,9 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 	}
 
 	req.Id = id
-	req.Key = body.Key
-	req.Description = body.Description
-	req.Value = body.Value
-	req.OrderNum = body.OrderNum
+	req.CallCenter = body.CallCenter
+	req.AppVersion = body.AppVersion
+	req.SupportUrl = body.SupportUrl
 
 	slog.Info("Update AppRoute", req)
 	_, err := h.Clients.AppRoute.Update(context.Background(), &req)

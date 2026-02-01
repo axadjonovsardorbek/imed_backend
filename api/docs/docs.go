@@ -143,14 +143,6 @@ const docTemplate = `{
                     "appRoute"
                 ],
                 "summary": "Get all appRoute",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Key",
-                        "name": "key",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2062,14 +2054,6 @@ const docTemplate = `{
                     "appRoute"
                 ],
                 "summary": "Get all appRoute",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Key",
-                        "name": "key",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -6137,21 +6121,19 @@ const docTemplate = `{
         "models.AppRouteCreateReq": {
             "type": "object",
             "required": [
-                "key",
-                "value"
+                "app_version",
+                "call_center",
+                "support_url"
             ],
             "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "order_num": {
-                    "type": "integer"
-                },
-                "value": {
+                "app_version": {
                     "type": "object"
+                },
+                "call_center": {
+                    "type": "string"
+                },
+                "support_url": {
+                    "type": "string"
                 }
             }
         },
@@ -6172,43 +6154,42 @@ const docTemplate = `{
         "models.AppRouteRes": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "app_version": {
+                    "type": "object"
+                },
+                "call_center": {
                     "type": "string"
                 },
-                "description": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "key": {
+                "support_url": {
                     "type": "string"
-                },
-                "order_num": {
-                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"
-                },
-                "value": {
-                    "type": "object"
                 }
             }
         },
         "models.AppRouteUpdateBody": {
             "type": "object",
+            "required": [
+                "app_version",
+                "call_center",
+                "support_url"
+            ],
             "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "order_num": {
-                    "type": "integer"
-                },
-                "value": {
+                "app_version": {
                     "type": "object"
+                },
+                "call_center": {
+                    "type": "string"
+                },
+                "support_url": {
+                    "type": "string"
                 }
             }
         },

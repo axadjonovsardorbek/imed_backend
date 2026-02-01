@@ -25,19 +25,17 @@ func (r *AppRouteRepo) Create(req *m.AppRouteCreateReq) (*m.ById, error) {
 	query := `
 	INSERT INTO app_routes (
 		id,
-		key,
-		value,
-		description,
-		order_num
-	) VALUES ($1, $2, $3::jsonb, $4, $5)
+		call_center,
+		support_url,
+		app_version,
+	) VALUES ($1, $2, $3, $4)
 	`
 
 	_, err := r.db.Exec(query,
 		id,
-		req.Key,
-		[]byte(req.Value),
-		req.Description,
-		req.OrderNum,
+		req.CallCenter,
+		req.SupportUrl,
+		req.AppVersion,
 	)
 
 	if err != nil {
@@ -50,10 +48,9 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 	query := `
 	SELECT 
 		id,
-		key,
-		value,
-		description,
-		order_num,
+		call_center,
+		support_url,
+		app_version,
 		created_at,
 		updated_at
 	FROM
@@ -69,10 +66,9 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 	app_route := m.AppRouteRes{}
 	err := row.Scan(
 		&app_route.Id,
-		&app_route.Key,
-		&app_route.Value,
-		&app_route.Description,
-		&app_route.OrderNum,
+		&app_route.CallCenter,
+		&app_route.SupportUrl,
+		&app_route.AppVersion,
 		&app_route.CreatedAt,
 		&app_route.UpdatedAt,
 	)
@@ -92,10 +88,9 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 	SELECT 
 		COUNT(id) OVER() AS total_count,
 		id,
-		key,
-		value,
-		description,
-		order_num,
+		call_center,
+		support_url,
+		app_version,
 		created_at,
 		updated_at
 	FROM
@@ -105,12 +100,8 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 	`
 
 	var args []interface{}
-	if req.Key != "" && req.Key != "string" {
-		query += fmt.Sprintf(" AND key ILIKE $%d", len(args)+1)
-		args = append(args, "%"+req.Key+"%")
-	}
 
-	query += " ORDER BY order_num ASC"
+	query += " ORDER BY created_at DESC"
 
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
@@ -129,10 +120,9 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 		err := rows.Scan(
 			&totalCount,
 			&app_route.Id,
-			&app_route.Key,
-			&app_route.Value,
-			&app_route.Description,
-			&app_route.OrderNum,
+			&app_route.CallCenter,
+			&app_route.SupportUrl,
+			&app_route.AppVersion,
 			&app_route.CreatedAt,
 			&app_route.UpdatedAt,
 		)
@@ -158,21 +148,14 @@ func (r *AppRouteRepo) Update(req *m.AppRouteUpdateReq) (*m.Void, error) {
 	var conditions []string
 	var args []interface{}
 
-	if req.Key != "" && req.Key != "string" {
-		conditions = append(conditions, " key = $"+strconv.Itoa(len(args)+1))
-		args = append(args, req.Key)
-	}
+	conditions = append(conditions, " call_center = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.CallCenter)
 
-	conditions = append(conditions, " description = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.Description)
+	conditions = append(conditions, " support_url = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.SupportUrl)
 
-	if req.Value != nil && len(req.Value) > 0 {
-		args = append(args, []byte(req.Value))
-		conditions = append(conditions, "value = $"+strconv.Itoa(len(args))+"::jsonb")
-	}
-
-	conditions = append(conditions, " order_num = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.OrderNum)
+	conditions = append(conditions, " app_version = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.AppVersion)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")
