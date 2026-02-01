@@ -6124,6 +6124,7 @@ const docTemplate = `{
                 "app_links",
                 "app_version",
                 "call_center",
+                "payment_min_version",
                 "support_url"
             ],
             "properties": {
@@ -6134,6 +6135,9 @@ const docTemplate = `{
                     "type": "object"
                 },
                 "call_center": {
+                    "type": "string"
+                },
+                "payment_min_version": {
                     "type": "string"
                 },
                 "support_url": {
@@ -6173,6 +6177,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "payment_min_version": {
+                    "type": "string"
+                },
                 "support_url": {
                     "type": "string"
                 },
@@ -6187,6 +6194,7 @@ const docTemplate = `{
                 "app_links",
                 "app_version",
                 "call_center",
+                "payment_min_version",
                 "support_url"
             ],
             "properties": {
@@ -6197,6 +6205,9 @@ const docTemplate = `{
                     "type": "object"
                 },
                 "call_center": {
+                    "type": "string"
+                },
+                "payment_min_version": {
                     "type": "string"
                 },
                 "support_url": {
@@ -6951,6 +6962,9 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "string"
+                },
+                "is_completed": {
+                    "type": "boolean"
                 },
                 "is_public": {
                     "type": "boolean"

@@ -39,8 +39,9 @@ func (r *AppRouteRepo) Create(req *m.AppRouteCreateReq) (*m.ById, error) {
 		call_center,
 		support_url,
 		app_version,
-		app_links
-	) VALUES ($1, $2, $3, $4, $5)
+		app_links,
+		payment_min_version
+	) VALUES ($1, $2, $3, $4, $5, $6)
 	`
 
 	_, err = r.db.Exec(query,
@@ -49,6 +50,7 @@ func (r *AppRouteRepo) Create(req *m.AppRouteCreateReq) (*m.ById, error) {
 		req.SupportUrl,
 		appVersionBytes,
 		appLinksBytes,
+		req.PaymentMinVersion,
 	)
 
 	if err != nil {
@@ -65,6 +67,7 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		support_url,
 		app_version,
 		app_links,
+		payment_min_version,
 		created_at,
 		updated_at
 	FROM
@@ -88,6 +91,7 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		&app_route.SupportUrl,
 		&rawAppVersion,
 		&rawAppLinks,
+		&app_route.PaymentMinVersion,
 		&app_route.CreatedAt,
 		&app_route.UpdatedAt,
 	)
@@ -119,6 +123,7 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 		support_url,
 		app_version,
 		app_links,
+		payment_min_version,
 		created_at,
 		updated_at
 	FROM
@@ -155,6 +160,7 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 			&app_route.SupportUrl,
 			&rawAppVersion,
 			&rawAppLinks,
+			&app_route.PaymentMinVersion,
 			&app_route.CreatedAt,
 			&app_route.UpdatedAt,
 		)
@@ -208,6 +214,9 @@ func (r *AppRouteRepo) Update(req *m.AppRouteUpdateReq) (*m.Void, error) {
 
 	conditions = append(conditions, " app_links = $"+strconv.Itoa(len(args)+1))
 	args = append(args, appLinksBytes)
+
+	conditions = append(conditions, " payment_min_version = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.PaymentMinVersion)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")

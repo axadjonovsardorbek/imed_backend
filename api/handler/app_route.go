@@ -142,6 +142,7 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 	req.AppVersion = body.AppVersion
 	req.SupportUrl = body.SupportUrl
 	req.AppLinks = body.AppLinks
+	req.PaymentMinVersion = body.PaymentMinVersion
 
 	slog.Info("Update AppRoute", req)
 	_, err := h.Clients.AppRoute.Update(context.Background(), &req)

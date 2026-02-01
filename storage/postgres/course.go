@@ -655,13 +655,17 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 			  'is_public', CASE
 							 WHEN cb.has_access THEN true
 							 ELSE COALESCE(l.is_public, false)
-						   END
+						   END,
+			'is_completed', COALESCE(ul.is_completed, false)
 			)
 			ORDER BY l.order_num
 		  ) AS lessons
 		FROM lessons l
 		JOIN modules m ON m.id = l.module_id
 		CROSS JOIN course_base cb
+		LEFT JOIN user_lessons ul
+		  ON ul.lesson_id = l.id
+	      AND ul.user_id = $2
 		WHERE m.course_id = $3
 		  AND m.deleted_at = 0
 		  AND l.deleted_at = 0

@@ -16,35 +16,39 @@ type AppLinksRes struct {
 }
 
 type AppRouteRes struct {
-	Id         string        `json:"id" db:"id"`
-	CallCenter string        `json:"call_center" db:"call_center"`
-	SupportUrl string        `json:"support_url" db:"support_url"`
-	AppVersion AppVersionRes `json:"app_version" db:"app_version" swaggertype:"object"`
-	AppLinks   AppLinksRes   `json:"app_links" db:"app_links" swaggertype:"object"`
-	CreatedAt  string        `json:"created_at" db:"created_at"`
-	UpdatedAt  string        `json:"updated_at" db:"updated_at"`
+	Id                string        `json:"id" db:"id"`
+	CallCenter        string        `json:"call_center" db:"call_center"`
+	SupportUrl        string        `json:"support_url" db:"support_url"`
+	AppVersion        AppVersionRes `json:"app_version" db:"app_version" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" db:"app_links" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" db:"payment_min_version"`
+	CreatedAt         string        `json:"created_at" db:"created_at"`
+	UpdatedAt         string        `json:"updated_at" db:"updated_at"`
 }
 
 type AppRouteCreateReq struct {
-	CallCenter string        `json:"call_center" binding:"required"`
-	SupportUrl string        `json:"support_url" binding:"required"`
-	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
-	AppLinks   AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
+	CallCenter        string        `json:"call_center" binding:"required"`
+	SupportUrl        string        `json:"support_url" binding:"required"`
+	AppVersion        AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" binding:"required"`
 }
 
 type AppRouteUpdateReq struct {
-	Id         string        `json:"id" binding:"required"`
-	CallCenter string        `json:"call_center" binding:"required"`
-	SupportUrl string        `json:"support_url" binding:"required"`
-	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
-	AppLinks   AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
+	Id                string        `json:"id" binding:"required"`
+	CallCenter        string        `json:"call_center" binding:"required"`
+	SupportUrl        string        `json:"support_url" binding:"required"`
+	AppVersion        AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" binding:"required"`
 }
 
 type AppRouteUpdateBody struct {
-	CallCenter string        `json:"call_center" binding:"required"`
-	SupportUrl string        `json:"support_url" binding:"required"`
-	AppVersion AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
-	AppLinks   AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
+	CallCenter        string        `json:"call_center" binding:"required"`
+	SupportUrl        string        `json:"support_url" binding:"required"`
+	AppVersion        AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" binding:"required"`
 }
 
 type AppRouteGetListReq struct {

@@ -128,12 +128,15 @@ definitions:
         type: object
       call_center:
         type: string
+      payment_min_version:
+        type: string
       support_url:
         type: string
     required:
     - app_links
     - app_version
     - call_center
+    - payment_min_version
     - support_url
     type: object
   models.AppRouteList:
@@ -157,6 +160,8 @@ definitions:
         type: string
       id:
         type: string
+      payment_min_version:
+        type: string
       support_url:
         type: string
       updated_at:
@@ -170,12 +175,15 @@ definitions:
         type: object
       call_center:
         type: string
+      payment_min_version:
+        type: string
       support_url:
         type: string
     required:
     - app_links
     - app_version
     - call_center
+    - payment_min_version
     - support_url
     type: object
   models.BannerCreateBody:
@@ -666,6 +674,8 @@ definitions:
     properties:
       id:
         type: string
+      is_completed:
+        type: boolean
       is_public:
         type: boolean
       module_id:
