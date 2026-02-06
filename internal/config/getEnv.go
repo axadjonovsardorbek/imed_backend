@@ -11,11 +11,11 @@ import (
 type Config struct {
 	AUTH_PORT string
 
-	DB_HOST     string
-	DB_PORT     int
-	DB_USER     string
-	DB_PASSWORD string
-	DB_NAME     string
+	POSTGRES_HOST     string
+	POSTGRES_PORT     int
+	POSTGRES_USER     string
+	POSTGRES_PASSWORD string
+	POSTGRES_NAME     string
 
 	REDIS_HOST string
 	REDIS_PORT string
@@ -50,11 +50,11 @@ func Load() Config {
 
 	config.AUTH_PORT = cast.ToString(coalesce("AUTH", ":1001"))
 
-	config.DB_HOST = cast.ToString(coalesce("DB_HOST", "postgres"))
-	config.DB_PORT = cast.ToInt(coalesce("DB_PORT", 5432))
-	config.DB_USER = cast.ToString(coalesce("DB_USER", "postgres"))
-	config.DB_PASSWORD = cast.ToString(coalesce("DB_PASSWORD", "1111"))
-	config.DB_NAME = cast.ToString(coalesce("DB_NAME", "test"))
+	config.POSTGRES_HOST = cast.ToString(coalesce("POSTGRES_HOST", "postgres"))
+	config.POSTGRES_PORT = cast.ToInt(coalesce("POSTGRES_PORT", 5432))
+	config.POSTGRES_USER = cast.ToString(coalesce("POSTGRES_USER", "postgres"))
+	config.POSTGRES_PASSWORD = cast.ToString(coalesce("POSTGRES_PASSWORD", "1111"))
+	config.POSTGRES_NAME = cast.ToString(coalesce("POSTGRES_NAME", "test"))
 
 	config.REDIS_HOST = cast.ToString(coalesce("REDIS_HOST", "redis"))
 	config.REDIS_PORT = cast.ToString(coalesce("REDIS_PORT", ":1111"))

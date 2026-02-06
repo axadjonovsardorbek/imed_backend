@@ -31,9 +31,9 @@ type Storage struct {
 	UserS         storage.UserI
 }
 
-func NewPostgresStorage(config config.Config) (*Storage, error) {
+func NewPostgresStorage(cf config.Config) (*Storage, error) {
 	conn := fmt.Sprintf("host=%s user=%s dbname=%s password=%s port=%d sslmode=disable",
-		config.DB_HOST, config.DB_USER, config.DB_NAME, config.DB_PASSWORD, config.DB_PORT)
+		cf.POSTGRES_HOST, cf.POSTGRES_USER, cf.POSTGRES_NAME, cf.POSTGRES_PASSWORD, cf.POSTGRES_PORT)
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
 		return nil, err
