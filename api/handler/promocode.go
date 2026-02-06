@@ -34,10 +34,11 @@ func (h *Handler) CreatePromoCode(c *gin.Context) {
 		return
 	}
 
-	if req.DiscountType != "fixed" || req.DiscountType != "percent" {
+	if req.DiscountType != "fixed" && req.DiscountType != "percent" {
 		c.JSON(400, gin.H{"message": "incorrect type for discount, fixed or percent for discout type"})
 		slog.Error("incorrect type for discount, fixed or percent for discout type")
 		smssender(c, fmt.Errorf("incorrect type for discount, fixed or percent for discout type"), http.StatusBadRequest)
+		return
 	}
 
 	if !IsYYYYMMDD(req.StartsAt) || !IsYYYYMMDD(req.EndsAt) {
@@ -178,10 +179,11 @@ func (h *Handler) UpdatePromoCode(c *gin.Context) {
 	req.MaxUsesTotal = body.MaxUsesTotal
 	req.MinOrderAmount = body.MinOrderAmount
 
-	if req.DiscountType != "fixed" || req.DiscountType != "percent" {
+	if req.DiscountType != "fixed" && req.DiscountType != "percent" {
 		c.JSON(400, gin.H{"message": "incorrect type for discount, fixed or percent for discout type"})
 		slog.Error("incorrect type for discount, fixed or percent for discout type")
 		smssender(c, fmt.Errorf("incorrect type for discount, fixed or percent for discout type"), http.StatusBadRequest)
+		return
 	}
 
 	if !IsYYYYMMDD(req.StartsAt) || !IsYYYYMMDD(req.EndsAt) {
