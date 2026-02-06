@@ -338,7 +338,6 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 	query := `
 	SELECT
-		COUNT(o.id) OVER() AS total_count,
 		o.id, 
 		o.user_id,
 		u.name,
