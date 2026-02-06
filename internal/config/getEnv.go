@@ -48,7 +48,7 @@ func Load() Config {
 
 	config := Config{}
 
-	config.AUTH_PORT = cast.ToString(coalesce("AUTH", ":1001"))
+	config.AUTH_PORT = cast.ToString(coalesce("AUTH_PORT", ":1001"))
 
 	config.POSTGRES_HOST = cast.ToString(coalesce("POSTGRES_HOST", "postgres"))
 	config.POSTGRES_PORT = cast.ToInt(coalesce("POSTGRES_PORT", 5432))
