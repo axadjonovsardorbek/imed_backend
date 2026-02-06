@@ -149,39 +149,34 @@ func (h *Handler) GetAllOrders(c *gin.Context) {
 		}
 	}
 
-	if req_type == "" {
-		slog.Error("type is required")
-		smssender(c, fmt.Errorf("type is required"), http.StatusBadRequest)
-		c.JSON(http.StatusBadRequest, gin.H{"message": "type is required, must be one of range, day, week, month, year"})
-		return
-	}
-
-	if req_type == "day" {
-		if day != "" && !IsYYYYMMDD(day) {
-			slog.Error("Invalid date format for day type")
-			smssender(c, fmt.Errorf("invalid date format for day type"), http.StatusBadRequest)
-			c.JSON(http.StatusBadRequest, gin.H{"message": "date must be YYYY-MM-DD"})
-			return
-		}
-		req.Day = day
-	}
-
-	if req_type == "range" {
-		if from == "" || to == "" {
-			slog.Error("from and to are required for range type")
-			smssender(c, fmt.Errorf("from and to are required for range type"), http.StatusBadRequest)
-			c.JSON(http.StatusBadRequest, gin.H{"message": "from and to are required for range"})
-			return
-		}
-		if !IsYYYYMMDD(from) || !IsYYYYMMDD(to) {
-			slog.Error("Invalid from/to format for range type")
-			smssender(c, fmt.Errorf("invalid from/to format for range type"), http.StatusBadRequest)
-			c.JSON(http.StatusBadRequest, gin.H{"message": "from/to must be YYYY-MM-DD"})
-			return
+	if req_type != "" {
+		if req_type == "day" {
+			if day != "" && !IsYYYYMMDD(day) {
+				slog.Error("Invalid date format for day type")
+				smssender(c, fmt.Errorf("invalid date format for day type"), http.StatusBadRequest)
+				c.JSON(http.StatusBadRequest, gin.H{"message": "date must be YYYY-MM-DD"})
+				return
+			}
+			req.Day = day
 		}
 
-		req.From = from
-		req.To = to
+		if req_type == "range" {
+			if from == "" || to == "" {
+				slog.Error("from and to are required for range type")
+				smssender(c, fmt.Errorf("from and to are required for range type"), http.StatusBadRequest)
+				c.JSON(http.StatusBadRequest, gin.H{"message": "from and to are required for range"})
+				return
+			}
+			if !IsYYYYMMDD(from) || !IsYYYYMMDD(to) {
+				slog.Error("Invalid from/to format for range type")
+				smssender(c, fmt.Errorf("invalid from/to format for range type"), http.StatusBadRequest)
+				c.JSON(http.StatusBadRequest, gin.H{"message": "from/to must be YYYY-MM-DD"})
+				return
+			}
+
+			req.From = from
+			req.To = to
+		}
 	}
 
 	req.UserId = user_id
