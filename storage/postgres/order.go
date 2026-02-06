@@ -362,8 +362,7 @@ func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 	JOIN courses c ON c.id = o.course_id
 	JOIN tariffs t ON t.id = o.tariff_id
 	LEFT JOIN promocodes p ON p.id = o.promo_id
-	WHERE o.deleted_at = 0
-	  AND o.id = $1
+	WHERE o.id = $1
 	`
 
 	row := r.db.QueryRow(query, req.Id)
