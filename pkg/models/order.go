@@ -1,14 +1,56 @@
 package models
 
+type OrderStatisticRes struct {
+	Id             string  `json:"id"`
+	UserId         string  `json:"user_id"`
+	UserName       string  `json:"user_name"`
+	UserPhone      string  `json:"user_phone"`
+	CourseId       string  `json:"course_id"`
+	CourseName     string  `json:"course_name"`
+	TariffId       string  `json:"tariff_id"`
+	TariffName     string  `json:"tariff_name"`
+	Duration       int     `json:"duration"`
+	PromoCodeId    *string `json:"promocode_id"`
+	PromoCode      *string `json:"promocode"`
+	Amount         float64 `json:"amount"`
+	DiscountAmount float64 `json:"discount_amount"`
+	CourseAmount   float64 `json:"course_amount"`
+	PaymentType    string  `json:"payment_type"`
+	Status         string  `json:"status"`
+	CreatedAt      string  `json:"created_at"`
+	PaidAt         *string `json:"paid_at,omitempty"`
+}
+
+type OrderList struct {
+	Count  int                  `json:"count"`
+	Orders []*OrderStatisticRes `json:"orders"`
+}
+
+type OrderGetListReq struct {
+	UserId      string     `json:"user_id"`
+	CourseId    string     `json:"course_id"`
+	TariffId    string     `json:"tariff_id"`
+	PromoCodeId string     `json:"promocode_id"`
+	Status      string     `json:"status"`
+	PaymentType string     `json:"payment_type"`
+	Type        string     `json:"type"` //range, day, week, month, year
+	Day         string     `json:"day"`  //2024-06-01
+	From        string     `json:"from"` //2024-06-01
+	To          string     `json:"to"`   //2024-06-30
+	Filter      Pagination `json:"filter"`
+}
+
 type OrderCreateReq struct {
-	UserId   string `json:"user_id"`
-	CourseId string `json:"course_id"`
-	TariffId string `json:"tariff_id"`
+	UserId    string `json:"user_id"`
+	CourseId  string `json:"course_id"`
+	PromoCode string `json:"promocode"`
+	TariffId  string `json:"tariff_id"`
 }
 
 type OrderCreateBody struct {
-	CourseId string `json:"course_id"`
-	TariffId string `json:"tariff_id"`
+	CourseId  string `json:"course_id"`
+	TariffId  string `json:"tariff_id"`
+	PromoCode string `json:"promocode"`
 }
 
 type OrderCreateRes struct {

@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	m "imed/pkg/models"
 	"strconv"
@@ -327,6 +328,22 @@ func (r *CourseRepo) Delete(req *m.ById) (*m.Void, error) {
 
 func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 
+	tz, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tz.Rollback()
+			err = fmt.Errorf("panic occurred: %v", p)
+		} else if err != nil {
+			tz.Rollback()
+		} else {
+			err = tz.Commit()
+		}
+	}()
+
 	id := uuid.NewString()
 	query := `
 	INSERT INTO user_courses (
@@ -339,7 +356,7 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 	) VALUES ($1, $2, $3, $4, $5, $6)
 	`
 
-	_, err := r.db.Exec(query,
+	_, err = tz.Exec(query,
 		id,
 		req.UserId,
 		req.CourseId,
@@ -350,6 +367,59 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 
 	if err != nil {
 		return nil, fmt.Errorf("error while buying course: %w", err)
+	}
+
+	var duration, price int
+
+	getTariffQuery := `
+	SELECT
+	  t.duration,
+	  (opt->>'price')::bigint AS price
+	FROM tariffs t
+	JOIN courses c ON c.id = $1
+	CROSS JOIN LATERAL jsonb_array_elements(c.price) AS opt
+	WHERE t.id = $2
+	  AND t.deleted_at = 0
+	  AND c.deleted_at = 0
+	  AND (opt->>'duration')::bigint = t.duration
+	LIMIT 1
+	`
+
+	err = tz.QueryRow(getTariffQuery, req.CourseId, req.TariffId).Scan(&duration, &price)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("price option not found for course=%s tariff=%s", req.CourseId, req.TariffId)
+		}
+		return nil, err
+	}
+
+	order_query := `
+	INSERT INTO orders (
+		id,
+		user_id,
+		course_id,
+		tariff_id,
+		amount,
+		status,
+		duration,
+		course_amount
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	`
+
+	order_id := uuid.NewString()
+	_, err = tz.Exec(order_query,
+		order_id,
+		req.UserId,
+		req.CourseId,
+		req.TariffId,
+		price,
+		"PAID",
+		duration,
+		price,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while creating order: %w", err)
 	}
 
 	return &m.Void{}, nil

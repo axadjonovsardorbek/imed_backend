@@ -18,12 +18,11 @@ type MinIO struct {
 	Cnf    *config.Config
 }
 
-var bucketName = "imed"
-
 func MinIOConnect(cnf *config.Config) (*MinIO, error) {
-	endpoint := "minio-imed:9010"
-	accessKeyID := "minioadmin"
-	secretAccessKey := "minioadmin123"
+	endpoint := cnf.MINIO_ENDPOINT + cnf.MINIO_PORT
+	accessKeyID := cnf.MINIO_ACCESS_KEY
+	secretAccessKey := cnf.MINIO_SECRET_KEY
+	bucketName := cnf.MINIO_BUCKET_NAME
 
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
@@ -76,6 +75,7 @@ func (m *MinIO) Upload(fileName, filePath string) (string, error) {
 	// Fayl kengaytmasini asosida content turini aniqlash
 	ext := filepath.Ext(fileName)
 	contentType := mime.TypeByExtension(ext)
+	bucketName := m.Cnf.MINIO_BUCKET_NAME
 
 	// Agar contentType topilmasa, default qilib binary faylni o'rnatamiz
 	if contentType == "" {

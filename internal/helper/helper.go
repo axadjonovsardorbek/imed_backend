@@ -1,12 +1,20 @@
 package helper
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 	"time"
+
+	"golang.org/x/crypto/pbkdf2"
 
 	"imed/internal/config"
 )
@@ -57,4 +65,38 @@ func GetStartEndDate(month int) (string, string) {
 	start := time.Now().UTC().Add(time.Hour * 5).Format("2006-01-02 15:04:05")
 	end := time.Now().UTC().AddDate(0, month, 0).Add(time.Hour * 5).Format("2006-01-02 15:04:05")
 	return start, end
+}
+
+func CheckDjangoPBKDF2(password, stored string) (bool, error) {
+	parts := strings.Split(stored, "$")
+	if len(parts) != 4 {
+		return false, errors.New("invalid django hash format")
+	}
+
+	if parts[0] != "pbkdf2_sha256" {
+		return false, errors.New("not pbkdf2_sha256")
+	}
+
+	iter, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return false, err
+	}
+
+	salt := parts[2]
+	hashB64 := parts[3]
+
+	want, err := base64.StdEncoding.DecodeString(hashB64)
+	if err != nil {
+		return false, err
+	}
+
+	got := pbkdf2.Key(
+		[]byte(password),
+		[]byte(salt),
+		iter,
+		len(want),
+		sha256.New,
+	)
+
+	return subtle.ConstantTimeCompare(got, want) == 1, nil
 }

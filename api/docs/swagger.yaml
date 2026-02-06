@@ -807,6 +807,86 @@ definitions:
       tariff_id:
         type: string
     type: object
+  models.PromoCodeCreateReq:
+    properties:
+      code:
+        type: string
+      discount_type:
+        type: string
+      discount_value:
+        type: number
+      ends_at:
+        type: string
+      max_discount:
+        type: number
+      max_uses_per_user:
+        type: integer
+      max_uses_total:
+        type: integer
+      min_order_amount:
+        type: number
+      starts_at:
+        type: string
+    type: object
+  models.PromoCodeList:
+    properties:
+      count:
+        type: integer
+      promo_codes:
+        items:
+          $ref: '#/definitions/models.PromoCodeRes'
+        type: array
+    type: object
+  models.PromoCodeRes:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      discount_type:
+        type: string
+      discount_value:
+        type: number
+      ends_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      max_discount:
+        type: number
+      max_uses_per_user:
+        type: integer
+      max_uses_total:
+        type: integer
+      min_order_amount:
+        type: number
+      starts_at:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.PromoCodeUpdateBody:
+    properties:
+      discount_type:
+        type: string
+      discount_value:
+        type: number
+      ends_at:
+        type: string
+      is_active:
+        type: boolean
+      max_discount:
+        type: number
+      max_uses_per_user:
+        type: integer
+      max_uses_total:
+        type: integer
+      min_order_amount:
+        type: number
+      starts_at:
+        type: string
+    type: object
   models.RatingResponse:
     properties:
       items:
@@ -4304,6 +4384,183 @@ paths:
       summary: Update notification
       tags:
       - notification
+  /web/promocode:
+    get:
+      consumes:
+      - application/json
+      description: Get all promocode with optional filtering
+      parameters:
+      - description: Code
+        in: query
+        name: code
+        type: string
+      - description: Discount Type
+        in: query
+        name: discount_type
+        type: string
+      - description: IsActive
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: is_active
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PromoCodeList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all promocode
+      tags:
+      - promocode
+    post:
+      consumes:
+      - application/json
+      description: Create a new promocode with the provided details
+      parameters:
+      - description: PromoCode Details
+        in: body
+        name: promocode
+        required: true
+        schema:
+          $ref: '#/definitions/models.PromoCodeCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new promocode
+      tags:
+      - promocode
+  /web/promocode/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a promocode by their ID
+      parameters:
+      - description: PromoCode ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PromoCodeRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get promocode by ID
+      tags:
+      - promocode
+  /web/promocode/{id}/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete promocode
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PromoCode deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete promocode
+      tags:
+      - promocode
+  /web/promocode/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update promocode
+      parameters:
+      - description: PromoCode ID
+        in: path
+        name: id
+        type: string
+      - description: PromoCode update credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.PromoCodeUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PromoCode updated
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update promocode
+      tags:
+      - promocode
   /web/source:
     get:
       consumes:

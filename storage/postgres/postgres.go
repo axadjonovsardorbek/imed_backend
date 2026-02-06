@@ -27,6 +27,7 @@ type Storage struct {
 	AppRouteS     storage.AppRouteI
 	OrderS        storage.OrderI
 	TariffS       storage.TariffI
+	PromoCodeS    storage.PromoCodeI
 	UserS         storage.UserI
 }
 
@@ -58,6 +59,7 @@ func NewPostgresStorage(config config.Config) (*Storage, error) {
 	app_route := NewAppRouteRepo(db)
 	order := NewOrderRepo(db)
 	tariff := NewTariffRepo(db)
+	promocode := NewPromoCodeRepo(db)
 	user := NewUserRepo(db)
 
 	return &Storage{
@@ -77,6 +79,7 @@ func NewPostgresStorage(config config.Config) (*Storage, error) {
 		AppRouteS:     app_route,
 		OrderS:        order,
 		TariffS:       tariff,
+		PromoCodeS:    promocode,
 		UserS:         user,
 	}, nil
 }

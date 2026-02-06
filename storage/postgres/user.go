@@ -201,9 +201,25 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 		return nil, fmt.Errorf("error while login: %w", err)
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(req.Password)); err != nil {
-		return nil, fmt.Errorf("invalid password: %w", err)
+	var valid bool
+
+	if strings.HasPrefix(password, "$2") {
+		valid = bcrypt.CompareHashAndPassword(
+			[]byte(password),
+			[]byte(req.Password),
+		) == nil
+
+	} else if strings.HasPrefix(password, "pbkdf2_sha256$") {
+		valid, _ = helper.CheckDjangoPBKDF2(req.Password, password)
 	}
+
+	if !valid {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	// if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(req.Password)); err != nil {
+	// 	return nil, fmt.Errorf("invalid password: %w", err)
+	// }
 
 	tkn := token.GenerateJWTToken(id, role)
 

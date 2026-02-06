@@ -2,16 +2,22 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+	"time"
+
+	"github.com/go-redis/redis"
 )
 
 type BannerService struct {
 	storage st.Storage
+	rdb     *redis.Client
 }
 
-func NewBannerService(storage *st.Storage) *BannerService {
-	return &BannerService{storage: *storage}
+func NewBannerService(storage *st.Storage, rdb *redis.Client) *BannerService {
+	return &BannerService{storage: *storage, rdb: rdb}
 }
 
 func (s *BannerService) Create(ctx context.Context, req *m.BannerCreateReq) (*m.ById, error) {
@@ -23,7 +29,32 @@ func (s *BannerService) GetById(ctx context.Context, req *m.ById) (*m.BannerRes,
 }
 
 func (s *BannerService) GetAll(ctx context.Context, req *m.BannerGetListReq) (*m.PaginationResponse, *m.BannerList, error) {
-	return s.storage.BannerS.GetAll(req)
+
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("title:%s_page:%d_limit:%d",
+		req.Title, req.Filter.Page, req.Filter.Limit)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.BannerS.GetAll(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			}
+		}
+	}
+
+	return res, nil, nil
 }
 
 func (s *BannerService) Update(ctx context.Context, req *m.BannerUpdateReq) (*m.Void, error) {
@@ -39,5 +70,29 @@ func (s *BannerService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*
 }
 
 func (s *BannerService) GetAllMobile(ctx context.Context, req *m.BannerGetListMobileReq) (*m.PaginationResponse, *m.BannerMobileList, error) {
-	return s.storage.BannerS.GetAllMobile(req)
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("banners_mobile_lang:%s",
+		req.Language)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.BannerS.GetAllMobile(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			}
+		}
+	}
+
+	return res, nil, nil
 }

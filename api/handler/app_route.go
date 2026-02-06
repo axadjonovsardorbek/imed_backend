@@ -32,6 +32,14 @@ func (h *Handler) CreateAppRoute(c *gin.Context) {
 		return
 	}
 
+	err = validateAppRouteCreate(req)
+	if err != nil {
+		c.JSON(400, gin.H{"message": err.Error()})
+		slog.Error("Error from validation")
+		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
 	slog.Info("Create appRoute", "AppRoute", req)
 	res, err := h.Clients.AppRoute.Create(context.Background(), &req)
 	slog.Info("Create appRoute response", "AppRoute", res)
@@ -144,8 +152,22 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 	req.AppLinks = body.AppLinks
 	req.PaymentMinVersion = body.PaymentMinVersion
 
+	err := validateAppRouteCreate(m.AppRouteCreateReq{
+		CallCenter:        req.CallCenter,
+		AppVersion:        req.AppVersion,
+		SupportUrl:        req.SupportUrl,
+		AppLinks:          req.AppLinks,
+		PaymentMinVersion: req.PaymentMinVersion,
+	})
+	if err != nil {
+		c.JSON(400, gin.H{"message": err.Error()})
+		slog.Error("Error from validation")
+		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
 	slog.Info("Update AppRoute", req)
-	_, err := h.Clients.AppRoute.Update(context.Background(), &req)
+	_, err = h.Clients.AppRoute.Update(context.Background(), &req)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

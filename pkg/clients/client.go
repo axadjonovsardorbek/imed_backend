@@ -25,26 +25,28 @@ type Clients struct {
 	AppRoute     *service.AppRouteService
 	Order        *service.OrderService
 	Tariff       *service.TariffService
+	PromoCode    *service.PromoCodeService
 	User         *service.UserService
 }
 
 func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, push *push.Client) (*Clients, error) {
 	return &Clients{
 		Admin:        service.NewAdminService(conn),
-		About:        service.NewAboutService(conn),
-		Banner:       service.NewBannerService(conn),
-		Contact:      service.NewContactService(conn),
-		Course:       service.NewCourseService(conn, push),
-		Faq:          service.NewFaqService(conn),
-		Lesson:       service.NewLessonService(conn),
-		Module:       service.NewModuleService(conn),
-		Source:       service.NewSourceService(conn),
-		Subject:      service.NewSubjectService(conn),
-		Teacher:      service.NewTeacherService(conn),
-		Notification: service.NewNotificationService(conn),
-		AppRoute:     service.NewAppRouteService(conn),
-		Order:        service.NewOrderService(conn),
-		Tariff:       service.NewTariffService(conn),
+		About:        service.NewAboutService(conn, rdb),
+		Banner:       service.NewBannerService(conn, rdb),
+		Contact:      service.NewContactService(conn, rdb),
+		Course:       service.NewCourseService(conn, push, rdb),
+		Faq:          service.NewFaqService(conn, rdb),
+		Lesson:       service.NewLessonService(conn, rdb),
+		Module:       service.NewModuleService(conn, rdb),
+		Source:       service.NewSourceService(conn, rdb),
+		Subject:      service.NewSubjectService(conn, rdb),
+		Teacher:      service.NewTeacherService(conn, rdb),
+		Notification: service.NewNotificationService(conn, rdb),
+		AppRoute:     service.NewAppRouteService(conn, rdb),
+		Order:        service.NewOrderService(conn, rdb),
+		Tariff:       service.NewTariffService(conn, rdb),
+		PromoCode:    service.NewPromoCodeService(conn, rdb),
 		User:         service.NewUserService(conn, rdb),
 	}, nil
 }

@@ -198,6 +198,21 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			notification.GET("/user", h.GetAllUserNotifications)
 		}
 
+		promocode := web.Group("/promocode").Use(mid.NewAuth(enforcer))
+		{
+			promocode.POST("", h.CreatePromoCode)
+			promocode.GET("", h.GetAllPromoCodes)
+			promocode.GET("/:id", h.GetByIdPromoCode)
+			promocode.PUT("/:id/update", h.UpdatePromoCode)
+			promocode.DELETE("/:id/delete", h.DeletePromoCode)
+		}
+
+		order := web.Group("/order").Use(mid.NewAuth(enforcer))
+		{
+			order.GET("/:id", h.GetByIdOrder)
+			order.GET("", h.GetAllOrders)
+		}
+
 		web.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer))
 	}
 
@@ -294,6 +309,11 @@ func NewApi(h *handler.Handler) *gin.Engine {
 		order := mobile.Group("/order").Use(mid.NewAuth(enforcer))
 		{
 			order.POST("", h.CreateOrder)
+		}
+
+		promocode := mobile.Group("/promocode").Use(mid.NewAuth(enforcer))
+		{
+			promocode.POST("/check", h.CheckPromoCode)
 		}
 
 	}

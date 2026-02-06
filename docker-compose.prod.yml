@@ -1,0 +1,90 @@
+version: '3.9'
+
+services:
+  migrate-road:
+    container_name: migrate-road-prod
+    image: ghcr.io/kukymbr/goose-docker:3.23.0
+    environment:
+      - GOOSE_DRIVER=postgres
+      - GOOSE_DBSTRING=host=postgres-imed-prod port=5432 user=postgres password=1111 dbname=imed sslmode=disable
+    volumes:
+      - ./migrations:/migrations:ro
+    depends_on:
+      postgres-imed:
+        condition: service_healthy
+    networks:
+      - imed-prod
+
+  postgres-imed:
+    container_name: postgres-imed-prod
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+      POSTGRES_DB: imed
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - imed_postgres_data_prod:/var/lib/postgresql/data
+    # ports: []
+    networks:
+      - imed-prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d imed"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  imed:
+    container_name: imed-prod
+    build: .
+    depends_on:
+      postgres-imed:
+        condition: service_healthy
+      redis-imed:
+        condition: service_healthy
+    ports:
+      - "8005:8005"
+    depends_on:
+      - postgres-imed-prod
+      - redis-imed-prod
+    networks:
+      - imed-prod
+    restart: unless-stopped
+
+  redis-imed:
+    image: redis:7
+    container_name: redis-imed-prod
+    # ports: []
+    networks:
+      - imed-prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  minio-imed:
+    image: minio/minio
+    container_name: minio-imed-prod
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    command: server /data --address ":9020" --console-address ":9021"
+    volumes:
+      - imed_minio_data_prod:/data
+    ports: 
+      - "9020:9020"
+      - "9021:9021"
+    networks:
+      - imed-prod
+    restart: unless-stopped
+
+networks:
+  imed-prod:
+    driver: bridge
+
+volumes:
+  imed_postgres_data_prod:
+  imed_minio_data_prod:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	sms "imed/internal/helper"
+	"imed/pkg/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -19,6 +21,7 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+const semverRegex = `^\d+\.\d+\.\d+$`
 const phoneRegex = `^(\+998)?[0-9]{9}$`
 const emailRegex = `^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 
@@ -30,6 +33,53 @@ func isValidEmail(email string) bool {
 func isValidPhone(phone string) bool {
 	re := regexp.MustCompile(phoneRegex)
 	return re.MatchString(phone)
+}
+
+func isValidSemver(v string) bool {
+	re := regexp.MustCompile(semverRegex)
+	return re.MatchString(v)
+}
+
+func isValidAppVersion(v models.AppVersionRes) bool {
+	return isValidSemver(v.Android) && isValidSemver(v.IOS)
+}
+
+func isValidAppLinks(l models.AppLinksRes) bool {
+	return isValidURL(l.Google) && isValidURL(l.Apple)
+}
+
+func isValidURL(u string) bool {
+	parsed, err := url.ParseRequestURI(u)
+	if err != nil {
+		return false
+	}
+
+	return parsed.Scheme == "http" || parsed.Scheme == "https"
+}
+
+func validateAppRouteCreate(req models.AppRouteCreateReq) error {
+
+	if !isValidPhone(req.CallCenter) {
+		return fmt.Errorf("invalid call_center phone number")
+	}
+
+	if !isValidURL(req.SupportUrl) {
+		return fmt.Errorf("invalid support_url")
+	}
+
+	if !isValidAppVersion(req.AppVersion) {
+		return fmt.Errorf("invalid app_version format")
+	}
+
+	if !isValidAppLinks(req.AppLinks) {
+		return fmt.Errorf("invalid app_links")
+	}
+
+	if !isValidSemver(req.PaymentMinVersion) {
+		return fmt.Errorf("invalid payment_min_version")
+	}
+
+	return nil
 }
 
 func claimData(c *gin.Context, data string) string {

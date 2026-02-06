@@ -33,7 +33,31 @@ func (s *UserService) GetById(ctx context.Context, req *m.ById) (*m.UserRes, err
 	return s.storage.UserS.GetById(req)
 }
 func (s *UserService) GetAll(ctx context.Context, req *m.UserGetListReq) (*m.PaginationResponse, *m.UserList, error) {
-	return s.storage.UserS.GetAll(req)
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("user_name:%s_user_phone:%s_page:%d_limit:%d",
+		req.Name, req.PhoneNumber, req.Filter.Page, req.Filter.Limit)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.UserS.GetAll(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			}
+		}
+	}
+
+	return res, nil, nil
 }
 func (s *UserService) Update(ctx context.Context, req *m.UserUpdateReq) (*m.Void, error) {
 	return s.storage.UserS.Update(req)

@@ -2,20 +2,25 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"imed/internal/helper"
 	"imed/internal/push"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+	"time"
+
+	"github.com/go-redis/redis"
 )
 
 type CourseService struct {
 	storage st.Storage
 	push    *push.Client
+	rdb     *redis.Client
 }
 
-func NewCourseService(storage *st.Storage, push *push.Client) *CourseService {
-	return &CourseService{storage: *storage, push: push}
+func NewCourseService(storage *st.Storage, push *push.Client, rdb *redis.Client) *CourseService {
+	return &CourseService{storage: *storage, push: push, rdb: rdb}
 }
 
 func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.ById, error) {
@@ -45,7 +50,32 @@ func (s *CourseService) GetById(ctx context.Context, req *m.ById) (*m.CourseRes,
 }
 
 func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m.PaginationResponse, *m.CourseList, error) {
-	return s.storage.CourseS.GetAll(req)
+
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("s_id:%s_t_id:%s_name:%s_is_pub:%s_price:%d_user_id:%s_role:%s_page:%d_limit:%d",
+		req.SubjectId, req.TeacherId, req.Name, req.IsPublic, req.Price, req.UserId, req.Role, req.Filter.Page, req.Filter.Limit)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.CourseS.GetAll(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 30*time.Second).Err()
+			}
+		}
+	}
+
+	return res, nil, nil
 }
 
 func (s *CourseService) Update(ctx context.Context, req *m.CourseUpdateReq) (*m.Void, error) {
@@ -96,7 +126,32 @@ func (s *CourseService) UserCourse(ctx context.Context, req *m.ById) (*m.UserCou
 	return s.storage.CourseS.UserCourse(req)
 }
 func (s *CourseService) UserCourses(ctx context.Context, req *m.UserCourseGetListReq) (*m.PaginationResponse, *m.UserCourseList, error) {
-	return s.storage.CourseS.UserCourses(req)
+
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("user_id:%s_course_id:%s_tariff_id:%s_is_active:%s_page:%d_limit:%d",
+		req.UserId, req.CourseId, req.TariffId, req.IsActive, req.Filter.Page, req.Filter.Limit)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.CourseS.UserCourses(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			}
+		}
+	}
+
+	return res, nil, nil
 }
 func (s *CourseService) UserUpdateCourse(ctx context.Context, req *m.UserCourseUpdateReq) (*m.Void, error) {
 	return s.storage.CourseS.UserUpdateCourse(req)
@@ -108,11 +163,61 @@ func (s *CourseService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*
 	return s.storage.CourseS.GetByIdMobile(req)
 }
 func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMobileReq) (*m.PaginationResponse, *m.CourseMobileList, error) {
-	return s.storage.CourseS.GetAllMobile(req)
+
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("s_id:%s_name:%s_is_pub:%s_user_id:%s_lang:%s",
+		req.SubjectId, req.Name, req.IsPublic, req.UserId, req.Language)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.CourseS.GetAllMobile(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			}
+		}
+	}
+
+	return res, nil, nil
 }
 func (s *CourseService) UserCourseMobile(ctx context.Context, req *m.ByIdMobile) (*m.UserCourseMobileRes, error) {
 	return s.storage.CourseS.UserCourseMobile(req)
 }
 func (s *CourseService) UserCoursesMobile(ctx context.Context, req *m.UserCourseGetListMobileReq) (*m.PaginationResponse, *m.UserCourseMobileList, error) {
-	return s.storage.CourseS.UserCoursesMobile(req)
+
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("user_id:%s_tariff_id:%s_is_active:%s_lang:%s",
+		req.UserId, req.TariffId, req.IsActive, req.Language)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.CourseS.UserCoursesMobile(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			}
+		}
+	}
+
+	return res, nil, nil
 }

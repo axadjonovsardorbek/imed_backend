@@ -160,10 +160,21 @@ type TariffI interface {
 
 type OrderI interface {
 	Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error)
-	GetById(req *m.ById) (*m.OrderRes, error)
+	CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRes, error)
+	GetById(req *m.ById) (*m.OrderStatisticRes, error)
+	GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.OrderList, error)
 	GetPayURL(req *m.ById) (*m.PayURLRes, error)
 
 	// Click callbacks uchun
 	ApplyPrepare(req *m.ApplyPrepareParams) (*m.PrepareResult, error)
 	ApplyComplete(req *m.ApplyCompleteParams) (*m.CompleteResult, error)
+}
+
+type PromoCodeI interface {
+	Create(req *m.PromoCodeCreateReq) (*m.ById, error)
+	GetById(req *m.ById) (*m.PromoCodeRes, error)
+	GetAll(req *m.PromoCodeGetListReq) (*m.PaginationResponse, *m.PromoCodeList, error)
+	Update(req *m.PromoCodeUpdateReq) (*m.Void, error)
+	Delete(req *m.ById) (*m.Void, error)
+	Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, error)
 }

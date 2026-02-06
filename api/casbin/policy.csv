@@ -91,6 +91,13 @@ p, admin, /web/faq, GET
 p, admin, /web/faq/:id, GET
 p, admin, /web/faq/:id/update, PUT
 p, admin, /web/faq/:id/delete, DELETE
+p, admin, /web/promocode, POST
+p, admin, /web/promocode, GET
+p, admin, /web/promocode/:id, GET
+p, admin, /web/promocode/:id/update, PUT
+p, admin, /web/promocode/:id/delete, DELETE
+p, admin, /web/order/:id, GET
+p, admin, /web/order, GET 
 p, admin, /web/file-upload, POST
 
 p, user, /mobile/auth/user/check, POST
@@ -135,6 +142,7 @@ p, user, /mobile/faq/:id, GET
 p, user, /mobile/order, POST
 p, user, /mobile/tariff, GET
 p, user, /mobile/tariff/:id, GET
+p, user, /mobile/promocode/check, POST
 p, user, /web/file-upload, POST
 
 g, user, unauthorized
