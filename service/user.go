@@ -55,6 +55,8 @@ func (s *UserService) GetAll(ctx context.Context, req *m.UserGetListReq) (*m.Pag
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil

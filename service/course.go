@@ -73,6 +73,8 @@ func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m
 				_ = s.rdb.Set(key, b, 30*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil
@@ -149,6 +151,8 @@ func (s *CourseService) UserCourses(ctx context.Context, req *m.UserCourseGetLis
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil
@@ -186,6 +190,8 @@ func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMo
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil
@@ -217,6 +223,8 @@ func (s *CourseService) UserCoursesMobile(ctx context.Context, req *m.UserCourse
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil

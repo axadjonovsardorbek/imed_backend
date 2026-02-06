@@ -51,6 +51,8 @@ func (s *NotificationService) GetAll(ctx context.Context, req *m.NotificationGet
 				_ = s.rdb.Set(key, b, 30*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil
@@ -87,6 +89,8 @@ func (s *NotificationService) UserNotifications(ctx context.Context, req *m.Noti
 				_ = s.rdb.Set(key, b, 30*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil

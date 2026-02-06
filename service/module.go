@@ -51,6 +51,8 @@ func (s *ModuleService) GetAll(ctx context.Context, req *m.ModuleGetListReq) (*m
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil

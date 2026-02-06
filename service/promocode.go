@@ -49,6 +49,8 @@ func (s *PromoCodeService) GetAll(ctx context.Context, req *m.PromoCodeGetListRe
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil

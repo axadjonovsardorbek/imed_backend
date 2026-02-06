@@ -49,6 +49,8 @@ func (s *AboutService) GetAll(ctx context.Context, req *m.AboutGetListReq) (*m.P
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil
@@ -85,6 +87,8 @@ func (s *AboutService) GetAllMobile(ctx context.Context, req *m.AboutGetListMobi
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil

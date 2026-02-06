@@ -52,6 +52,8 @@ func (s *BannerService) GetAll(ctx context.Context, req *m.BannerGetListReq) (*m
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil
@@ -92,6 +94,8 @@ func (s *BannerService) GetAllMobile(ctx context.Context, req *m.BannerGetListMo
 				_ = s.rdb.Set(key, b, 60*time.Second).Err()
 			}
 		}
+
+		return res, nil, nil
 	}
 
 	return res, nil, nil

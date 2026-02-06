@@ -86,8 +86,8 @@ func (r *PromoCodeRepo) GetById(req *m.ById) (*m.PromoCodeRes, error) {
 	promocode := m.PromoCodeRes{}
 	err := row.Scan(
 		&promocode.Id,
-		&promocode.IsActive,
 		&promocode.Code,
+		&promocode.IsActive,
 		&promocode.DiscountType,
 		&promocode.DiscountValue,
 		&promocode.StartsAt,
