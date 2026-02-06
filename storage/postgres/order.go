@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -427,7 +428,7 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 	JOIN courses c ON c.id = o.course_id
 	JOIN tariffs t ON t.id = o.tariff_id
 	LEFT JOIN promocodes p ON p.id = o.promo_id
-	WHERE o.deleted_at = 0
+	WHERE 1=1
 	`
 
 	var args []interface{}
@@ -464,7 +465,12 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 
 	if req.Type != "" && req.Type != "string" {
 
-		loc, _ := time.LoadLocation("Asia/Tashkent")
+		loc, err := time.LoadLocation("Asia/Tashkent")
+		if err != nil {
+			slog.Warn("tzdata missing? fallback to fixed zone", "err", err)
+			loc = time.FixedZone("Asia/Tashkent", 5*60*60)
+		}
+
 		parseDate := func(s string) (time.Time, error) {
 			return time.ParseInLocation("2006-01-02", s, loc)
 		}
