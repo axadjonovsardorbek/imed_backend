@@ -804,6 +804,65 @@ definitions:
     properties:
       course_id:
         type: string
+      promocode:
+        type: string
+      tariff_id:
+        type: string
+    type: object
+  models.OrderList:
+    properties:
+      count:
+        type: integer
+      orders:
+        items:
+          $ref: '#/definitions/models.OrderStatisticRes'
+        type: array
+    type: object
+  models.OrderStatisticRes:
+    properties:
+      amount:
+        type: number
+      course_amount:
+        type: number
+      course_id:
+        type: string
+      course_name:
+        type: string
+      created_at:
+        type: string
+      discount_amount:
+        type: number
+      duration:
+        type: integer
+      id:
+        type: string
+      paid_at:
+        type: string
+      payment_type:
+        type: string
+      promocode:
+        type: string
+      promocode_id:
+        type: string
+      status:
+        type: string
+      tariff_id:
+        type: string
+      tariff_name:
+        type: string
+      user_id:
+        type: string
+      user_name:
+        type: string
+      user_phone:
+        type: string
+    type: object
+  models.PromoCodeCheckBody:
+    properties:
+      code:
+        type: string
+      course_id:
+        type: string
       tariff_id:
         type: string
     type: object
@@ -2158,6 +2217,38 @@ paths:
       summary: Create a new order
       tags:
       - order
+  /mobile/promocode/check:
+    post:
+      consumes:
+      - application/json
+      description: Check a promocode with the provided details
+      parameters:
+      - description: PromoCode Details
+        in: body
+        name: promocode
+        required: true
+        schema:
+          $ref: '#/definitions/models.PromoCodeCheckBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Check promocode
+      tags:
+      - promocode
   /mobile/subject:
     get:
       consumes:
@@ -4384,6 +4475,126 @@ paths:
       summary: Update notification
       tags:
       - notification
+  /web/order/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve order details by order ID
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrderStatisticRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get order by ID
+      tags:
+      - order
+  /web/orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all orders with optional filters
+      parameters:
+      - description: User ID
+        in: query
+        name: user_id
+        type: string
+      - description: Course ID
+        in: query
+        name: course_id
+        type: string
+      - description: Tariff ID
+        in: query
+        name: tariff_id
+        type: string
+      - description: Promo Code ID
+        in: query
+        name: promocode_id
+        type: string
+      - description: Order Status
+        enum:
+        - NEW
+        - PAID
+        - CANCELLED
+        - RESERVED
+        - EXPIRED
+        in: query
+        name: status
+        type: string
+      - description: Payment Type
+        enum:
+        - click
+        - admin
+        in: query
+        name: payment_type
+        type: string
+      - description: Type (range, day, week, month, year)
+        enum:
+        - range
+        - day
+        - week
+        - month
+        - year
+        in: query
+        name: type
+        type: string
+      - description: Day (YYYY-MM-DD)
+        in: query
+        name: day
+        type: string
+      - description: From Date (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: To Date (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrderList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all orders
+      tags:
+      - order
   /web/promocode:
     get:
       consumes:
