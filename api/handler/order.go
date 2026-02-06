@@ -112,7 +112,7 @@ func (h *Handler) GetByIdOrder(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /web/orders [get]
+// @Router /web/order [get]
 func (h *Handler) GetAllOrders(c *gin.Context) {
 	req := m.OrderGetListReq{}
 

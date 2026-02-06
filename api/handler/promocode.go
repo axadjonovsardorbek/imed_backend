@@ -171,10 +171,10 @@ func (h *Handler) UpdatePromoCode(c *gin.Context) {
 	req.Id = id
 	req.DiscountType = body.DiscountType
 	req.DiscountValue = body.DiscountValue
-	req.EndsAt = req.EndsAt
+	req.EndsAt = body.EndsAt
 	req.StartsAt = body.StartsAt
 	req.IsActive = body.IsActive
-	req.MaxDiscount = req.MaxDiscount
+	req.MaxDiscount = body.MaxDiscount
 	req.MaxUsesPerUser = body.MaxUsesPerUser
 	req.MaxUsesTotal = body.MaxUsesTotal
 	req.MinOrderAmount = body.MinOrderAmount
