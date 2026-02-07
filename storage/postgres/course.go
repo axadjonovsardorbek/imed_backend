@@ -402,8 +402,9 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		amount,
 		status,
 		duration,
-		course_amount
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		course_amount,
+		payment_type
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
 	order_id := uuid.NewString()
@@ -416,6 +417,7 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		"PAID",
 		duration,
 		price,
+		"admin",
 	)
 
 	if err != nil {

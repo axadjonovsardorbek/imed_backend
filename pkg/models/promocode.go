@@ -1,32 +1,5 @@
 package models
 
-// CREATE TABLE IF NOT EXISTS promocodes (
-//     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//     code              TEXT NOT NULL,
-
-//     is_active         BOOLEAN NOT NULL DEFAULT TRUE,
-
-//     discount_type     promo_discount_type NOT NULL,
-//     discount_value    NUMERIC(12,2) NOT NULL CHECK (discount_value > 0),
-//     CHECK (
-//       (discount_type = 'percent' AND discount_value <= 100)
-//       OR (discount_type = 'fixed')
-//     ),
-
-//     starts_at         TIMESTAMPTZ,
-//     ends_at           TIMESTAMPTZ,
-
-//     min_order_amount  NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (min_order_amount >= 0),
-//     max_discount      NUMERIC(12,2),
-
-//     max_uses_total    INT,
-//     max_uses_per_user INT NOT NULL DEFAULT 1,
-
-//     created_at        TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-//     updated_at        TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-//     deleted_at        BIGINT NOT NULL DEFAULT 0
-// );
-
 type PromoCodeCreateReq struct {
 	Code           string  `json:"code"`
 	DiscountType   string  `json:"discount_type"`
@@ -106,25 +79,29 @@ type PromoCodeCheckRes struct {
 }
 
 type PromoCodeCheckReq struct {
-	Code     string `json:"code"`
-	CourseId string `json:"course_id"`
-	UserId   string `json:"user_id"`
-	TariffId string `json:"tariff_id"`
+	PromoCode string `json:"promocode"`
+	CourseId  string `json:"course_id"`
+	UserId    string `json:"user_id"`
+	TariffId  string `json:"tariff_id"`
 }
 
 type PromoCodeCheckBody struct {
-	Code     string `json:"code"`
-	CourseId string `json:"course_id"`
-	TariffId string `json:"tariff_id"`
+	PromoCode string `json:"promocode"`
+	CourseId  string `json:"course_id"`
+	TariffId  string `json:"tariff_id"`
 }
 
 type PromoRedemptionRes struct {
 	Id             *string  `json:"id"`
 	PromoId        *string  `json:"promo_id"`
+	PromoCode      *string  `json:"promocode"`
 	UserId         *string  `json:"user_id"`
+	UserName       *string  `json:"user_name"`
+	UserPhone      *string  `json:"user_phone"`
 	OrderId        *string  `json:"order_id"`
 	OrderAmount    *float64 `json:"order_amount"`
 	DiscountAmount *float64 `json:"discount_amount"`
+	CourseAmount   *float64 `json:"course_amount"`
 	IsActive       *bool    `json:"is_active"`
 	CreatedAt      *string  `json:"created_at"`
 	DeactivatedAt  *string  `json:"deactivated_at"`
@@ -141,3 +118,15 @@ type PromoRedemptionGetListReq struct {
 	IsActive string     `json:"is_active"`
 	Filter   Pagination `json:"filter"`
 }
+
+// CREATE TABLE IF NOT EXISTS promo_redemptions (
+// 	id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+// 	promo_id        UUID NOT NULL REFERENCES promocodes(id),
+// 	user_id         UUID NOT NULL REFERENCES users(id),
+// 	order_id        UUID NOT NULL REFERENCES orders(id),
+// 	order_amount    NUMERIC(12,2) NOT NULL,
+// 	discount_amount NUMERIC(12,2) NOT NULL,
+// 	is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+// 	created_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+// 	deactivated_at  TIMESTAMP WITH TIME ZONE DEFAULT NULL
+//   );

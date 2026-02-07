@@ -205,6 +205,8 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			promocode.GET("/:id", h.GetByIdPromoCode)
 			promocode.PUT("/:id/update", h.UpdatePromoCode)
 			promocode.DELETE("/:id/delete", h.DeletePromoCode)
+			promocode.GET("-redemption", h.GetAllUserPromoCodes)
+			promocode.GET("-redemption/:id", h.GetByIdUserPromoCode)
 		}
 
 		order := web.Group("/order").Use(mid.NewAuth(enforcer))

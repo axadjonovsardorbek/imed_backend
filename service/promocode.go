@@ -64,3 +64,35 @@ func (s *PromoCodeService) Delete(ctx context.Context, req *m.ById) (*m.Void, er
 func (s *PromoCodeService) Check(ctx context.Context, req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, error) {
 	return s.storage.PromoCodeS.Check(req)
 }
+func (s *PromoCodeService) GetByIdUserPromo(ctx context.Context, req *m.ById) (*m.PromoRedemptionRes, error) {
+	return s.storage.PromoCodeS.GetByIdUserPromo(req)
+}
+func (s *PromoCodeService) GetAllUserPromo(ctx context.Context, req *m.PromoRedemptionGetListReq) (*m.PaginationResponse, *m.PromoRedemptionList, error) {
+	res := &m.PaginationResponse{}
+
+	key := fmt.Sprintf("promo_id:%s_user_id:%s_is_active:%s_page:%d_limit:%d",
+		req.PromoId, req.UserId, req.IsActive, req.Filter.Page, req.Filter.Limit)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			_ = json.Unmarshal(b, &res)
+		}
+	}
+
+	if res.Total == 0 {
+		res, _, err := s.storage.PromoCodeS.GetAllUserPromo(req)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if s.rdb != nil {
+			if b, err := json.Marshal(res); err == nil {
+				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			}
+		}
+
+		return res, nil, nil
+	}
+
+	return res, nil, nil
+}

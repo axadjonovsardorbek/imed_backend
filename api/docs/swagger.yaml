@@ -859,9 +859,9 @@ definitions:
     type: object
   models.PromoCodeCheckBody:
     properties:
-      code:
-        type: string
       course_id:
+        type: string
+      promocode:
         type: string
       tariff_id:
         type: string
@@ -944,6 +944,44 @@ definitions:
       min_order_amount:
         type: number
       starts_at:
+        type: string
+    type: object
+  models.PromoRedemptionList:
+    properties:
+      count:
+        type: integer
+      redemptions:
+        items:
+          $ref: '#/definitions/models.PromoRedemptionRes'
+        type: array
+    type: object
+  models.PromoRedemptionRes:
+    properties:
+      course_amount:
+        type: number
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      discount_amount:
+        type: number
+      id:
+        type: string
+      is_active:
+        type: boolean
+      order_amount:
+        type: number
+      order_id:
+        type: string
+      promo_id:
+        type: string
+      promocode:
+        type: string
+      user_id:
+        type: string
+      user_name:
+        type: string
+      user_phone:
         type: string
     type: object
   models.RatingResponse:
@@ -4673,6 +4711,85 @@ paths:
       security:
       - BearerAuth: []
       summary: Create a new promocode
+      tags:
+      - promocode
+  /web/promocode-redemption:
+    get:
+      consumes:
+      - application/json
+      description: Get all promocode with optional filtering
+      parameters:
+      - description: UserId
+        in: query
+        name: user_id
+        type: string
+      - description: PromoCode ID
+        in: query
+        name: promo_id
+        type: string
+      - description: IsActive
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: is_active
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PromoRedemptionList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all promocode
+      tags:
+      - promocode
+  /web/promocode-redemption/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a promocode by their ID
+      parameters:
+      - description: PromoCodeRedemption ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PromoRedemptionRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get promocode by ID
       tags:
       - promocode
   /web/promocode/{id}:

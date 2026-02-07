@@ -115,9 +115,18 @@ func (r *PromoCodeRepo) GetAll(req *m.PromoCodeGetListReq) (*m.PaginationRespons
 	SELECT 
 		COUNT(id) OVER() AS total_count,
 		id,
-		is_active,
 		code,
-		discount_type
+		is_active,
+		discount_type,
+		discount_value,
+		starts_at,
+		ends_at,
+		min_order_amount,
+		max_discount,
+		max_uses_total,
+		max_uses_per_user,
+		created_at,
+		updated_at
 	FROM
 		promocodes
 	WHERE
@@ -163,9 +172,18 @@ func (r *PromoCodeRepo) GetAll(req *m.PromoCodeGetListReq) (*m.PaginationRespons
 		err := rows.Scan(
 			&totalCount,
 			&promocode.Id,
-			&promocode.IsActive,
 			&promocode.Code,
+			&promocode.IsActive,
 			&promocode.DiscountType,
+			&promocode.DiscountValue,
+			&promocode.StartsAt,
+			&promocode.EndsAt,
+			&promocode.MinOrderAmount,
+			&promocode.MaxDiscount,
+			&promocode.MaxUsesTotal,
+			&promocode.MaxUsesPerUser,
+			&promocode.CreatedAt,
+			&promocode.UpdatedAt,
 		)
 
 		if err != nil {
@@ -190,18 +208,6 @@ func (r *PromoCodeRepo) Update(req *m.PromoCodeUpdateReq) (*m.Void, error) {
 	var conditions []string
 	var args []interface{}
 
-	// type PromoCodeUpdateReq struct {
-	// 	Id             string  `json:"id"`
-	// 	IsActive       bool    `json:"is_active"`
-	// 	DiscountType   string  `json:"discount_type"`
-	// 	DiscountValue  float64 `json:"discount_value"`
-	// 	StartsAt       string  `json:"starts_at"`
-	// 	EndsAt         string  `json:"ends_at"`
-	// 	MinOrderAmount float64 `json:"min_order_amount"`
-	// 	MaxDiscount    float64 `json:"max_discount"`
-	// 	MaxUsesTotal   int     `json:"max_uses_total"`
-	// 	MaxUsesPerUser int     `json:"max_uses_per_user"`
-	// }
 	conditions = append(conditions, " is_active = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.IsActive)
 
@@ -225,22 +231,22 @@ func (r *PromoCodeRepo) Update(req *m.PromoCodeUpdateReq) (*m.Void, error) {
 		args = append(args, req.StartsAt)
 	}
 
-	if req.MinOrderAmount >= 0 {
+	if req.MinOrderAmount > 0 {
 		conditions = append(conditions, " min_order_amount = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MinOrderAmount)
 	}
 
-	if req.MaxDiscount >= 0 {
+	if req.MaxDiscount > 0 {
 		conditions = append(conditions, " max_discount = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MaxDiscount)
 	}
 
-	if req.MaxUsesTotal >= 0 {
+	if req.MaxUsesTotal > 0 {
 		conditions = append(conditions, " max_uses_total = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MaxUsesTotal)
 	}
 
-	if req.MaxUsesPerUser >= 0 {
+	if req.MaxUsesPerUser > 0 {
 		conditions = append(conditions, " max_uses_per_user = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MaxUsesPerUser)
 	}
@@ -340,7 +346,7 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		WHERE lower(code) = lower($1)
 		  AND deleted_at = 0
 		LIMIT 1
-	`, req.Code).Scan(
+	`, req.PromoCode).Scan(
 		&promoID, &isActive, &discountType, &discountValue,
 		&minOrderAmount, &maxDiscount,
 		&startsAt, &endsAt,
@@ -459,6 +465,159 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 
 	return res, nil
 
+}
+
+func (r *PromoCodeRepo) GetByIdUserPromo(req *m.ById) (*m.PromoRedemptionRes, error) {
+	query := `
+	SELECT 
+		r.id,
+		r.promo_id,
+		p.code,
+		r.user_id,
+		u.name,
+		u.phone_number,
+		r.order_id,
+		r.order_amount,
+		r.discount_amount,
+		r.course_amount,
+		r.is_active,
+		r.created_at,
+		r.deactivated_at
+	FROM
+		promo_redemptions r
+	JOIN
+		users u ON u.id = r.user_id
+	JOIN
+		promocodes p ON p.id = r.promo_id
+	JOIN
+		orders o ON o.id = r.order_id
+	WHERE
+		r.id = $1
+	`
+
+	row := r.db.QueryRow(query, req.Id)
+
+	redemption := m.PromoRedemptionRes{}
+	err := row.Scan(
+		&redemption.Id,
+		&redemption.PromoId,
+		&redemption.PromoCode,
+		&redemption.UserId,
+		&redemption.UserName,
+		&redemption.UserPhone,
+		&redemption.OrderId,
+		&redemption.OrderAmount,
+		&redemption.DiscountAmount,
+		&redemption.CourseAmount,
+		&redemption.IsActive,
+		&redemption.CreatedAt,
+		&redemption.DeactivatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("promo redemption not found with id: %s", req.Id)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting promo redemption by id: %w", err)
+	}
+
+	return &redemption, nil
+}
+func (r *PromoCodeRepo) GetAllUserPromo(req *m.PromoRedemptionGetListReq) (*m.PaginationResponse, *m.PromoRedemptionList, error) {
+	query := `
+	SELECT 
+		COUNT(r.id) OVER() AS total_count,
+		r.id,
+		r.promo_id,
+		p.code,
+		r.user_id,
+		u.name,
+		u.phone_number,
+		r.order_id,
+		r.order_amount,
+		r.discount_amount,
+		r.course_amount,
+		r.is_active,
+		r.created_at,
+		r.deactivated_at
+	FROM
+		promo_redemptions r
+	JOIN
+		users u ON u.id = r.user_id
+	JOIN
+		promocodes p ON p.id = r.promo_id
+	JOIN
+		orders o ON o.id = r.order_id
+	WHERE
+		1=1
+	`
+
+	var args []interface{}
+	if req.UserId != "" && req.UserId != "string" {
+		query += fmt.Sprintf(" AND r.user_id = $%d", len(args)+1)
+		args = append(args, req.UserId)
+	}
+	if req.PromoId != "" && req.PromoId != "string" {
+		query += fmt.Sprintf(" AND r.promo_id = $%d", len(args)+1)
+		args = append(args, req.PromoId)
+	}
+	if req.IsActive != "" && req.IsActive != "string" {
+		if req.IsActive == "true" {
+			query += fmt.Sprintf(" AND r.is_active = TRUE")
+		} else if req.IsActive == "false" {
+			query += fmt.Sprintf(" AND r.is_active = FALSE")
+		}
+	}
+
+	query += " ORDER BY r.created_at DESC"
+
+	args = append(args, req.Filter.Limit, req.Filter.Page)
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error while getting promocode: %w", err)
+	}
+	defer rows.Close()
+
+	redemptions := m.PromoRedemptionList{}
+
+	for rows.Next() {
+
+		redemption := m.PromoRedemptionRes{}
+
+		var totalCount int
+
+		err := rows.Scan(
+			&totalCount,
+			&redemption.Id,
+			&redemption.PromoId,
+			&redemption.PromoCode,
+			&redemption.UserId,
+			&redemption.UserName,
+			&redemption.UserPhone,
+			&redemption.OrderId,
+			&redemption.OrderAmount,
+			&redemption.DiscountAmount,
+			&redemption.CourseAmount,
+			&redemption.IsActive,
+			&redemption.CreatedAt,
+			&redemption.DeactivatedAt,
+		)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("error while scanning promocode row: %w", err)
+		}
+
+		redemptions.Redemptions = append(redemptions.Redemptions, &redemption)
+		redemptions.Count = totalCount
+
+	}
+
+	response := m.NewPaginationResponse(req.Filter, redemptions.Count, redemptions.Redemptions)
+
+	return &response, &redemptions, nil
 }
 
 func ComputeDiscount(amount float64, discountType string, discountValue float64, maxDiscount *float64) float64 {

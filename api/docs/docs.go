@@ -5064,6 +5064,130 @@ const docTemplate = `{
                 }
             }
         },
+        "/web/promocode-redemption": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all promocode with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promocode"
+                ],
+                "summary": "Get all promocode",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UserId",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "PromoCode ID",
+                        "name": "promo_id",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "IsActive",
+                        "name": "is_active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PromoRedemptionList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/promocode-redemption/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a promocode by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promocode"
+                ],
+                "summary": "Get promocode by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "PromoCodeRedemption ID",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PromoRedemptionRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/web/promocode/{id}": {
             "get": {
                 "security": [
@@ -7757,10 +7881,10 @@ const docTemplate = `{
         "models.PromoCodeCheckBody": {
             "type": "object",
             "properties": {
-                "code": {
+                "course_id": {
                     "type": "string"
                 },
-                "course_id": {
+                "promocode": {
                     "type": "string"
                 },
                 "tariff_id": {
@@ -7886,6 +8010,64 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "starts_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PromoRedemptionList": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "redemptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PromoRedemptionRes"
+                    }
+                }
+            }
+        },
+        "models.PromoRedemptionRes": {
+            "type": "object",
+            "properties": {
+                "course_amount": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deactivated_at": {
+                    "type": "string"
+                },
+                "discount_amount": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "order_amount": {
+                    "type": "number"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "promo_id": {
+                    "type": "string"
+                },
+                "promocode": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                },
+                "user_phone": {
                     "type": "string"
                 }
             }

@@ -177,4 +177,6 @@ type PromoCodeI interface {
 	Update(req *m.PromoCodeUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
 	Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, error)
+	GetByIdUserPromo(req *m.ById) (*m.PromoRedemptionRes, error)
+	GetAllUserPromo(req *m.PromoRedemptionGetListReq) (*m.PaginationResponse, *m.PromoRedemptionList, error)
 }

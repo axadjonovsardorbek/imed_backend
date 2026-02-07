@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS promo_redemptions (
   order_id        UUID NOT NULL REFERENCES orders(id),
   order_amount    NUMERIC(12,2) NOT NULL,
   discount_amount NUMERIC(12,2) NOT NULL,
+  course_amount   NUMERIC(12,2) NOT NULL,
   is_active       BOOLEAN NOT NULL DEFAULT TRUE,
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   deactivated_at  TIMESTAMP WITH TIME ZONE DEFAULT NULL

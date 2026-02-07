@@ -267,7 +267,7 @@ func (h *Handler) CheckPromoCode(c *gin.Context) {
 		return
 	}
 
-	req.Code = body.Code
+	req.PromoCode = body.PromoCode
 	req.UserId = user_id
 	req.CourseId = body.CourseId
 	req.TariffId = body.TariffId
@@ -284,4 +284,81 @@ func (h *Handler) CheckPromoCode(c *gin.Context) {
 
 	slog.Info("PromoCode created successfully")
 	c.JSON(200, res)
+}
+
+// GetById godoc
+// @Summary Get promocode by ID
+// @Description Get a promocode by their ID
+// @Tags promocode
+// @Accept  json
+// @Produce  json
+// @Param id path string false "PromoCodeRedemption ID"
+// @Success 200 {object} models.PromoRedemptionRes
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /web/promocode-redemption/{id} [get]
+func (h *Handler) GetByIdUserPromoCode(c *gin.Context) {
+	id := c.Param("id")
+
+	slog.Info("Get promocode with id", id)
+	res, err := h.Clients.PromoCode.GetById(context.Background(), &m.ById{Id: id})
+	slog.Info("PromoCode details", res)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting promocode by ID: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("PromoCode retrieved successfully")
+	c.JSON(200, res)
+}
+
+// GetAllPromoCodes godoc
+// @Summary Get all promocode
+// @Description Get all promocode with optional filtering
+// @Tags promocode
+// @Accept  json
+// @Produce  json
+// @Param user_id query string false "UserId"
+// @Param promo_id query string false "PromoCode ID"
+// @Param is_active query string false "IsActive" Enums(true, false)
+// @Param limit query int false "Limit"
+// @Param page query int false "Page"
+// @Success 200 {object} models.PromoRedemptionList
+// @Failure 400 {object} string
+// @Failure 500 {object} string
+// @Security BearerAuth
+// @Router /web/promocode-redemption [get]
+func (h *Handler) GetAllUserPromoCodes(c *gin.Context) {
+	user_id := c.Query("user_id")
+	promo_id := c.Query("promo_id")
+	is_active := c.Query("is_active")
+	limit := c.Query("limit")
+	page := c.Query("page")
+
+	pagination := m.ParsePagination(limit, page)
+
+	req := &m.PromoRedemptionGetListReq{
+		UserId:   user_id,
+		PromoId:  promo_id,
+		IsActive: is_active,
+		Filter:   pagination,
+	}
+
+	slog.Info("Get all promocode with filtes", req)
+	data, _, err := h.Clients.PromoCode.GetAllUserPromo(context.Background(), req)
+	slog.Info("All promocode", data)
+
+	if err != nil {
+		c.JSON(500, gin.H{"message": err.Error()})
+		slog.Error("Error getting promocode: ", err.Error())
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("PromoCodeRedemptions retrieved successfully")
+	c.JSON(200, data)
 }
