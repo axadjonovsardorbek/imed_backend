@@ -24,6 +24,8 @@ func NewOrderRepo(db *sql.DB) *OrderRepo {
 }
 
 func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
+	cfg := config.Load()
+
 	tz, err := r.db.Begin()
 	if err != nil {
 		return nil, err
@@ -41,6 +43,61 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		}
 		err = tz.Commit()
 	}()
+
+	var promocode_id string
+
+	promo_check_query := `
+	SELECT 
+		id
+	FROM
+		promocodes
+	WHERE lower(code) = lower($1)
+	AND deleted_at = 0
+	`
+
+	_ = tz.QueryRow(promo_check_query, req.PromoCode).Scan(&promocode_id)
+
+	if promocode_id != "" {
+
+		var check_id string
+		var check_amount float64
+
+		check_query := `
+	SELECT
+		id,
+		amount
+	FROM
+		orders
+	WHERE
+		user_id = $1
+	AND
+		course_id = $2
+	AND
+		tariff_id = $3 
+	AND 
+		promo_id = $4
+	AND
+		status IN ('NEW','EXPIRED')
+	AND 
+		created_at >= now() - interval '5 days'
+	ORDER BY created_at DESC
+	LIMIT 1
+	`
+
+		_ = tz.QueryRow(check_query, req.UserId, req.CourseId, req.TariffId, promocode_id).Scan(&check_id, &check_amount)
+
+		if check_id != "" && check_amount > 0 {
+			payURL := fmt.Sprintf(
+				"https://my.click.uz/services/pay?merchant_id=%d&service_id=%d&amount=%.2f&transaction_param=%s",
+				cfg.CLICK_MERCHANT_ID,
+				cfg.CLICK_SERVICE_ID,
+				check_amount,
+				check_id,
+			)
+
+			return &m.OrderCreateRes{Id: check_id, Url: payURL}, nil
+		}
+	}
 
 	id := uuid.NewString()
 
@@ -236,7 +293,6 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		}
 	}
 
-	cfg := config.Load()
 	payURL := fmt.Sprintf(
 		"https://my.click.uz/services/pay?merchant_id=%d&service_id=%d&amount=%.2f&transaction_param=%s",
 		cfg.CLICK_MERCHANT_ID,
@@ -280,14 +336,16 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 	AND
 		course_id = $2
 	AND
-		tariff_id = $3
+		tariff_id = $3 
 	AND 
-		(status == 'NEW' OR status == 'EXPIRED')
+		status IN ('NEW','EXPIRED')
+	AND 
+		created_at >= now() - interval '5 days'
 	ORDER BY created_at DESC
 	LIMIT 1
 	`
 
-	_ = r.db.QueryRow(check_query, req.UserId, req.CourseId, req.TariffId).Scan(&check_id, &check_amount)
+	_ = tz.QueryRow(check_query, req.UserId, req.CourseId, req.TariffId).Scan(&check_id, &check_amount)
 
 	if check_id != "" && check_amount > 0 {
 		payURL := fmt.Sprintf(
@@ -300,6 +358,7 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 
 		return &m.OrderCreateRes{Id: check_id, Url: payURL}, nil
 	}
+
 	id := uuid.NewString()
 
 	meta := map[string]any{
