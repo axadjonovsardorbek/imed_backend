@@ -804,7 +804,7 @@ definitions:
     properties:
       course_id:
         type: string
-      promocode:
+      promocode_id:
         type: string
       tariff_id:
         type: string

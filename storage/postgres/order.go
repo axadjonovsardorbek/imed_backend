@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
 	"imed/internal/config"
@@ -44,47 +43,34 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		err = tz.Commit()
 	}()
 
-	var promocode_id string
-
-	promo_check_query := `
-	SELECT 
-		id
-	FROM
-		promocodes
-	WHERE lower(code) = lower($1)
-	AND deleted_at = 0
-	`
-
-	_ = tz.QueryRow(promo_check_query, req.PromoCode).Scan(&promocode_id)
-
-	if promocode_id != "" {
+	if req.PromoCodeId != "" {
 
 		var check_id string
 		var check_amount float64
 
 		check_query := `
-	SELECT
-		id,
-		amount
-	FROM
-		orders
-	WHERE
-		user_id = $1
-	AND
-		course_id = $2
-	AND
-		tariff_id = $3 
-	AND 
-		promo_id = $4
-	AND
-		status IN ('NEW','EXPIRED')
-	AND 
-		created_at >= now() - interval '5 days'
-	ORDER BY created_at DESC
-	LIMIT 1
-	`
+		SELECT
+			id,
+			amount
+		FROM
+			orders
+		WHERE
+			user_id = $1
+		AND
+			course_id = $2
+		AND
+			tariff_id = $3 
+		AND 
+			promo_id = $4
+		AND
+			status IN ('NEW','EXPIRED')
+		AND 
+			created_at >= now() - interval '5 days'
+		ORDER BY created_at DESC
+		LIMIT 1
+		`
 
-		_ = tz.QueryRow(check_query, req.UserId, req.CourseId, req.TariffId, promocode_id).Scan(&check_id, &check_amount)
+		_ = tz.QueryRow(check_query, req.UserId, req.CourseId, req.TariffId, req.PromoCodeId).Scan(&check_id, &check_amount)
 
 		if check_id != "" && check_amount > 0 {
 			payURL := fmt.Sprintf(
@@ -125,6 +111,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 	err = tz.QueryRow(getTariffQuery, req.CourseId, req.TariffId).Scan(&duration, &price)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			
 			return nil, fmt.Errorf("price option not found for course=%s tariff=%s", req.CourseId, req.TariffId)
 		}
 		return nil, err
@@ -136,8 +123,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		totalAmount    float64 = float64(price)
 	)
 
-	code := strings.TrimSpace(req.PromoCode)
-	if code != "" {
+	if req.PromoCodeId != "" {
 		type promoRow struct {
 			ID            string
 			IsActive      bool
@@ -159,10 +145,10 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 					   starts_at, ends_at,
 					   max_uses_total, max_uses_per_user
 				FROM promocodes
-				WHERE lower(code) = lower($1)
+				WHERE id = $1
 				  AND deleted_at = 0
 				FOR UPDATE
-			`, code).Scan(
+			`, req.PromoCodeId).Scan(
 			&p.ID, &p.IsActive, &p.DiscountType, &p.DiscountValue,
 			&p.MinAmount, &p.MaxDiscount,
 			&p.StartsAt, &p.EndsAt,

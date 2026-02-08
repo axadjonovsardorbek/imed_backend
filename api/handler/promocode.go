@@ -276,7 +276,7 @@ func (h *Handler) CheckPromoCode(c *gin.Context) {
 	res, err := h.Clients.PromoCode.Check(context.Background(), &req)
 	slog.Info("Check promocode response", "PromoCode", res)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, res)
 		slog.Error("Error checking promocode: ", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return

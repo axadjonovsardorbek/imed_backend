@@ -21,6 +21,19 @@ func NewPromoCodeRepo(db *sql.DB) *PromoCodeRepo {
 	}
 }
 
+const (
+	ErrUnExpected             = "unexpected error"
+	ErrCourseOrTariffNotFound = "course or tariff not found"
+	ErrPromoNotFound          = "promocode not found"
+	ErrPromoExpired           = "promocode expired"
+	ErrPromoInActive          = "promocode inactive"
+	ErrPromoNotStarted        = "promocode not started"
+	ErrSmallAmount            = "order amount is too small for this promocode"
+	ErrPromoLimitForUser      = "promocode usage limit reached for user"
+	ErrPromoLimitForAll       = "promocode usage limit reached"
+	ErrPromoSuccessfull       = "promocode applied successfully"
+)
+
 func (r *PromoCodeRepo) Create(req *m.PromoCodeCreateReq) (*m.ById, error) {
 	id := uuid.NewString()
 	query := `
@@ -316,11 +329,12 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		LIMIT 1
 	`, req.CourseId, req.TariffId).Scan(&amount)
 	if err == sql.ErrNoRows {
-		res.Message = fmt.Sprintf("course or tariff not found")
-		return res, nil
+		res.Message = ErrCourseOrTariffNotFound
+		return res, fmt.Errorf(ErrCourseOrTariffNotFound)
 	}
 	if err != nil {
-		return nil, err
+		res.Message = ErrUnExpected
+		return res, fmt.Errorf(ErrUnExpected)
 	}
 
 	// 2) promo
@@ -353,11 +367,12 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		&maxUsesTotal, &maxUsesPerUser,
 	)
 	if err == sql.ErrNoRows {
-		res.Message = fmt.Sprintf("promocode not found")
-		return res, nil
+		res.Message = ErrPromoNotFound
+		return res, fmt.Errorf(ErrPromoNotFound)
 	}
 	if err != nil {
-		return nil, err
+		res.Message = ErrUnExpected
+		return res, fmt.Errorf(ErrUnExpected)
 	}
 
 	now := time.Now()
@@ -374,22 +389,22 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 			  AND deleted_at = 0
 		`, promoID)
 
-		res.Message = fmt.Sprintf("promocode expired")
-		return res, nil
+		res.Message = ErrPromoExpired
+		return res, fmt.Errorf(ErrPromoExpired)
 	}
 
 	// 3.1) validate promo (endidan oldin)
 	if !isActive {
-		res.Message = fmt.Sprintf("promocode inactive")
-		return res, nil
+		res.Message = ErrPromoInActive
+		return res, fmt.Errorf(ErrPromoInActive)
 	}
 	if startsAt.Valid && now.Before(startsAt.Time) {
-		res.Message = fmt.Sprintf("promocode not started")
-		return res, nil
+		res.Message = ErrPromoNotStarted
+		return res, fmt.Errorf(ErrPromoNotStarted)
 	}
 	if amount < minOrderAmount {
-		res.Message = fmt.Sprintf("order amount is too small for this promocode")
-		return res, nil
+		res.Message = ErrSmallAmount
+		return res, fmt.Errorf(ErrSmallAmount)
 	}
 
 	// 4) per-user limit
@@ -402,12 +417,13 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		  AND is_active = TRUE
 	`, promoID, req.UserId).Scan(&usedByUser)
 	if err != nil {
-		return nil, err
+		res.Message = ErrUnExpected
+		return res, fmt.Errorf(ErrUnExpected)
 	}
 
 	if usedByUser >= maxUsesPerUser {
-		res.Message = fmt.Sprintf("promocode usage limit reached for user")
-		return res, nil
+		res.Message = ErrPromoLimitForUser
+		return res, fmt.Errorf(ErrPromoLimitForUser)
 	}
 
 	// 5) total limit (optional) + ✅ auto-deactivate if full
@@ -420,7 +436,8 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 			  AND is_active = TRUE
 		`, promoID).Scan(&usedTotal)
 		if err != nil {
-			return nil, err
+			res.Message = ErrUnExpected
+			return res, fmt.Errorf(ErrUnExpected)
 		}
 
 		if usedTotal >= int(maxUsesTotal.Int64) {
@@ -435,8 +452,8 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 				  AND max_uses_total IS NOT NULL
 			`, promoID)
 
-			res.Message = fmt.Sprintf("promocode usage limit reached")
-			return res, nil
+			res.Message = ErrPromoLimitForAll
+			return res, fmt.Errorf(ErrPromoLimitForAll)
 		}
 	}
 
@@ -451,7 +468,7 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 
 	// 7) response
 
-	msg := "promocode applied successfully"
+	msg := ErrPromoSuccessfull
 	res.IsValid = true
 	res.Message = msg
 	res.DiscountType = &discountType
@@ -464,7 +481,6 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 	res.TotalAmount = &total
 
 	return res, nil
-
 }
 
 func (r *PromoCodeRepo) GetByIdUserPromo(req *m.ById) (*m.PromoRedemptionRes, error) {

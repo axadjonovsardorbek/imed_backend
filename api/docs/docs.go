@@ -7797,7 +7797,7 @@ const docTemplate = `{
                 "course_id": {
                     "type": "string"
                 },
-                "promocode": {
+                "promocode_id": {
                     "type": "string"
                 },
                 "tariff_id": {

@@ -45,6 +45,8 @@ services:
       - redis-imed
     networks:
       - imed
+    volumes:
+      - ./internal/secrets/firebase-admin.json:/run/secrets/firebase-admin.json:ro
 
   redis-imed:
     image: redis:latest

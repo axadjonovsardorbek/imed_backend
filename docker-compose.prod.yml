@@ -50,6 +50,8 @@ services:
       - redis-imed-prod
     networks:
       - imed-prod
+    volumes:
+      - ./internal/secrets/firebase-admin.json:/run/secrets/firebase-admin.json:ro
     restart: unless-stopped
 
   redis-imed:

@@ -41,16 +41,16 @@ type OrderGetListReq struct {
 }
 
 type OrderCreateReq struct {
-	UserId    string `json:"user_id"`
-	CourseId  string `json:"course_id"`
-	PromoCode string `json:"promocode"`
-	TariffId  string `json:"tariff_id"`
+	UserId      string `json:"user_id"`
+	CourseId    string `json:"course_id"`
+	PromoCodeId string `json:"promocode_id"`
+	TariffId    string `json:"tariff_id"`
 }
 
 type OrderCreateBody struct {
-	CourseId  string `json:"course_id"`
-	TariffId  string `json:"tariff_id"`
-	PromoCode string `json:"promocode"`
+	CourseId    string `json:"course_id"`
+	TariffId    string `json:"tariff_id"`
+	PromoCodeId string `json:"promocode_id"`
 }
 
 type OrderCreateRes struct {

@@ -21,7 +21,7 @@ func NewOrderService(storage *st.Storage, rdb *redis.Client) *OrderService {
 }
 
 func (s *OrderService) Create(ctx context.Context, req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
-	if req.PromoCode == "" || req.PromoCode == "string" {
+	if req.PromoCodeId == "" || req.PromoCodeId == "string" {
 		res, err := s.storage.OrderS.Create(req)
 		if err != nil {
 			return nil, err
@@ -34,7 +34,7 @@ func (s *OrderService) Create(ctx context.Context, req *m.OrderCreateReq) (*m.Or
 			return nil, err
 		}
 
-		fmt.Println("Applying promo code:", req.PromoCode)
+		fmt.Println("Applying promo code:", req.PromoCodeId)
 		return res, nil
 	}
 }

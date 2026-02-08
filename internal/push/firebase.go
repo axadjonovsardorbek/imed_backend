@@ -26,12 +26,12 @@ func NewClientFromServiceAccountFile(ctx context.Context, serviceAccountPath str
 	app, err := firebase.NewApp(ctx, nil, option.WithCredentialsFile(serviceAccountPath))
 	if err != nil {
 		fmt.Println("Error initializing firebase app:", err)
-		// return nil, fmt.Errorf("firebase.NewApp: %w", err)
+		return nil, fmt.Errorf("firebase.NewApp: %w", err)
 	}
 	msg, err := app.Messaging(ctx)
 	if err != nil {
 		fmt.Println("Error initializing firebase messaging client:", err)
-		// return nil, fmt.Errorf("app.Messaging: %w", err)
+		return nil, fmt.Errorf("app.Messaging: %w", err)
 	}
 	return &Client{msg: msg}, nil
 }

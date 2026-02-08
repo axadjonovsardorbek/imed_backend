@@ -42,7 +42,7 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 	req.UserId = user_id
 	req.CourseId = body.CourseId
 	req.TariffId = body.TariffId
-	req.PromoCode = body.PromoCode
+	req.PromoCodeId = body.PromoCodeId
 
 	slog.Info("Create order", "order", req)
 	res, err := h.Clients.Order.Create(context.Background(), &req)
