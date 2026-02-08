@@ -4713,85 +4713,6 @@ paths:
       summary: Create a new promocode
       tags:
       - promocode
-  /web/promocode-redemption:
-    get:
-      consumes:
-      - application/json
-      description: Get all promocode with optional filtering
-      parameters:
-      - description: UserId
-        in: query
-        name: user_id
-        type: string
-      - description: PromoCode ID
-        in: query
-        name: promo_id
-        type: string
-      - description: IsActive
-        enum:
-        - "true"
-        - "false"
-        in: query
-        name: is_active
-        type: string
-      - description: Limit
-        in: query
-        name: limit
-        type: integer
-      - description: Page
-        in: query
-        name: page
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.PromoRedemptionList'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Get all promocode
-      tags:
-      - promocode
-  /web/promocode-redemption/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get a promocode by their ID
-      parameters:
-      - description: PromoCodeRedemption ID
-        in: path
-        name: id
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.PromoRedemptionRes'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Get promocode by ID
-      tags:
-      - promocode
   /web/promocode/{id}:
     get:
       consumes:
@@ -4887,6 +4808,85 @@ paths:
       security:
       - BearerAuth: []
       summary: Update promocode
+      tags:
+      - promocode
+  /web/promocode/redemption:
+    get:
+      consumes:
+      - application/json
+      description: Get all promocode with optional filtering
+      parameters:
+      - description: UserId
+        in: query
+        name: user_id
+        type: string
+      - description: PromoCode ID
+        in: query
+        name: promo_id
+        type: string
+      - description: IsActive
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: is_active
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PromoRedemptionList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all promocode
+      tags:
+      - promocode
+  /web/promocode/redemption/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a promocode by their ID
+      parameters:
+      - description: PromoCodeRedemption ID
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PromoRedemptionRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get promocode by ID
       tags:
       - promocode
   /web/source:

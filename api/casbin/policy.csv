@@ -96,8 +96,8 @@ p, admin, /web/promocode, GET
 p, admin, /web/promocode/:id, GET
 p, admin, /web/promocode/:id/update, PUT
 p, admin, /web/promocode/:id/delete, DELETE
-p, admin, /web/promocode-redemption, GET
-p, admin, /web/promocode-redemption/:id, GET
+p, admin, /web/promocode/redemption, GET
+p, admin, /web/promocode/redemption/:id, GET
 p, admin, /web/order/:id, GET
 p, admin, /web/order, GET 
 p, admin, /web/file-upload, POST

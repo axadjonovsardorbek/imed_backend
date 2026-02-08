@@ -5064,7 +5064,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/web/promocode-redemption": {
+        "/web/promocode/redemption": {
             "get": {
                 "security": [
                     {
@@ -5140,7 +5140,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/web/promocode-redemption/{id}": {
+        "/web/promocode/redemption/{id}": {
             "get": {
                 "security": [
                     {

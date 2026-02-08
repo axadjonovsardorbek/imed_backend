@@ -297,7 +297,7 @@ func (h *Handler) CheckPromoCode(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /web/promocode-redemption/{id} [get]
+// @Router /web/promocode/redemption/{id} [get]
 func (h *Handler) GetByIdUserPromoCode(c *gin.Context) {
 	id := c.Param("id")
 
@@ -331,7 +331,7 @@ func (h *Handler) GetByIdUserPromoCode(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
-// @Router /web/promocode-redemption [get]
+// @Router /web/promocode/redemption [get]
 func (h *Handler) GetAllUserPromoCodes(c *gin.Context) {
 	user_id := c.Query("user_id")
 	promo_id := c.Query("promo_id")

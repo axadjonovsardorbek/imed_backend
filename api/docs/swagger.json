@@ -5057,7 +5057,7 @@
                 }
             }
         },
-        "/web/promocode-redemption": {
+        "/web/promocode/redemption": {
             "get": {
                 "security": [
                     {
@@ -5133,7 +5133,7 @@
                 }
             }
         },
-        "/web/promocode-redemption/{id}": {
+        "/web/promocode/redemption/{id}": {
             "get": {
                 "security": [
                     {
