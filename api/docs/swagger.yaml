@@ -891,7 +891,7 @@ definitions:
     properties:
       count:
         type: integer
-      promo_codes:
+      promocodes:
         items:
           $ref: '#/definitions/models.PromoCodeRes'
         type: array

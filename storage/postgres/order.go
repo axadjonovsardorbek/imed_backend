@@ -111,7 +111,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 	err = tz.QueryRow(getTariffQuery, req.CourseId, req.TariffId).Scan(&duration, &price)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			
+
 			return nil, fmt.Errorf("price option not found for course=%s tariff=%s", req.CourseId, req.TariffId)
 		}
 		return nil, err
@@ -270,7 +270,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		_, err = tz.Exec(`
 				INSERT INTO promo_redemptions (
 					promo_id, user_id, order_id,
-					order_amount, discount_amount, course_amount
+					order_amount, discount_amount, course_amount,
 					is_active
 				) VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, $6, TRUE)
 			`, *promoID, req.UserId, id, payAmount, discountAmount, float64(price))
@@ -427,7 +427,7 @@ func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 		t.name AS tariff_name,
 		o.duration,
 		o.promo_id,
-		p.code AS promo_code,
+		p.code AS promocode,
 		o.amount,
 		o.discount_amount,
 		o.course_amount,
@@ -492,7 +492,7 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 		t.name AS tariff_name,
 		o.duration,
 		o.promo_id,
-		p.code AS promo_code,
+		p.code AS promocode,
 		o.amount,
 		o.discount_amount,
 		o.course_amount,

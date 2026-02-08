@@ -29,7 +29,7 @@ type PromoCodeRes struct {
 }
 
 type PromoCodeList struct {
-	PromoCodes []*PromoCodeRes `json:"promo_codes"`
+	PromoCodes []*PromoCodeRes `json:"promocodes"`
 	Count      int             `json:"count"`
 }
 
@@ -72,7 +72,7 @@ type PromoCodeCheckRes struct {
 	DiscountValue  *float64 `json:"discount_value"`
 	TarriffId      *string  `json:"tariff_id"`
 	CourseId       *string  `json:"course_id"`
-	PromoCodeId    *string  `json:"promo_code_id"`
+	PromoCodeId    *string  `json:"promocode_id"`
 	CourseAmount   *float64 `json:"course_amount"`
 	DiscountAmount *float64 `json:"discount_amount"`
 	TotalAmount    *float64 `json:"total_amount"`

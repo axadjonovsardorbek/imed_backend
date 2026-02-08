@@ -7930,7 +7930,7 @@ const docTemplate = `{
                 "count": {
                     "type": "integer"
                 },
-                "promo_codes": {
+                "promocodes": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.PromoCodeRes"
