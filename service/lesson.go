@@ -70,29 +70,5 @@ func (s *LessonService) EndLesson(ctx context.Context, req *m.EndUserLessonReq) 
 	return s.storage.LessonS.EndLesson(req)
 }
 func (s *LessonService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.SourceLessonMobileRes, error) {
-	res := &m.SourceLessonMobileRes{}
-
-	key := fmt.Sprintf("lesson_id:%s_user_id:%s_lang:%s",
-		req.Id, req.UserId, req.Language)
-
-	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
-
-	if res.Id == "" {
-		res, err := s.storage.LessonS.GetByIdMobile(req)
-		if err != nil {
-			return nil, err
-		}
-
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
-			}
-		}
-	}
-
-	return res, nil
+	return s.storage.LessonS.GetByIdMobile(req)
 }

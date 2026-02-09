@@ -39,6 +39,7 @@ type Config struct {
 	MINIO_ACCESS_KEY  string
 	MINIO_SECRET_KEY  string
 	MINIO_BUCKET_NAME string
+	MINIO_DOMAIN      string
 }
 
 func Load() Config {
@@ -79,6 +80,7 @@ func Load() Config {
 	config.MINIO_ACCESS_KEY = cast.ToString(coalesce("MINIO_ACCESS_KEY", "minio"))
 	config.MINIO_SECRET_KEY = cast.ToString(coalesce("MINIO_SECRET_KEY", "minio"))
 	config.MINIO_BUCKET_NAME = cast.ToString(coalesce("MINIO_BUCKET_NAME", "test-bucket"))
+	config.MINIO_DOMAIN = cast.ToString(coalesce(("MINIO_DOMAIN"), "minio"))
 
 	return config
 }
