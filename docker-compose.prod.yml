@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  migrate-road:
+  migrate-road-prod:
     container_name: migrate-road-prod
     image: ghcr.io/kukymbr/goose-docker:3.23.0
     environment:
@@ -10,12 +10,12 @@ services:
     volumes:
       - ./migrations:/migrations:ro
     depends_on:
-      postgres-imed:
+      postgres-imed-prod:
         condition: service_healthy
     networks:
       - imed-prod
 
-  postgres-imed:
+  postgres-imed-prod:
     container_name: postgres-imed-prod
     image: postgres:16
     environment:
@@ -35,26 +35,23 @@ services:
       timeout: 3s
       retries: 10
 
-  imed:
+  imed-prod:
     container_name: imed-prod
     build: .
     depends_on:
-      postgres-imed:
+      postgres-imed-prod:
         condition: service_healthy
-      redis-imed:
+      redis-imed-prod:
         condition: service_healthy
     ports:
       - "8005:8005"
-    depends_on:
-      - postgres-imed-prod
-      - redis-imed-prod
     networks:
       - imed-prod
     volumes:
       - ./internal/secrets/firebase-admin.json:/run/secrets/firebase-admin.json:ro
     restart: unless-stopped
 
-  redis-imed:
+  redis-imed-prod:
     image: redis:7
     container_name: redis-imed-prod
     # ports: []
@@ -67,7 +64,7 @@ services:
       timeout: 3s
       retries: 10
 
-  minio-imed:
+  minio-imed-prod:
     image: minio/minio
     container_name: minio-imed-prod
     environment:

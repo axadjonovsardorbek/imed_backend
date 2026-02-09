@@ -436,9 +436,25 @@ func (r *UserRepo) ChangePassword(req *m.ChangePasswordReq) (*m.Void, error) {
 		return nil, err
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(curPass), []byte(req.OldPassword)); err != nil {
-		return nil, fmt.Errorf("invalid current password: %w", err)
+	var valid bool
+
+	if strings.HasPrefix(curPass, "$2") {
+		valid = bcrypt.CompareHashAndPassword(
+			[]byte(curPass),
+			[]byte(req.OldPassword),
+		) == nil
+
+	} else if strings.HasPrefix(curPass, "pbkdf2_sha256$") {
+		valid, _ = helper.CheckDjangoPBKDF2(req.OldPassword, curPass)
 	}
+
+	if !valid {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	// if err := bcrypt.CompareHashAndPassword([]byte(curPass), []byte(req.OldPassword)); err != nil {
+	// 	return nil, fmt.Errorf("invalid current password: %w", err)
+	// }
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
