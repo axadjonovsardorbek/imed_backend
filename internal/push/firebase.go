@@ -1,11 +1,3 @@
-// package push
-// Firebase FCM: single-user va multi-user push jo‘natish (Go Admin SDK)
-//
-// go get firebase.google.com/go/v4
-// go get google.golang.org/api/option
-//
-// Eslatma: FCM Multicast bir so‘rovda max ~500 token. Shuning uchun batching bor.
-
 package push
 
 import (
@@ -118,16 +110,10 @@ func (c *Client) SendToManyTokens(ctx context.Context, tokens []string, title, b
 		res.Successes += br.SuccessCount
 		res.Failures += br.FailureCount
 
-		// qaysi tokenlar invalid bo‘lganini ajratib olamiz
 		for idx, r := range br.Responses {
 			if r.Success {
 				continue
 			}
-			// Invalid/Unregistered tokenlar: DB’dan tozalash yaxshi
-			// Firebase Admin SDK error stringlar turlicha bo‘lishi mumkin, lekin quyidagi 2 ta eng ko‘p:
-			// - "registration-token-not-registered"
-			// - "invalid-registration-token"
-			// messaging.IsUnregistered / IsInvalidArgument tekshiruvlari eng ishonchli
 			if messaging.IsUnregistered(r.Error) || messaging.IsInvalidArgument(r.Error) {
 				res.InvalidTokens = append(res.InvalidTokens, batch[idx])
 			}

@@ -100,6 +100,7 @@ p, admin, /web/promocode/redemption, GET
 p, admin, /web/promocode/redemption/:id, GET
 p, admin, /web/order/:id, GET
 p, admin, /web/order, GET 
+p, admin, /web/dashboard, GET 
 p, admin, /web/file-upload, POST
 
 p, user, /mobile/auth/user/check, POST

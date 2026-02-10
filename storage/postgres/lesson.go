@@ -52,6 +52,39 @@ func (r *LessonRepo) Create(req *m.LessonCreateReq) (*m.ById, error) {
 	return &m.ById{Id: id}, nil
 }
 
+func (r *LessonRepo) GetLessonCourseInfo(req *m.ById) (*m.LessonCourseInfo, error) {
+	var args []interface{}
+
+	query := `
+	SELECT
+	  c.id AS course_id,
+	  (c.name->>$1) AS course_name,
+	  l.id AS lesson_id,
+	  (l.name->>$1) AS lesson_name
+	FROM lessons l
+	JOIN modules m ON m.id = l.module_id AND m.deleted_at=0
+	JOIN courses c ON c.id = m.course_id AND c.deleted_at=0
+	WHERE l.id=$2 AND l.deleted_at=0;
+	`
+	args = append(args, "uz", req.Id)
+
+	row := r.db.QueryRow(query, args...)
+
+	lesson := m.LessonCourseInfo{}
+
+	err := row.Scan(
+		&lesson.CourseId,
+		&lesson.CourseName,
+		&lesson.LessonId,
+		&lesson.LessonName,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting lesson by id: %w", err)
+	}
+	return &lesson, nil
+}
+
 func (r *LessonRepo) GetById(req *m.ById) (*m.LessonRes, error) {
 	var args []interface{}
 

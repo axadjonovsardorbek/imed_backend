@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"imed/internal/helper"
-	"imed/internal/push"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 	"time"
@@ -15,11 +14,11 @@ import (
 
 type CourseService struct {
 	storage st.Storage
-	push    *push.Client
+	push    *PushService
 	rdb     *redis.Client
 }
 
-func NewCourseService(storage *st.Storage, push *push.Client, rdb *redis.Client) *CourseService {
+func NewCourseService(storage *st.Storage, push *PushService, rdb *redis.Client) *CourseService {
 	return &CourseService{storage: *storage, push: push, rdb: rdb}
 }
 
@@ -29,18 +28,16 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 		return nil, err
 	}
 
-	tokens, err := s.storage.UserS.GetTokens()
-	if err != nil {
-		fmt.Println("Error getting tokens:", err)
-	} else {
-		fmt.Println("Tokens retrieved:", tokens)
-		_, err = s.push.SendToManyTokens(ctx, tokens, "Yangi kurs!", "Yangi kurs qo‘shildi 🔥", map[string]string{
-			"type": "new_course",
-		})
-		if err != nil {
-			fmt.Println("Error sending push to many tokens:", err)
-		}
-	}
+	courseNameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
+
+	_ = s.push.SendPush(ctx,
+		m.PushTarget{Type: m.TargetAllUsers},
+		m.PushEvent{
+			Type:       m.EventNewCourse,
+			CourseID:   res.Id,
+			CourseName: courseNameUz,
+		},
+	)
 
 	return res, nil
 }
@@ -108,19 +105,15 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 		return nil, err
 	}
 
-	token, err := s.storage.UserS.GetToken(req.UserId)
-	if err != nil {
-		fmt.Println("Error getting token:", err)
-	} else {
-		fmt.Println("Token retrieved:", token)
-		err = s.push.SendToToken(ctx, *token, "Kurs sotib olindi", "Kursingiz aktivlashtirildi ✅", map[string]string{
-			"type": "course_purchased",
-		})
-
-		if err != nil {
-			fmt.Println("Error sending push to token:", err)
-		}
-	}
+	course, _ := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
+	_ = s.push.SendPush(ctx,
+		m.PushTarget{Type: m.TargetUser, UserID: req.UserId},
+		m.PushEvent{
+			Type:       m.EventCourseAssigned,
+			CourseID:   course.Id,
+			CourseName: course.Name["uz"],
+		},
+	)
 
 	return res, nil
 }

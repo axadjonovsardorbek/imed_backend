@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	m "imed/pkg/models"
 )
 
@@ -70,6 +71,7 @@ type LessonI interface {
 	GetAll(req *m.LessonGetListReq) (*m.PaginationResponse, *m.LessonList, error)
 	Update(req *m.LessonUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	GetLessonCourseInfo(req *m.ById) (*m.LessonCourseInfo, error)
 	EndLesson(req *m.EndUserLessonReq) (*m.Void, error)
 	GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes, error)
 	// GetAllMobile(req *m.LessonGetListMobileReq) (*m.PaginationResponse, *m.LessonMobileList, error)
@@ -95,7 +97,7 @@ type SourceI interface {
 
 type UserI interface {
 	GetToken(user_id string) (*string, error)
-	GetTokens() ([]string, error)
+	GetTokens(ctx context.Context, f m.TokenFilter) ([]string, error)
 	CreateUser(req *m.UserLoginReq) (*m.ById, error)
 	Check(req *m.UserCheckReq) (*m.UserCheckRes, error)
 	Login(req *m.UserLoginReq) (*m.TokenRes, error)
@@ -179,4 +181,8 @@ type PromoCodeI interface {
 	Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, error)
 	GetByIdUserPromo(req *m.ById) (*m.PromoRedemptionRes, error)
 	GetAllUserPromo(req *m.PromoRedemptionGetListReq) (*m.PaginationResponse, *m.PromoRedemptionList, error)
+}
+
+type DashBoardI interface {
+	GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, error)
 }

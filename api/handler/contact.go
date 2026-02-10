@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	m "imed/pkg/models"
@@ -30,6 +31,20 @@ func (h *Handler) CreateContact(c *gin.Context) {
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
+	}
+
+	url_check := isValidURL(req.LinkUrl)
+	if !url_check {
+		c.JSON(400, gin.H{"message": "invalid url"})
+		slog.Error("Invalid url")
+		smssender(c, fmt.Errorf("invalid url"), 400)
+	}
+
+	phone_check := isValidPhone(req.PhoneNumber)
+	if !phone_check {
+		c.JSON(400, gin.H{"message": "invalid phone"})
+		slog.Error("Invalid phone")
+		smssender(c, fmt.Errorf("invalid phone"), 400)
 	}
 
 	slog.Info("Create contact", "Contact", req)
@@ -155,6 +170,20 @@ func (h *Handler) UpdateContact(c *gin.Context) {
 	req.LinkUrl = body.LinkUrl
 	req.Name = body.Name
 	req.PhoneNumber = body.PhoneNumber
+
+	url_check := isValidURL(req.LinkUrl)
+	if !url_check {
+		c.JSON(400, gin.H{"message": "invalid url"})
+		slog.Error("Invalid url")
+		smssender(c, fmt.Errorf("invalid url"), 400)
+	}
+
+	phone_check := isValidPhone(req.PhoneNumber)
+	if !phone_check {
+		c.JSON(400, gin.H{"message": "invalid phone"})
+		slog.Error("Invalid phone")
+		smssender(c, fmt.Errorf("invalid phone"), 400)
+	}
 
 	slog.Info("Update Contact", req)
 	_, err := h.Clients.Contact.Update(context.Background(), &req)

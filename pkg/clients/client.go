@@ -26,27 +26,30 @@ type Clients struct {
 	Order        *service.OrderService
 	Tariff       *service.TariffService
 	PromoCode    *service.PromoCodeService
+	Dashboard    *service.DashboardService
 	User         *service.UserService
 }
 
-func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, push *push.Client) (*Clients, error) {
+func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, pushClient *push.Client) (*Clients, error) {
+	pushSvc := service.NewPushService(conn, pushClient)
 	return &Clients{
 		Admin:        service.NewAdminService(conn),
 		About:        service.NewAboutService(conn, rdb),
 		Banner:       service.NewBannerService(conn, rdb),
 		Contact:      service.NewContactService(conn, rdb),
-		Course:       service.NewCourseService(conn, push, rdb),
+		Course:       service.NewCourseService(conn, pushSvc, rdb),
 		Faq:          service.NewFaqService(conn, rdb),
-		Lesson:       service.NewLessonService(conn, rdb),
+		Lesson:       service.NewLessonService(conn, rdb, pushSvc),
 		Module:       service.NewModuleService(conn, rdb),
 		Source:       service.NewSourceService(conn, rdb),
 		Subject:      service.NewSubjectService(conn, rdb),
 		Teacher:      service.NewTeacherService(conn, rdb),
 		Notification: service.NewNotificationService(conn, rdb),
 		AppRoute:     service.NewAppRouteService(conn, rdb),
-		Order:        service.NewOrderService(conn, rdb),
+		Order:        service.NewOrderService(conn, rdb, pushSvc),
 		Tariff:       service.NewTariffService(conn, rdb),
 		PromoCode:    service.NewPromoCodeService(conn, rdb),
+		Dashboard:    service.NewDashboardService(conn, rdb),
 		User:         service.NewUserService(conn, rdb),
 	}, nil
 }

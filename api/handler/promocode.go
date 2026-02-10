@@ -48,6 +48,10 @@ func (h *Handler) CreatePromoCode(c *gin.Context) {
 		return
 	}
 
+	if req.DiscountType == "fixed" {
+		req.MaxDiscount = req.DiscountValue
+	}
+
 	slog.Info("Create promocode", "PromoCode", req)
 	res, err := h.Clients.PromoCode.Create(context.Background(), &req)
 	slog.Info("Create promocode response", "PromoCode", res)
@@ -191,6 +195,10 @@ func (h *Handler) UpdatePromoCode(c *gin.Context) {
 		smssender(c, fmt.Errorf("invalid start/end date"), http.StatusBadRequest)
 		c.JSON(http.StatusBadRequest, gin.H{"message": "start/end date must be YYYY-MM-DD"})
 		return
+	}
+
+	if req.DiscountType == "fixed" {
+		req.MaxDiscount = req.DiscountValue
 	}
 
 	slog.Info("Update PromoCode", req)

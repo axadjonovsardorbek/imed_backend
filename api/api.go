@@ -215,6 +215,11 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			order.GET("", h.GetAllOrders)
 		}
 
+		dashboard := web.Group("/dashboard").Use(mid.NewAuth(enforcer))
+		{
+			dashboard.GET("", h.GetDashboard)
+		}
+
 		web.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer))
 	}
 
