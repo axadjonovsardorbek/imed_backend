@@ -89,10 +89,8 @@ func (m *MinIO) Upload(fileName, filePath string) (string, error) {
 		return "", err
 	}
 
-	serverHost := "bucket"
-	domain := "axadjonovsardorbek.uz"
-	minioURL := fmt.Sprintf("https://%s.%s/%s/%s", serverHost, domain, bucketName, fileName)
-	// minioURL := fmt.Sprintf("%s/%s", bucketName, fileName)
+	domain := m.Cnf.MINIO_DOMAIN
+	minioURL := fmt.Sprintf("%s/%s/%s", domain, bucketName, fileName)
 
 	return minioURL, nil
 }
