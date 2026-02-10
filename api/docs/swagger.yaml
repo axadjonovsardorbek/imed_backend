@@ -127,17 +127,14 @@ definitions:
       app_version:
         type: object
       call_center:
+        example: "+998901234567"
         type: string
       payment_min_version:
+        example: 1.0.5
         type: string
       support_url:
+        example: https://t.me/support
         type: string
-    required:
-    - app_links
-    - app_version
-    - call_center
-    - payment_min_version
-    - support_url
     type: object
   models.AppRouteList:
     properties:
@@ -155,16 +152,22 @@ definitions:
       app_version:
         type: object
       call_center:
+        example: "+998901234567"
         type: string
       created_at:
+        example: "2026-02-10T10:00:00Z"
         type: string
       id:
+        example: uuid-string
         type: string
       payment_min_version:
+        example: 1.0.5
         type: string
       support_url:
+        example: https://t.me/support
         type: string
       updated_at:
+        example: "2026-02-10T10:00:00Z"
         type: string
     type: object
   models.AppRouteUpdateBody:
@@ -174,17 +177,14 @@ definitions:
       app_version:
         type: object
       call_center:
+        example: "+998901234567"
         type: string
       payment_min_version:
+        example: 1.0.5
         type: string
       support_url:
+        example: https://t.me/support
         type: string
-    required:
-    - app_links
-    - app_version
-    - call_center
-    - payment_min_version
-    - support_url
     type: object
   models.BannerCreateBody:
     properties:
@@ -471,6 +471,29 @@ definitions:
         type: string
       teacher_id:
         type: string
+    type: object
+  models.DashboardRes:
+    properties:
+      courses:
+        type: integer
+      documents:
+        type: integer
+      lessons:
+        type: integer
+      modules:
+        type: integer
+      subjects:
+        type: integer
+      tariffs:
+        type: integer
+      teachers:
+        type: integer
+      tests:
+        type: integer
+      users:
+        type: integer
+      videos:
+        type: integer
     type: object
   models.FaqCreateBody:
     properties:
@@ -3799,6 +3822,54 @@ paths:
       summary: Update user course
       tags:
       - course
+  /web/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get dashboard
+      parameters:
+      - description: Type (range, day, week, month, year)
+        enum:
+        - range
+        - day
+        - week
+        - month
+        - year
+        in: query
+        name: type
+        type: string
+      - description: Day (YYYY-MM-DD)
+        in: query
+        name: day
+        type: string
+      - description: From Date (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: To Date (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DashboardRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get dashboard
+      tags:
+      - dashboard
   /web/faq:
     get:
       consumes:

@@ -14,10 +14,11 @@ import (
 type OrderService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewOrderService(storage *st.Storage, rdb *redis.Client) *OrderService {
-	return &OrderService{storage: *storage, rdb: rdb}
+func NewOrderService(storage *st.Storage, rdb *redis.Client, push *PushService) *OrderService {
+	return &OrderService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *OrderService) Create(ctx context.Context, req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
@@ -94,6 +95,51 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 	fmt.Println("ApplyComplete result:", res, "error:", err)
 	fmt.Println("Request details:", req)
 	fmt.Println("Response details:", res)
+
+	orderID := req.OrderId
+	code := res.Error
+
+	go func(orderID string, code int) {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("push goroutine panic:", r)
+			}
+		}()
+
+		pushCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		order, err2 := s.storage.OrderS.GetById(&m.ById{Id: orderID})
+		if err2 != nil || order == nil || order.UserId == "" {
+			fmt.Println("push skipped, order fetch error:", err2)
+			return
+		}
+
+		var event m.PushEvent
+		if code == 0 {
+			event = m.PushEvent{
+				Type:       m.EventPaymentSuccess,
+				OrderID:    order.Id,
+				CourseID:   order.CourseId,
+				CourseName: order.CourseName,
+			}
+		} else if code != 0 && code != -4 {
+			event = m.PushEvent{
+				Type:       m.EventPaymentFailed,
+				OrderID:    order.Id,
+				CourseID:   order.CourseId,
+				CourseName: order.CourseName,
+			}
+		}
+
+		if err := s.push.SendPush(pushCtx,
+			m.PushTarget{Type: m.TargetUser, UserID: order.UserId},
+			event,
+		); err != nil {
+			fmt.Println("push send error:", err)
+		}
+
+	}(orderID, code)
 
 	return res, err
 }

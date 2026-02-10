@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
@@ -26,32 +27,45 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 		db: db,
 	}
 }
+func (r *UserRepo) GetTokens(ctx context.Context, f m.TokenFilter) ([]string, error) {
+	q := `SELECT DISTINCT u.fcm_token FROM users u `
+	args := make([]any, 0, 2)
 
-func (r *UserRepo) GetTokens() ([]string, error) {
-	query := `
-	SELECT fcm_token
-	FROM users
-	WHERE deleted_at = 0
-	AND fcm_token IS NOT NULL
-	AND fcm_token <> ''
-	`
+	if f.CourseID != "" {
+		q += `JOIN user_courses uc ON uc.user_id = u.id `
+	}
 
-	rows, err := r.db.Query(query)
+	q += `
+WHERE u.deleted_at = 0
+  AND u.fcm_token IS NOT NULL
+  AND u.fcm_token <> ''
+`
+
+	if f.CourseID != "" {
+		args = append(args, f.CourseID)
+		q += fmt.Sprintf(`
+  AND uc.deleted_at = 0
+  AND uc.course_id = $%d
+`, len(args))
+	}
+
+	rows, err := r.db.QueryContext(ctx, q, args...)
 	if err != nil {
-		return nil, fmt.Errorf("error while getting fcm tokens: %w", err)
+		return nil, fmt.Errorf("get fcm tokens query: %w", err)
 	}
 	defer rows.Close()
 
-	var tokens []string
-
+	tokens := make([]string, 0, 256)
 	for rows.Next() {
 		var token string
 		if err := rows.Scan(&token); err != nil {
-			return nil, fmt.Errorf("error while scanning fcm token: %w", err)
+			return nil, fmt.Errorf("scan fcm token: %w", err)
 		}
 		tokens = append(tokens, token)
 	}
-
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate fcm tokens: %w", err)
+	}
 	return tokens, nil
 }
 

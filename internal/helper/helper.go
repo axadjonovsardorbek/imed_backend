@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -99,4 +100,30 @@ func CheckDjangoPBKDF2(password, stored string) (bool, error) {
 	)
 
 	return subtle.ConstantTimeCompare(got, want) == 1, nil
+}
+
+func PickFromJSONStr(jsonStr string, lang string) (string, error) {
+	jsonStr = strings.TrimSpace(jsonStr)
+	if jsonStr == "" {
+		return "", nil
+	}
+
+	var m map[string]string
+	if err := json.Unmarshal([]byte(jsonStr), &m); err != nil {
+		return "", fmt.Errorf("invalid json string: %w", err)
+	}
+
+	if v := strings.TrimSpace(m[lang]); v != "" {
+		return v, nil
+	}
+	if v := strings.TrimSpace(m["uz"]); v != "" {
+		return v, nil
+	}
+	if v := strings.TrimSpace(m["ru"]); v != "" {
+		return v, nil
+	}
+	if v := strings.TrimSpace(m["en"]); v != "" {
+		return v, nil
+	}
+	return "", nil
 }

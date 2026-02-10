@@ -14,14 +14,34 @@ import (
 type LessonService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewLessonService(storage *st.Storage, rdb *redis.Client) *LessonService {
-	return &LessonService{storage: *storage, rdb: rdb}
+func NewLessonService(storage *st.Storage, rdb *redis.Client, push *PushService) *LessonService {
+	return &LessonService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.ById, error) {
-	return s.storage.LessonS.Create(req)
+	res, err := s.storage.LessonS.Create(req)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: res.Id})
+	if err == nil {
+		_ = s.push.SendPush(ctx,
+			m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.CourseId},
+			m.PushEvent{
+				Type:       m.EventLessonAdded,
+				CourseID:   info.CourseId,
+				CourseName: info.CourseName,
+				LessonID:   info.LessonId,
+				LessonName: info.LessonName,
+			},
+		)
+	}
+
+	return res, nil
 }
 
 func (s *LessonService) GetById(ctx context.Context, req *m.ById) (*m.LessonRes, error) {

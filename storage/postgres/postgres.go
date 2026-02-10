@@ -28,6 +28,7 @@ type Storage struct {
 	OrderS        storage.OrderI
 	TariffS       storage.TariffI
 	PromoCodeS    storage.PromoCodeI
+	DashboardS    storage.DashBoardI
 	UserS         storage.UserI
 }
 
@@ -60,6 +61,7 @@ func NewPostgresStorage(cf config.Config) (*Storage, error) {
 	order := NewOrderRepo(db)
 	tariff := NewTariffRepo(db)
 	promocode := NewPromoCodeRepo(db)
+	dashboard := NewDashboardRepo(db)
 	user := NewUserRepo(db)
 
 	return &Storage{
@@ -80,6 +82,7 @@ func NewPostgresStorage(cf config.Config) (*Storage, error) {
 		OrderS:        order,
 		TariffS:       tariff,
 		PromoCodeS:    promocode,
+		DashboardS:    dashboard,
 		UserS:         user,
 	}, nil
 }

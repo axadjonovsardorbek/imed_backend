@@ -18,6 +18,13 @@ type LessonCreateBody struct {
 	OrderNum int               `json:"order_num"`
 }
 
+type LessonCourseInfo struct {
+	CourseId   string `json:"course_id"`
+	CourseName string `json:"course_name"`
+	LessonId   string `json:"lesson_id"`
+	LessonName string `json:"lesson_name"`
+}
+
 type LessonRes struct {
 	Id         string            `json:"id"`
 	Name       map[string]string `json:"name"`

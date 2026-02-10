@@ -6,49 +6,49 @@ import (
 )
 
 type AppVersionRes struct {
-	Android string `json:"android" db:"android"`
-	IOS     string `json:"ios" db:"ios"`
+	Android string `json:"android" db:"android" example:"1.0.5"`
+	IOS     string `json:"ios" db:"ios" example:"1.0.5"`
 }
 
 type AppLinksRes struct {
-	Google string `json:"google" db:"google"`
-	Apple  string `json:"apple" db:"apple"`
+	Google string `json:"google" db:"google" example:"https://play.google.com/store/apps/details?id=app"`
+	Apple  string `json:"apple" db:"apple" example:"https://apps.apple.com/app/id123456"`
 }
 
 type AppRouteRes struct {
-	Id                string        `json:"id" db:"id"`
-	CallCenter        string        `json:"call_center" db:"call_center"`
-	SupportUrl        string        `json:"support_url" db:"support_url"`
-	AppVersion        AppVersionRes `json:"app_version" db:"app_version" swaggertype:"object"`
-	AppLinks          AppLinksRes   `json:"app_links" db:"app_links" swaggertype:"object"`
-	PaymentMinVersion string        `json:"payment_min_version" db:"payment_min_version"`
-	CreatedAt         string        `json:"created_at" db:"created_at"`
-	UpdatedAt         string        `json:"updated_at" db:"updated_at"`
+	Id                string        `json:"id" db:"id" example:"uuid-string"`
+	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
+	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
+	CreatedAt         string        `json:"created_at" example:"2026-02-10T10:00:00Z"`
+	UpdatedAt         string        `json:"updated_at" example:"2026-02-10T10:00:00Z"`
 }
 
 type AppRouteCreateReq struct {
-	CallCenter        string        `json:"call_center" binding:"required"`
-	SupportUrl        string        `json:"support_url" binding:"required"`
-	AppVersion        AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
-	AppLinks          AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
-	PaymentMinVersion string        `json:"payment_min_version" binding:"required"`
+	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
+	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
 }
 
 type AppRouteUpdateReq struct {
 	Id                string        `json:"id" binding:"required"`
-	CallCenter        string        `json:"call_center" binding:"required"`
-	SupportUrl        string        `json:"support_url" binding:"required"`
-	AppVersion        AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
-	AppLinks          AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
-	PaymentMinVersion string        `json:"payment_min_version" binding:"required"`
+	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
+	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
 }
 
 type AppRouteUpdateBody struct {
-	CallCenter        string        `json:"call_center" binding:"required"`
-	SupportUrl        string        `json:"support_url" binding:"required"`
-	AppVersion        AppVersionRes `json:"app_version" binding:"required" swaggertype:"object"`
-	AppLinks          AppLinksRes   `json:"app_links" binding:"required" swaggertype:"object"`
-	PaymentMinVersion string        `json:"payment_min_version" binding:"required"`
+	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
+	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
+	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
+	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
 }
 
 type AppRouteGetListReq struct {

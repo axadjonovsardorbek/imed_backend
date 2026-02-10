@@ -3628,6 +3628,79 @@ const docTemplate = `{
                 }
             }
         },
+        "/web/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get dashboard",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dashboard"
+                ],
+                "summary": "Get dashboard",
+                "parameters": [
+                    {
+                        "enum": [
+                            "range",
+                            "day",
+                            "week",
+                            "month",
+                            "year"
+                        ],
+                        "type": "string",
+                        "description": "Type (range, day, week, month, year)",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Day (YYYY-MM-DD)",
+                        "name": "day",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "From Date (YYYY-MM-DD)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "To Date (YYYY-MM-DD)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DashboardRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/web/faq": {
             "get": {
                 "security": [
@@ -6755,13 +6828,6 @@ const docTemplate = `{
         },
         "models.AppRouteCreateReq": {
             "type": "object",
-            "required": [
-                "app_links",
-                "app_version",
-                "call_center",
-                "payment_min_version",
-                "support_url"
-            ],
             "properties": {
                 "app_links": {
                     "type": "object"
@@ -6770,13 +6836,16 @@ const docTemplate = `{
                     "type": "object"
                 },
                 "call_center": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+998901234567"
                 },
                 "payment_min_version": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1.0.5"
                 },
                 "support_url": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://t.me/support"
                 }
             }
         },
@@ -6804,34 +6873,33 @@ const docTemplate = `{
                     "type": "object"
                 },
                 "call_center": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+998901234567"
                 },
                 "created_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2026-02-10T10:00:00Z"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "uuid-string"
                 },
                 "payment_min_version": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1.0.5"
                 },
                 "support_url": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://t.me/support"
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2026-02-10T10:00:00Z"
                 }
             }
         },
         "models.AppRouteUpdateBody": {
             "type": "object",
-            "required": [
-                "app_links",
-                "app_version",
-                "call_center",
-                "payment_min_version",
-                "support_url"
-            ],
             "properties": {
                 "app_links": {
                     "type": "object"
@@ -6840,13 +6908,16 @@ const docTemplate = `{
                     "type": "object"
                 },
                 "call_center": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+998901234567"
                 },
                 "payment_min_version": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1.0.5"
                 },
                 "support_url": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "https://t.me/support"
                 }
             }
         },
@@ -7285,6 +7356,41 @@ const docTemplate = `{
                 },
                 "teacher_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.DashboardRes": {
+            "type": "object",
+            "properties": {
+                "courses": {
+                    "type": "integer"
+                },
+                "documents": {
+                    "type": "integer"
+                },
+                "lessons": {
+                    "type": "integer"
+                },
+                "modules": {
+                    "type": "integer"
+                },
+                "subjects": {
+                    "type": "integer"
+                },
+                "tariffs": {
+                    "type": "integer"
+                },
+                "teachers": {
+                    "type": "integer"
+                },
+                "tests": {
+                    "type": "integer"
+                },
+                "users": {
+                    "type": "integer"
+                },
+                "videos": {
+                    "type": "integer"
                 }
             }
         },
