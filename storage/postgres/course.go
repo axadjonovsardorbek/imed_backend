@@ -344,31 +344,6 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		}
 	}()
 
-	id := uuid.NewString()
-	query := `
-	INSERT INTO user_courses (
-		id,
-		user_id,
-		course_id,
-		tariff_id,
-		started_at,
-		ended_at
-	) VALUES ($1, $2, $3, $4, $5, $6)
-	`
-
-	_, err = tz.Exec(query,
-		id,
-		req.UserId,
-		req.CourseId,
-		req.TariffId,
-		req.StartedAt,
-		req.EndedAt,
-	)
-
-	if err != nil {
-		return nil, fmt.Errorf("error while buying course: %w", err)
-	}
-
 	var duration, price int
 
 	getTariffQuery := `
@@ -423,6 +398,31 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 
 	if err != nil {
 		return nil, fmt.Errorf("error while creating order: %w", err)
+	}
+
+	id := uuid.NewString()
+	query := `
+	INSERT INTO user_courses (
+		id,
+		user_id,
+		course_id,
+		tariff_id,
+		started_at,
+		ended_at
+	) VALUES ($1, $2, $3, $4, $5, $6)
+	`
+
+	_, err = tz.Exec(query,
+		id,
+		req.UserId,
+		req.CourseId,
+		req.TariffId,
+		req.StartedAt,
+		req.EndedAt,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while buying course: %w", err)
 	}
 
 	return &m.Void{}, nil
