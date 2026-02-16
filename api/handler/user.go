@@ -78,10 +78,12 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	var body m.ChangePasswordBody
 
 	user_id := claimData(c, "user_id")
+	fmt.Println("userId", user_id)
 	if user_id == "" {
 		return
 	}
 	role := claimData(c, "role")
+	fmt.Println("role", role)
 	if role == "" {
 		return
 	}
