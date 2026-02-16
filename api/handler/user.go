@@ -72,8 +72,77 @@ func (h *Handler) CreateUser(c *gin.Context) {
 // @Failure 400 {object} string "Invalid request payload"
 // @Failure 500 {object} string "Server error"
 // @Router /web/auth/password/change [put]
+func (h *Handler) ChangePasswordWeb(c *gin.Context) {
+	var req m.ChangePasswordReq
+	var body m.ChangePasswordBody
+
+	user_id := claimData(c, "user_id")
+	fmt.Println("userId", user_id)
+	if user_id == "" {
+		return
+	}
+	role := claimData(c, "role")
+	fmt.Println("role", role)
+	if role == "" {
+		return
+	}
+
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		slog.Error("Error binding request body", err)
+		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	if body.OldPassword == body.NewPassword || body.OldPassword == body.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "the old password must not be the same as the new password.",
+		})
+		slog.Error("Error changing password")
+		smssender(c, fmt.Errorf("the old password same as the new password"), http.StatusBadRequest)
+		return
+	}
+	if body.NewPassword != body.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "the new password must not be the different as the confirm password.",
+		})
+		slog.Error("Error changing password")
+		smssender(c, fmt.Errorf("the confirm password different as the new password"), http.StatusBadRequest)
+		return
+	}
+
+	req.NewPassword = body.NewPassword
+	req.OldPassword = body.OldPassword
+	req.Id = user_id
+	req.Role = role
+
+	slog.Info("Change password credentials ", req)
+	res, err := h.Clients.User.ChangePassword(context.Background(), &req)
+	slog.Info("Change password response", res)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		slog.Error("Error while check", err)
+		smssender(c, err, http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "password changed successfully"})
+}
+
+// ChangePassword godoc
+// @Summary Change password
+// @Description Change password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param credentials body models.ChangePasswordBody true "Change password credentials"
+// @Success 200 {object} string "Password changed successfully"
+// @Failure 400 {object} string "Invalid request payload"
+// @Failure 500 {object} string "Server error"
 // @Router /mobile/auth/password/change [put]
-func (h *Handler) ChangePassword(c *gin.Context) {
+func (h *Handler) ChangePasswordMobile(c *gin.Context) {
 	var req m.ChangePasswordReq
 	var body m.ChangePasswordBody
 
