@@ -466,16 +466,19 @@ func (r *UserRepo) ChangePassword(req *m.ChangePasswordReq) (*m.Void, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	// if err := bcrypt.CompareHashAndPassword([]byte(curPass), []byte(req.OldPassword)); err != nil {
-	// 	return nil, fmt.Errorf("invalid current password: %w", err)
-	// }
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("error while hashing password: %w", err)
 	}
 
-	queryUpdate := fmt.Sprintf("UPDATE %s SET password = $1 WHERE id = $2 AND deleted_at = 0", req.Role+"s")
+	var queryUpdate string
+	if req.Role == "user" {
+		queryUpdate = "UPDATE users SET password = $1 WHERE id = $2 AND deleted_at = 0"
+	} else if req.Role == "admin" {
+		queryUpdate = "UPDATE admins SET password = $1 WHERE id = $2"
+	} else {
+		return nil, fmt.Errorf("incorrect role")
+	}
 
 	_, err = r.db.Exec(queryUpdate, string(hashedPassword), req.Id)
 
