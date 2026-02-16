@@ -440,7 +440,15 @@ func (r *UserRepo) Delete(req *m.ById) (*m.Void, error) {
 func (r *UserRepo) ChangePassword(req *m.ChangePasswordReq) (*m.Void, error) {
 	var curPass string
 
-	queryCurrent := fmt.Sprintf("SELECT password FROM %s WHERE id = $1 AND deleted_at = 0", req.Role+"s")
+	var queryCurrent string
+
+	if req.Role == "user" {
+		queryCurrent = "SELECT password FROM users WHERE id = $1 AND deleted_at = 0"
+	} else if req.Role == "admin" {
+		queryCurrent = "SELECT password FROM %s WHERE id = $1"
+	} else {
+		return nil, fmt.Errorf("incorrect role")
+	}
 
 	row := r.db.QueryRow(queryCurrent, req.Id)
 
@@ -498,15 +506,15 @@ func (r *UserRepo) RefreshPassword(req *m.RefreshPasswordReq) (*m.RefreshPasswor
 		return nil, fmt.Errorf("error while hashing password: %w", err)
 	}
 
-	query := fmt.Sprintf(`
-	UPDATE %s
-	SET
-		password = $1
-	WHERE
-		id = $2
-	AND
-		deleted_at = 0
-	`, req.Role+"s")
+	var query string
+
+	if req.Role == "user" {
+		query = "UPDATE SET password WHERE id = $1 AND deleted_at = 0"
+	} else if req.Role == "admin" {
+		query = "UPDATE SET password WHERE id = $1"
+	} else {
+		return nil, fmt.Errorf("incorrect role")
+	}
 
 	_, err = r.db.Exec(query, string(hashedPassword), req.UserId)
 
