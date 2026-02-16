@@ -77,6 +77,15 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	var req m.ChangePasswordReq
 	var body m.ChangePasswordBody
 
+	user_id := claimData(c, "user_id")
+	if user_id == "" {
+		return
+	}
+	role := claimData(c, "role")
+	if role == "" {
+		return
+	}
+
 	if err := c.BindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
@@ -98,15 +107,6 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 		})
 		slog.Error("Error changing password")
 		smssender(c, fmt.Errorf("the confirm password different as the new password"), http.StatusBadRequest)
-		return
-	}
-
-	user_id := claimData(c, "user_id")
-	if user_id == "" {
-		return
-	}
-	role := claimData(c, "role")
-	if role == "" {
 		return
 	}
 
