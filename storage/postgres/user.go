@@ -445,7 +445,7 @@ func (r *UserRepo) ChangePassword(req *m.ChangePasswordReq) (*m.Void, error) {
 	if req.Role == "user" {
 		queryCurrent = "SELECT password FROM users WHERE id = $1 AND deleted_at = 0"
 	} else if req.Role == "admin" {
-		queryCurrent = "SELECT password FROM %s WHERE id = $1"
+		queryCurrent = "SELECT password FROM admins WHERE id = $1"
 	} else {
 		return nil, fmt.Errorf("incorrect role")
 	}
