@@ -225,7 +225,10 @@ func NewApi(h *handler.Handler) *gin.Engine {
 
 	mobile := router.Group("/mobile")
 	{
-		mobile.PUT("/auth/password/change", h.ChangePasswordMobile).Use(mid.NewAuth(enforcer))
+		auth := mobile.Group("/auth").Use(mid.NewAuth(enforcer))
+		{
+			auth.PUT("/password/change", h.ChangePasswordMobile)
+		}
 
 		user := mobile.Group("/user").Use(mid.NewAuth(enforcer))
 		{
