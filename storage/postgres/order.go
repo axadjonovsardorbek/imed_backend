@@ -65,7 +65,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		AND
 			status IN ('NEW','EXPIRED')
 		AND 
-			created_at >= now() - interval '5 days'
+			created_at >= now() - interval '1 days'
 		ORDER BY created_at DESC
 		LIMIT 1
 		`
@@ -326,7 +326,7 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 	AND 
 		status IN ('NEW','EXPIRED')
 	AND 
-		created_at >= now() - interval '5 days'
+		created_at >= now() - interval '1 days'
 	ORDER BY created_at DESC
 	LIMIT 1
 	`
