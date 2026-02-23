@@ -509,9 +509,9 @@ func (r *UserRepo) RefreshPassword(req *m.RefreshPasswordReq) (*m.RefreshPasswor
 	var query string
 
 	if req.Role == "user" {
-		query = "UPDATE SET password WHERE id = $1 AND deleted_at = 0"
+		query = "UPDATE SET password = $1 WHERE id = $2 AND deleted_at = 0"
 	} else if req.Role == "admin" {
-		query = "UPDATE SET password WHERE id = $1"
+		query = "UPDATE SET password = $1 WHERE id = $2"
 	} else {
 		return nil, fmt.Errorf("incorrect role")
 	}
