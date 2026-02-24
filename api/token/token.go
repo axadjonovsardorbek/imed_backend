@@ -26,7 +26,7 @@ func GenerateJWTToken(userID string, role string) *Tokens {
 	claims["user_id"] = userID
 	claims["role"] = role
 	claims["iat"] = time.Now().Unix()
-	claims["exp"] = time.Now().Add(72 * time.Hour).Unix() // Token expires in 3 days
+	claims["exp"] = time.Now().Add(4320 * time.Hour).Unix() // Token expires in 180 days
 	access, err := accessToken.SignedString([]byte(signingKey))
 	if err != nil {
 		log.Fatal("error while generating access token : ", err)
@@ -36,7 +36,7 @@ func GenerateJWTToken(userID string, role string) *Tokens {
 	rftClaims["user_id"] = userID
 	rftClaims["role"] = role
 	rftClaims["iat"] = time.Now().Unix()
-	rftClaims["exp"] = time.Now().Add(720 * time.Hour).Unix() // Refresh token expires in 30 days
+	rftClaims["exp"] = time.Now().Add(4320 * time.Hour).Unix() // Refresh token expires in 180 days
 	refresh, err := refreshToken.SignedString([]byte(signingKey))
 	if err != nil {
 		log.Fatal("error while generating refresh token : ", err)
