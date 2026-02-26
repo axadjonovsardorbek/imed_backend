@@ -13,12 +13,13 @@ type SubjectCreateBody struct {
 }
 
 type SubjectRes struct {
-	Id        *string           `json:"id"`
-	Name      map[string]string `json:"name"`
-	ImageUrl  *string           `json:"image_url"`
-	OrderNum  *int              `json:"order_num"`
-	CreatedAt *string           `json:"created_at"`
-	UpdatedAt *string           `json:"updated_at"`
+	Id           *string           `json:"id"`
+	Name         map[string]string `json:"name"`
+	ImageUrl     *string           `json:"image_url"`
+	OrderNum     *int              `json:"order_num"`
+	TotalCourses *int              `json:"total_courses"`
+	CreatedAt    *string           `json:"created_at"`
+	UpdatedAt    *string           `json:"updated_at"`
 }
 
 type SubjectList struct {
@@ -45,12 +46,13 @@ type SubjectUpdateReq struct {
 }
 
 type SubjectMobileRes struct {
-	Id        *string `json:"id"`
-	Name      *string `json:"name"`
-	ImageUrl  *string `json:"image_url"`
-	OrderNum  *int    `json:"order_num"`
-	CreatedAt *string `json:"created_at"`
-	UpdatedAt *string `json:"updated_at"`
+	Id           *string `json:"id"`
+	Name         *string `json:"name"`
+	ImageUrl     *string `json:"image_url"`
+	OrderNum     *int    `json:"order_num"`
+	TotalCourses *int    `json:"total_courses"`
+	CreatedAt    *string `json:"created_at"`
+	UpdatedAt    *string `json:"updated_at"`
 }
 
 type SubjectMobileList struct {

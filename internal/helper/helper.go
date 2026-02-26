@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"net/smtp"
 	"net/url"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	"imed/internal/config"
+	"imed/pkg/models"
 )
 
 func SendMessage(message string) error {
@@ -48,10 +50,18 @@ func SendMessage(message string) error {
 	return nil
 }
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+const charset = "abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+}
+
+func GenerateOtp() string {
+	b := make([]byte, 6)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
 }
 
 func GeneratePassword() string {
@@ -126,4 +136,35 @@ func PickFromJSONStr(jsonStr string, lang string) (string, error) {
 		return v, nil
 	}
 	return "", nil
+}
+
+func SendVerificationCode(params models.Params, cfg config.Config) error {
+
+	smtpHost := cfg.BREVO_SERVER
+	smtpPort := cfg.BREVO_PORT
+
+	message := fmt.Sprintf(
+		"From: iMedTeam <%s>\r\n"+
+			"To: %s\r\n"+
+			"Subject: %s\r\n"+
+			"MIME-Version: 1.0\r\n"+
+			"Content-Type: text/html; charset=\"UTF-8\"\r\n\r\n"+
+			"%s",
+		params.From, params.To, params.Subject, params.HTMLBody,
+	)
+
+	auth := smtp.PlainAuth(
+		"",
+		cfg.BREVO_LOGIN,
+		cfg.BREVO_KEY,
+		smtpHost,
+	)
+
+	return smtp.SendMail(
+		smtpHost+":"+smtpPort,
+		auth,
+		params.From,
+		[]string{params.To},
+		[]byte(message),
+	)
 }

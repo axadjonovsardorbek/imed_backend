@@ -6,6 +6,14 @@ import (
 	"fmt"
 )
 
+type Params struct {
+	From     string
+	To       string
+	Message  string
+	HTMLBody string
+	Subject  string
+}
+
 type LoginReq struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`

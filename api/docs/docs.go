@@ -366,6 +366,108 @@ const docTemplate = `{
                 }
             }
         },
+        "/mobile/auth/user/otp/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Verify the provided confirmation code and return a token if valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Verify confirmation code",
+                "parameters": [
+                    {
+                        "description": "Code Details",
+                        "name": "banner",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfirmationReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/auth/user/otp/send": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send a confirmation code to the provided email address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Send confirmation code to email",
+                "parameters": [
+                    {
+                        "description": "Code Details",
+                        "name": "banner",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendConfirmationCodeReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/mobile/banner": {
             "get": {
                 "security": [
@@ -2527,6 +2629,108 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/auth/user/otp/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Verify the provided confirmation code and return a token if valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Verify confirmation code",
+                "parameters": [
+                    {
+                        "description": "Code Details",
+                        "name": "banner",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfirmationReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/auth/user/otp/send": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send a confirmation code to the provided email address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Send confirmation code to email",
+                "parameters": [
+                    {
+                        "description": "Code Details",
+                        "name": "banner",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendConfirmationCodeReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -6783,7 +6987,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "value": {
-                    "description": "activity (minut/sekund)",
                     "type": "integer"
                 }
             }
@@ -7084,6 +7287,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "old_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ConfirmationReq": {
+            "type": "object",
+            "properties": {
+                "confirmation_code": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 }
             }
@@ -8260,6 +8474,14 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SendConfirmationCodeReq": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SourceCreateBody": {
             "type": "object",
             "properties": {
@@ -8491,6 +8713,9 @@ const docTemplate = `{
                 "order_num": {
                     "type": "integer"
                 },
+                "total_courses": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "string"
                 }
@@ -8515,6 +8740,9 @@ const docTemplate = `{
                     }
                 },
                 "order_num": {
+                    "type": "integer"
+                },
+                "total_courses": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -8950,6 +9178,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "created_at": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "fcm_token": {

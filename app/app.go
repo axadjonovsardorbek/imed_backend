@@ -8,6 +8,7 @@ import (
 
 	"imed/api"
 	"imed/api/handler"
+	"imed/internal/bot"
 	"imed/internal/config"
 	"imed/internal/push"
 	"imed/pkg/clients"
@@ -20,6 +21,19 @@ import (
 func Run(cf *config.Config) {
 	ctx := context.Background()
 
+	rAddr := fmt.Sprintf("%s%s", cf.REDIS_HOST, cf.REDIS_PORT)
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr: rAddr,
+	})
+
+	_, err := rdb.Ping().Result()
+	if err != nil {
+		slog.Error("Failed to connect redis:", "err", err)
+		return
+	}
+	slog.Info("Redis connected successfully")
+
 	conn, err := postgres.NewPostgresStorage(*cf)
 
 	if err != nil {
@@ -27,19 +41,6 @@ func Run(cf *config.Config) {
 	}
 	defer conn.Db.Close()
 	slog.Info("Postgres storage connected successfully")
-
-	rAddr := fmt.Sprintf("%s%s", cf.REDIS_HOST, cf.REDIS_PORT)
-
-	rdb := redis.NewClient(&redis.Options{
-		Addr: rAddr,
-	})
-
-	_, err = rdb.Ping().Result()
-	if err != nil {
-		slog.Error("Failed to connect redis:", "err", err)
-		return
-	}
-	slog.Info("Redis connected successfully")
 
 	pushClient, err := push.NewClientFromServiceAccountFile(
 		ctx,
@@ -63,6 +64,8 @@ func Run(cf *config.Config) {
 	}
 
 	handlers := handler.NewHandler(*services, minioClient, cf)
+
+	go bot.BotAuth(cf)
 
 	router := api.NewApi(handlers)
 	log.Println("Server is running on port ", cf)

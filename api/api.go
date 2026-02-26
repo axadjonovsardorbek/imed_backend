@@ -55,6 +55,10 @@ func NewApi(h *handler.Handler) *gin.Engine {
 	router.POST("/mobile/auth/user/login", h.LoginUser)
 	router.POST("/click/prepare", h.ClickPrepare)
 	router.POST("/click/complete", h.ClickComplete)
+	router.POST("/web/auth/user/otp/send", h.SendConfirmation)
+	router.POST("/web/auth/user/otp/confirm", h.VerifyConfirmation)
+	router.POST("/mobile/auth/user/otp/send", h.SendConfirmation)
+	router.POST("/mobile/auth/user/otp/confirm", h.VerifyConfirmation)
 
 	web := router.Group("/web")
 	{

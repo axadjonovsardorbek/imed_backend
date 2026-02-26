@@ -11,7 +11,7 @@ type UserActivityCreateBody struct {
 
 type ActivityStatItem struct {
 	Date  string `json:"date"`  // day/week/month/range: YYYY-MM-DD, year: YYYY-MM-01
-	Value int64  `json:"value"` // activity (minut/sekund)
+	Value int64  `json:"value"`
 }
 
 type ActivityStatsResponse struct {

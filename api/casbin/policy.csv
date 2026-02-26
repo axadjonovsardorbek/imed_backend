@@ -1,6 +1,10 @@
 p, unauthorized, /,            GET
 
 p, unauthorized, /mobile/auth/user/check,        POST
+p, unauthorized, /mobile/auth/user/otp/send, POST
+p, unauthorized, /mobile/auth/user/otp/confirm, POST
+p, unauthorized, /web/auth/user/otp/send, POST
+p, unauthorized, /web/auth/user/otp/confirm, POST
 p, unauthorized, /mobile/auth/user/login,        POST
 p, unauthorized, /web/auth/admin/login,        POST
 p, unauthorized, /click/prepare, POST
