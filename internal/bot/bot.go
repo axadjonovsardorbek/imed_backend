@@ -77,7 +77,7 @@ func BotAuth(config *config.Config) {
 			// Bosqich 4: Kodingni bot orqali foydalanuvchiga yuborish
 			text := fmt.Sprintf(`👋 Salom %s
 
-			Siz *iMedTeam\\.uz* akkauntingizga kirish uchun so‘rov yubordingiz.
+			Siz *iMedTeam.uz* akkauntingizga kirish uchun so‘rov yubordingiz.
 			
 			🔐 *Tasdiqlash kodingiz:*
 			
@@ -87,7 +87,7 @@ func BotAuth(config *config.Config) {
 			
 			⚠️ Hech qachon bu kodni boshqalar bilan ulashmang.
 			Agar bu so‘rovni siz yubormagan bo‘lsangiz, xabarni e’tiborsiz qoldiring.
-			
+
 			📋 Kod ustiga bosib, uni nusxalashingiz mumkin.`,
 				name, otp,
 			)
