@@ -7,6 +7,15 @@ ADD COLUMN IF NOT EXISTS total_courses BIGINT NOT NULL DEFAULT 0;
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS email VARCHAR(255) DEFAULT NULL;
 
+ALTER TABLE users
+ALTER COLUMN phone_number DROP NOT NULL,
+ALTER COLUMN password DROP NOT NULL;
+
+UPDATE users
+SET email = phone_number
+WHERE phone_number LIKE '%@%'
+AND email IS NULL;
+
 CREATE OR REPLACE FUNCTION trg_courses_update_subject_total()
 RETURNS TRIGGER
 LANGUAGE plpgsql

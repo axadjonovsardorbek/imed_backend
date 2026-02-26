@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	m "imed/pkg/models"
 	"net/http"
 
@@ -21,7 +22,6 @@ import (
 // @Failure 500 {object} string
 // @Security BearerAuth
 // @Router /mobile/auth/user/otp/send [post]
-// @Router /web/auth/user/otp/send [post]
 func (h *Handler) SendConfirmation(c *gin.Context) {
 	var req m.SendConfirmationCodeReq
 
@@ -29,6 +29,14 @@ func (h *Handler) SendConfirmation(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	check := isValidEmail(req.Email)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid email format"})
+		slog.Error("Invalid email format")
+		smssender(c, fmt.Errorf("invalid email format"), http.StatusBadRequest)
 		return
 	}
 
@@ -58,7 +66,6 @@ func (h *Handler) SendConfirmation(c *gin.Context) {
 // @Failure 500 {object} string
 // @Security BearerAuth
 // @Router /mobile/auth/user/otp/confirm [post]
-// @Router /web/auth/user/otp/confirm [post]
 func (h *Handler) VerifyConfirmation(c *gin.Context) {
 	var req m.ConfirmationReq
 
@@ -67,6 +74,16 @@ func (h *Handler) VerifyConfirmation(c *gin.Context) {
 		slog.Error("Error binding request body", err)
 		smssender(c, err, http.StatusBadRequest)
 		return
+	}
+
+	if req.Email != "" && req.Email != "string" {
+		check := isValidEmail(req.Email)
+		if !check {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "invalid email format"})
+			slog.Error("Invalid email format")
+			smssender(c, fmt.Errorf("invalid email format"), http.StatusBadRequest)
+			return
+		}
 	}
 
 	slog.Info("Verify Confirmation Code:", req)
