@@ -52,6 +52,7 @@ func (r *SubjectRepo) GetById(req *m.ById) (*m.SubjectRes, error) {
 		name,
 		image_url,
 		order_num,
+		total_courses,
 		created_at,
 		updated_at
 	FROM
@@ -72,6 +73,7 @@ func (r *SubjectRepo) GetById(req *m.ById) (*m.SubjectRes, error) {
 		&nameJSON,
 		&subject.ImageUrl,
 		&subject.OrderNum,
+		&subject.TotalCourses,
 		&subject.CreatedAt,
 		&subject.UpdatedAt,
 	)
@@ -96,6 +98,7 @@ func (r *SubjectRepo) GetAll(req *m.SubjectGetListReq) (*m.PaginationResponse, *
 		name,
 		image_url,
 		order_num,
+		total_courses,
 		created_at,
 		updated_at
 	FROM
@@ -135,6 +138,7 @@ func (r *SubjectRepo) GetAll(req *m.SubjectGetListReq) (*m.PaginationResponse, *
 			&nameJSON,
 			&subject.ImageUrl,
 			&subject.OrderNum,
+			&subject.TotalCourses,
 			&subject.CreatedAt,
 			&subject.UpdatedAt,
 		)
@@ -229,6 +233,7 @@ func (r *SubjectRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SubjectMobileRes, err
 		name->> $1,
 		image_url,
 		order_num,
+		total_courses,
 		created_at,
 		updated_at
 	FROM
@@ -247,6 +252,7 @@ func (r *SubjectRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SubjectMobileRes, err
 		&subject.Name,
 		&subject.ImageUrl,
 		&subject.OrderNum,
+		&subject.TotalCourses,
 		&subject.CreatedAt,
 		&subject.UpdatedAt,
 	)
@@ -269,6 +275,7 @@ func (r *SubjectRepo) GetAllMobile(req *m.SubjectGetListMobileReq) (*m.Paginatio
 		name->> $1,
 		image_url,
 		order_num,
+		total_courses,
 		created_at,
 		updated_at
 	FROM
@@ -306,6 +313,7 @@ func (r *SubjectRepo) GetAllMobile(req *m.SubjectGetListMobileReq) (*m.Paginatio
 			&subject.Name,
 			&subject.ImageUrl,
 			&subject.OrderNum,
+			&subject.TotalCourses,
 			&subject.CreatedAt,
 			&subject.UpdatedAt,
 		)

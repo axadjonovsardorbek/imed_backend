@@ -27,6 +27,7 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 		db: db,
 	}
 }
+
 func (r *UserRepo) GetTokens(ctx context.Context, f m.TokenFilter) ([]string, error) {
 	q := `SELECT DISTINCT u.fcm_token FROM users u `
 	args := make([]any, 0, 2)
@@ -142,6 +143,134 @@ func (r *UserRepo) Check(req *m.UserCheckReq) (*m.UserCheckRes, error) {
 	return &res, nil
 }
 
+func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
+
+	var count int
+	var user_id string
+	var tkn *token.Tokens
+
+	query := `
+	SELECT 
+		COUNT(id) OVER() as count,
+		id
+	FROM
+		users
+	WHERE
+		email = $1
+	AND
+		deleted_at = 0
+	GROUP BY id
+	`
+
+	row := r.db.QueryRow(query, req.Email)
+
+	err := row.Scan(
+		&count,
+		&user_id,
+	)
+
+	if err != nil {
+		fmt.Println("error while checking user existence:", err)
+	}
+
+	if count == 1 && user_id != "string" {
+		tkn = token.GenerateJWTToken(user_id, "user")
+		return &m.TokenRes{
+			AccessToken:  tkn.AccessToken,
+			RefreshToken: tkn.RefreshToken,
+			Role:         "user",
+			Id:           user_id,
+		}, nil
+	} else {
+		id := uuid.New().String()
+
+		query := `
+			INSERT INTO users (
+				id,
+				email,
+				name
+			) VALUES($1, $2, $3)
+			`
+
+		_, err = r.db.Exec(query, id, req.Email, req.Email)
+
+		if err != nil {
+			return nil, err
+		}
+		tkn = token.GenerateJWTToken(id, "user")
+		return &m.TokenRes{
+			AccessToken:  tkn.AccessToken,
+			RefreshToken: tkn.RefreshToken,
+			Role:         "user",
+			Id:           id,
+		}, nil
+	}
+}
+
+func (r *UserRepo) TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error) {
+
+	var count int
+	var user_id string
+	var tkn *token.Tokens
+
+	query := `
+	SELECT 
+		COUNT(id) OVER() as count,
+		id
+	FROM
+		users
+	WHERE
+		phone_number = $1
+	AND
+		deleted_at = 0
+	GROUP BY id
+	`
+
+	row := r.db.QueryRow(query, req.Phone)
+
+	err := row.Scan(
+		&count,
+		&user_id,
+	)
+
+	if err != nil {
+		fmt.Println("error while checking user existence:", err)
+	}
+
+	if count == 1 && user_id != "string" {
+		tkn = token.GenerateJWTToken(user_id, "user")
+		return &m.TokenRes{
+			AccessToken:  tkn.AccessToken,
+			RefreshToken: tkn.RefreshToken,
+			Role:         "user",
+			Id:           user_id,
+		}, nil
+	} else {
+		id := uuid.New().String()
+
+		query := `
+			INSERT INTO users (
+				id,
+				phone_number,
+				name
+			) VALUES($1, $2, $3)
+			`
+
+		_, err = r.db.Exec(query, id, req.Phone, req.Name)
+
+		if err != nil {
+			return nil, err
+		}
+		tkn = token.GenerateJWTToken(id, "user")
+		return &m.TokenRes{
+			AccessToken:  tkn.AccessToken,
+			RefreshToken: tkn.RefreshToken,
+			Role:         "user",
+			Id:           id,
+		}, nil
+	}
+}
+
 func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 
 	var id string
@@ -231,10 +360,6 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	// if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(req.Password)); err != nil {
-	// 	return nil, fmt.Errorf("invalid password: %w", err)
-	// }
-
 	tkn := token.GenerateJWTToken(id, role)
 
 	return &m.TokenRes{
@@ -251,6 +376,7 @@ func (r *UserRepo) GetById(req *m.ById) (*m.UserRes, error) {
 		id,
 		name,
 		phone_number,
+		email,
 		fcm_token,
 		image_url,
 		language,
@@ -271,6 +397,7 @@ func (r *UserRepo) GetById(req *m.ById) (*m.UserRes, error) {
 		&user.Id,
 		&user.Name,
 		&user.PhoneNumber,
+		&user.Email,
 		&user.FCMToken,
 		&user.ImageUrl,
 		&user.Language,
@@ -296,6 +423,7 @@ func (r *UserRepo) GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.User
 		id,
 		name,
 		phone_number,
+		email,
 		fcm_token,
 		image_url,
 		language,
@@ -339,6 +467,7 @@ func (r *UserRepo) GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.User
 			&user.Id,
 			&user.Name,
 			&user.PhoneNumber,
+			&user.Email,
 			&user.FCMToken,
 			&user.ImageUrl,
 			&user.Language,
@@ -385,6 +514,10 @@ func (r *UserRepo) Update(req *m.UserUpdateReq) (*m.Void, error) {
 	if req.Language != "" && req.Language != "string" {
 		conditions = append(conditions, " language = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.Language)
+	}
+	if req.Email != "" && req.Email != "string" {
+		conditions = append(conditions, " email = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.Email)
 	}
 
 	if len(conditions) == 0 {

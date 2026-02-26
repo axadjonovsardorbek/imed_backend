@@ -20,6 +20,7 @@ type Config struct {
 	REDIS_HOST string
 	REDIS_PORT string
 
+	NEW_BOT_TOKEN     string
 	BOT_TOKEN         string
 	GROUP_ID          string
 	GROUP_FOR_INFO_ID string
@@ -40,6 +41,16 @@ type Config struct {
 	MINIO_SECRET_KEY  string
 	MINIO_BUCKET_NAME string
 	MINIO_DOMAIN      string
+
+	CONFIRM_PAGE_URL string
+
+	EMAIL_NAME string
+	EMAIL_LOGO string
+
+	BREVO_SERVER string
+	BREVO_PORT   string
+	BREVO_LOGIN  string
+	BREVO_KEY    string
 }
 
 func Load() Config {
@@ -60,6 +71,7 @@ func Load() Config {
 	config.REDIS_HOST = cast.ToString(coalesce("REDIS_HOST", "redis"))
 	config.REDIS_PORT = cast.ToString(coalesce("REDIS_PORT", ":1111"))
 
+	config.NEW_BOT_TOKEN = cast.ToString(coalesce("NEW_BOT_TOKEN", "token"))
 	config.BOT_TOKEN = cast.ToString(coalesce("BOT_TOKEN", "token"))
 	config.GROUP_ID = cast.ToString(coalesce("GROUP_ID", "-1"))
 	config.GROUP_FOR_INFO_ID = cast.ToString(coalesce("GROUP_FOR_INFO_ID", "-1"))
@@ -81,6 +93,16 @@ func Load() Config {
 	config.MINIO_SECRET_KEY = cast.ToString(coalesce("MINIO_SECRET_KEY", "minio"))
 	config.MINIO_BUCKET_NAME = cast.ToString(coalesce("MINIO_BUCKET_NAME", "test-bucket"))
 	config.MINIO_DOMAIN = cast.ToString(coalesce(("MINIO_DOMAIN"), "minio"))
+
+	config.CONFIRM_PAGE_URL = cast.ToString(coalesce("CONFIRM_PAGE_URL", "test"))
+
+	config.EMAIL_NAME = cast.ToString(coalesce("EMAIL_NAME", "test"))
+	config.EMAIL_LOGO = cast.ToString(coalesce("EMAIL_LOGO", "test"))
+
+	config.BREVO_SERVER = cast.ToString(coalesce("BREVO_SERVER", "smtp-relay.brevo.com"))
+	config.BREVO_PORT = cast.ToString(coalesce("BREVO_PORT", "587"))
+	config.BREVO_LOGIN = cast.ToString(coalesce("BREVO_LOGIN", "test"))
+	config.BREVO_KEY = cast.ToString(coalesce("BREVO_KEY", "test"))
 
 	return config
 }

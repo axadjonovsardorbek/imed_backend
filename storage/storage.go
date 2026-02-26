@@ -96,6 +96,8 @@ type SourceI interface {
 }
 
 type UserI interface {
+	EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error)
+	TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error)
 	GetToken(user_id string) (*string, error)
 	GetTokens(ctx context.Context, f m.TokenFilter) ([]string, error)
 	CreateUser(req *m.UserLoginReq) (*m.ById, error)

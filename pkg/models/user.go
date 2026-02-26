@@ -1,5 +1,18 @@
 package models
 
+type TelegramLoginReq struct {
+	Phone string `json:"phone"`
+	Name  string `json:"name"`
+}
+
+type SendConfirmationCodeReq struct {
+	Email string `json:"email"`
+}
+
+type ConfirmationReq struct {
+	Email            string `json:"email"`
+	ConfirmationCode string `json:"confirmation_code"`
+}
 type UserCheckReq struct {
 	PhoneNumber string `json:"phone_number"`
 }
@@ -18,6 +31,7 @@ type UserRes struct {
 	Id          string  `json:"id"`
 	Name        *string `json:"name"`
 	PhoneNumber *string `json:"phone_number"`
+	Email       *string `json:"email"`
 	FCMToken    *string `json:"fcm_token"`
 	ImageUrl    *string `json:"image_url"`
 	Language    *string `json:"language"`
@@ -29,6 +43,7 @@ type UserUpdateReq struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
 	PhoneNumber string `json:"phone_number"`
+	Email       string `json:"email"`
 	ImageUrl    string `json:"image_url"`
 	FCMToken    string `json:"fcm_token"`
 	Language    string `json:"language"`
@@ -37,6 +52,7 @@ type UserUpdateReq struct {
 type UserUpdateBody struct {
 	Name        string `json:"name"`
 	PhoneNumber string `json:"phone_number"`
+	Email       string `json:"email"`
 	ImageUrl    string `json:"image_url"`
 	FCMToken    string `json:"fcm_token"`
 	Language    string `json:"language"`
@@ -45,6 +61,7 @@ type UserUpdateBody struct {
 type UserGetListReq struct {
 	Filter      Pagination `json:"filter"`
 	Name        string     `json:"name"`
+	Email       string     `json:"email"`
 	PhoneNumber string     `json:"phone_number"`
 }
 

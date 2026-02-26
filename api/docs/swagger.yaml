@@ -92,7 +92,6 @@ definitions:
         description: 'day/week/month/range: YYYY-MM-DD, year: YYYY-MM-01'
         type: string
       value:
-        description: activity (minut/sekund)
         type: integer
     type: object
   models.ActivityStatsResponse:
@@ -293,6 +292,13 @@ definitions:
       new_password:
         type: string
       old_password:
+        type: string
+    type: object
+  models.ConfirmationReq:
+    properties:
+      confirmation_code:
+        type: string
+      email:
         type: string
     type: object
   models.ContactCreateReq:
@@ -1063,6 +1069,11 @@ definitions:
       user_id:
         type: string
     type: object
+  models.SendConfirmationCodeReq:
+    properties:
+      email:
+        type: string
+    type: object
   models.SourceCreateBody:
     properties:
       lesson_id:
@@ -1214,6 +1225,8 @@ definitions:
         type: string
       order_num:
         type: integer
+      total_courses:
+        type: integer
       updated_at:
         type: string
     type: object
@@ -1230,6 +1243,8 @@ definitions:
           type: string
         type: object
       order_num:
+        type: integer
+      total_courses:
         type: integer
       updated_at:
         type: string
@@ -1513,6 +1528,8 @@ definitions:
     properties:
       created_at:
         type: string
+      email:
+        type: string
       fcm_token:
         type: string
       id:
@@ -1753,6 +1770,70 @@ paths:
       security:
       - BearerAuth: []
       summary: Login user
+      tags:
+      - auth
+  /mobile/auth/user/otp/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Verify the provided confirmation code and return a token if valid
+      parameters:
+      - description: Code Details
+        in: body
+        name: banner
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConfirmationReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Verify confirmation code
+      tags:
+      - auth
+  /mobile/auth/user/otp/send:
+    post:
+      consumes:
+      - application/json
+      description: Send a confirmation code to the provided email address
+      parameters:
+      - description: Code Details
+        in: body
+        name: banner
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendConfirmationCodeReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Send confirmation code to email
       tags:
       - auth
   /mobile/banner:
