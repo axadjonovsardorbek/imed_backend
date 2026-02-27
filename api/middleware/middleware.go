@@ -102,7 +102,7 @@ func CheckPermission(path string, r *http.Request, enforcer *casbin.Enforcer) (b
 
 func InvalidToken(c *gin.Context) {
 	c.JSON(http.StatusUnauthorized, gin.H{
-		"message": "invalid token!",
+		"message": "invalid token",
 	})
 	return
 }

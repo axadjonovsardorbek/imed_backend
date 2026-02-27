@@ -694,6 +694,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		  (c.description->>$1) AS description,
 		  c.image_url          AS image_url,
 		  c.price              AS price,
+		  c.is_public 		   AS is_public,
 	  
 		  c.total_lessons      AS lessons,
 		  c.total_sources      AS total_sources,
@@ -772,6 +773,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		cb.image_url,
 		cb.has_access,
 		cb.price,
+		cb.is_public,
 	  
 		cb.tests,
 		cb.documents,
@@ -797,6 +799,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		&res.ImageUrl,
 		&res.HasAccess,
 		&res.Price,
+		&res.IsPublic,
 		&res.Tests,
 		&res.Documents,
 		&res.Duration,
