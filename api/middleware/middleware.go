@@ -20,42 +20,46 @@ const (
 	unauthorized = "unauthorized"
 )
 
+var ErrTokenExpired = errors.New("token expired")
+
 func NewAuth(enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		allow, err := CheckPermission(ctx.FullPath(), ctx.Request, enforcer)
 
 		if err != nil {
-			slog.Error("Error checking permission: %v", "err", err)
-			// if ve, ok := err.(*jwt.ValidationError); ok && ve.Errors == jwt.ValidationErrorExpired {
-			// 	RequireRefresh(ctx)
-			// 	return
-			// }
-			if ve, ok := err.(*jwt.ValidationError); ok && (ve.Errors&jwt.ValidationErrorExpired != 0) {
-				RequireRefresh(ctx)
-				return
-			} else {
-				RequirePermission(ctx)
+			slog.Error("Error checking permission", "err", err)
+
+			// ✅ expired bo‘lsa 401
+			if errors.Is(err, ErrTokenExpired) {
+				RequireRefresh(ctx) // 401
 				return
 			}
-		} else if !allow {
-			RequirePermission(ctx)
+
+			// ✅ qolganlari unauthorized bo‘lsa 401
+			InvalidToken(ctx) // yoki unauthorized
+			return
+		}
+
+		if !allow {
+			RequirePermission(ctx) // 403
 			return
 		}
 
 		claims, err := ExtractToken(ctx.Request)
 		if err != nil {
-			slog.Error("Error extracting token: %v", "err", err)
+			if errors.Is(err, ErrTokenExpired) {
+				RequireRefresh(ctx)
+				return
+			}
 			InvalidToken(ctx)
 			return
 		}
 
 		ctx.Set("claims", claims)
 		ctx.Set("user_id", claims["user_id"])
-
 		ctx.Next()
 	}
 }
-
 func ExtractToken(r *http.Request) (jwt.MapClaims, error) {
 	jwtToken := r.Header.Get("Authorization")
 	if jwtToken == "" {
@@ -66,14 +70,74 @@ func ExtractToken(r *http.Request) (jwt.MapClaims, error) {
 	}
 
 	tokenString := strings.TrimPrefix(jwtToken, "Bearer ")
+
 	claims, err := token.ExtractClaim(tokenString)
 	if err != nil {
-		slog.Error("Error while extracting claims", "err", err)
+		// ✅ expiredni universal ushlab qolamiz
+		msg := strings.ToLower(err.Error())
+		if strings.Contains(msg, "token is expired") || strings.Contains(msg, "expired") {
+			return nil, ErrTokenExpired
+		}
 		return nil, err
 	}
 
 	return claims, nil
 }
+
+// func NewAuth(enforcer *casbin.Enforcer) gin.HandlerFunc {
+// 	return func(ctx *gin.Context) {
+// 		allow, err := CheckPermission(ctx.FullPath(), ctx.Request, enforcer)
+
+// 		if err != nil {
+// 			slog.Error("Error checking permission: %v", "err", err)
+// 			// if ve, ok := err.(*jwt.ValidationError); ok && ve.Errors == jwt.ValidationErrorExpired {
+// 			// 	RequireRefresh(ctx)
+// 			// 	return
+// 			// }
+// 			if ve, ok := err.(*jwt.ValidationError); ok && (ve.Errors&jwt.ValidationErrorExpired != 0) {
+// 				RequireRefresh(ctx)
+// 				return
+// 			} else {
+// 				RequirePermission(ctx)
+// 				return
+// 			}
+// 		} else if !allow {
+// 			RequirePermission(ctx)
+// 			return
+// 		}
+
+// 		claims, err := ExtractToken(ctx.Request)
+// 		if err != nil {
+// 			slog.Error("Error extracting token: %v", "err", err)
+// 			InvalidToken(ctx)
+// 			return
+// 		}
+
+// 		ctx.Set("claims", claims)
+// 		ctx.Set("user_id", claims["user_id"])
+
+// 		ctx.Next()
+// 	}
+// }
+
+// func ExtractToken(r *http.Request) (jwt.MapClaims, error) {
+// 	jwtToken := r.Header.Get("Authorization")
+// 	if jwtToken == "" {
+// 		return nil, fmt.Errorf("access token missing")
+// 	}
+// 	if strings.Contains(jwtToken, "Basic") {
+// 		return nil, fmt.Errorf("invalid token format")
+// 	}
+
+// 	tokenString := strings.TrimPrefix(jwtToken, "Bearer ")
+// 	claims, err := token.ExtractClaim(tokenString)
+// 	if err != nil {
+// 		slog.Error("Error while extracting claims", "err", err)
+// 		return nil, err
+// 	}
+
+// 	return claims, nil
+// }
 
 func GetRole(r *http.Request) (string, error) {
 	claims, err := ExtractToken(r)
