@@ -20,38 +20,44 @@ const (
 	unauthorized = "unauthorized"
 )
 
+var ErrTokenExpired = errors.New("token expired")
+
 func NewAuth(enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		allow, err := CheckPermission(ctx.FullPath(), ctx.Request, enforcer)
 
 		if err != nil {
-			slog.Error("Error checking permission: %v", "err", err)
-			if ve, ok := err.(*jwt.ValidationError); ok && ve.Errors == jwt.ValidationErrorExpired {
+			slog.Error("Error checking permission", "err", err)
+
+			if errors.Is(err, ErrTokenExpired) {
 				RequireRefresh(ctx)
 				return
-			} else {
-				RequirePermission(ctx)
-				return
 			}
-		} else if !allow {
+
+			InvalidToken(ctx)
+			return
+		}
+
+		if !allow {
 			RequirePermission(ctx)
 			return
 		}
 
 		claims, err := ExtractToken(ctx.Request)
 		if err != nil {
-			slog.Error("Error extracting token: %v", "err", err)
+			if errors.Is(err, ErrTokenExpired) {
+				RequireRefresh(ctx)
+				return
+			}
 			InvalidToken(ctx)
 			return
 		}
 
 		ctx.Set("claims", claims)
 		ctx.Set("user_id", claims["user_id"])
-
 		ctx.Next()
 	}
 }
-
 func ExtractToken(r *http.Request) (jwt.MapClaims, error) {
 	jwtToken := r.Header.Get("Authorization")
 	if jwtToken == "" {
@@ -62,9 +68,13 @@ func ExtractToken(r *http.Request) (jwt.MapClaims, error) {
 	}
 
 	tokenString := strings.TrimPrefix(jwtToken, "Bearer ")
+
 	claims, err := token.ExtractClaim(tokenString)
 	if err != nil {
-		slog.Error("Error while extracting claims", "err", err)
+		msg := strings.ToLower(err.Error())
+		if strings.Contains(msg, "token is expired") || strings.Contains(msg, "expired") {
+			return nil, ErrTokenExpired
+		}
 		return nil, err
 	}
 
@@ -101,22 +111,19 @@ func CheckPermission(path string, r *http.Request, enforcer *casbin.Enforcer) (b
 }
 
 func InvalidToken(c *gin.Context) {
-	c.JSON(http.StatusUnauthorized, gin.H{
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 		"message": "invalid token",
 	})
-	return
 }
 
 func RequirePermission(c *gin.Context) {
-	c.JSON(http.StatusForbidden, gin.H{
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "permission denied",
 	})
-	return
 }
 
 func RequireRefresh(c *gin.Context) {
-	c.JSON(http.StatusUnauthorized, gin.H{
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 		"message": "access token expired",
 	})
-	return
 }
