@@ -7877,6 +7877,9 @@ const docTemplate = `{
                 "image_url": {
                     "type": "string"
                 },
+                "is_public": {
+                    "type": "boolean"
+                },
                 "lessons": {
                     "type": "integer"
                 },

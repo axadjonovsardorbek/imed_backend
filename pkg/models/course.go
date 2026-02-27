@@ -206,6 +206,7 @@ type MobileCourseRes struct {
 	Name        *string                 `json:"name"`
 	Description *string                 `json:"description"`
 	ImageUrl    *string                 `json:"image_url"`
+	IsPublic    *bool                   `json:"is_public"`
 	TeacherId   string                  `json:"teacher_id"`
 	TeacherName *string                 `json:"teacher_name"`
 	HasAccess   bool                    `json:"has_access"`
