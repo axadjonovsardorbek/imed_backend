@@ -26,7 +26,11 @@ func NewAuth(enforcer *casbin.Enforcer) gin.HandlerFunc {
 
 		if err != nil {
 			slog.Error("Error checking permission: %v", "err", err)
-			if ve, ok := err.(*jwt.ValidationError); ok && ve.Errors == jwt.ValidationErrorExpired {
+			// if ve, ok := err.(*jwt.ValidationError); ok && ve.Errors == jwt.ValidationErrorExpired {
+			// 	RequireRefresh(ctx)
+			// 	return
+			// }
+			if ve, ok := err.(*jwt.ValidationError); ok && (ve.Errors&jwt.ValidationErrorExpired != 0) {
 				RequireRefresh(ctx)
 				return
 			} else {
@@ -101,22 +105,19 @@ func CheckPermission(path string, r *http.Request, enforcer *casbin.Enforcer) (b
 }
 
 func InvalidToken(c *gin.Context) {
-	c.JSON(http.StatusUnauthorized, gin.H{
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 		"message": "invalid token",
 	})
-	return
 }
 
 func RequirePermission(c *gin.Context) {
-	c.JSON(http.StatusForbidden, gin.H{
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "permission denied",
 	})
-	return
 }
 
 func RequireRefresh(c *gin.Context) {
-	c.JSON(http.StatusUnauthorized, gin.H{
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 		"message": "access token expired",
 	})
-	return
 }
