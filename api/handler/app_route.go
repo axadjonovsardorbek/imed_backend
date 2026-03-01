@@ -151,6 +151,7 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 	req.SupportUrl = body.SupportUrl
 	req.AppLinks = body.AppLinks
 	req.PaymentMinVersion = body.PaymentMinVersion
+	req.BuyCourse = body.BuyCourse
 
 	err := validateAppRouteCreate(m.AppRouteCreateReq{
 		CallCenter:        req.CallCenter,
