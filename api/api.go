@@ -57,6 +57,8 @@ func NewApi(h *handler.Handler) *gin.Engine {
 	router.POST("/click/complete", h.ClickComplete)
 	router.POST("/mobile/auth/user/otp/send", h.SendConfirmation)
 	router.POST("/mobile/auth/user/otp/confirm", h.VerifyConfirmation)
+	router.GET("/mobile/app-route", h.GetAllAppRoutes)
+	router.GET("/mobile/app-route/:id", h.GetByIdAppRoute)
 
 	web := router.Group("/web")
 	{
@@ -252,12 +254,6 @@ func NewApi(h *handler.Handler) *gin.Engine {
 		{
 			about.GET("", h.GetAllMobileAbouts)
 			about.GET("/:id", h.GetByIdMobileAbout)
-		}
-
-		app_route := mobile.Group("/app-route").Use(mid.NewAuth(enforcer))
-		{
-			app_route.GET("", h.GetAllAppRoutes)
-			app_route.GET("/:id", h.GetByIdAppRoute)
 		}
 
 		faq := mobile.Group("/faq").Use(mid.NewAuth(enforcer))

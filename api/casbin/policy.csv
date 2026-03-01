@@ -7,6 +7,8 @@ p, unauthorized, /mobile/auth/user/login,        POST
 p, unauthorized, /web/auth/admin/login,        POST
 p, unauthorized, /click/prepare, POST
 p, unauthorized, /click/complete, POST
+p, unauthorized, /mobile/app-route, GET
+p, unauthorized, /mobile/app-route/:id, GET
 
 p, subject, object, action
 p, admin, /web/auth/admin/login, POST
@@ -140,8 +142,6 @@ p, user, /mobile/notification/:id/read, PUT
 p, user, /mobile/notification/user, GET
 p, user, /mobile/about, GET
 p, user, /mobile/about/:id, GET
-p, user, /mobile/app-route, GET
-p, user, /mobile/app-route/:id, GET
 p, user, /mobile/faq, GET
 p, user, /mobile/faq/:id, GET
 p, user, /mobile/order, POST
