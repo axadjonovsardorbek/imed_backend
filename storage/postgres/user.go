@@ -192,7 +192,7 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 			) VALUES($1, $2, $3)
 			`
 
-		_, err = r.db.Exec(query, id, req.Email, req.Email)
+		_, err = r.db.Exec(query, id, req.Email, "Foydalanuvchi")
 
 		if err != nil {
 			return nil, err
