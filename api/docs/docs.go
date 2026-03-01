@@ -6973,6 +6973,10 @@ const docTemplate = `{
                 "app_version": {
                     "type": "object"
                 },
+                "buy_course": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "call_center": {
                     "type": "string",
                     "example": "+998901234567"
@@ -7007,6 +7011,10 @@ const docTemplate = `{
                 },
                 "app_version": {
                     "type": "object"
+                },
+                "buy_course": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "call_center": {
                     "type": "string",
@@ -7268,6 +7276,9 @@ const docTemplate = `{
         "models.CourseCreateBody": {
             "type": "object",
             "properties": {
+                "can_buy": {
+                    "type": "boolean"
+                },
                 "description": {
                     "type": "object",
                     "additionalProperties": {
@@ -7377,6 +7388,9 @@ const docTemplate = `{
         "models.CourseRes": {
             "type": "object",
             "properties": {
+                "can_buy": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -7436,6 +7450,9 @@ const docTemplate = `{
         "models.CourseUpdateBody": {
             "type": "object",
             "properties": {
+                "can_buy": {
+                    "type": "boolean"
+                },
                 "description": {
                     "type": "object",
                     "additionalProperties": {
@@ -7859,6 +7876,9 @@ const docTemplate = `{
         "models.MobileCourseRes": {
             "type": "object",
             "properties": {
+                "can_buy": {
+                    "type": "boolean"
+                },
                 "description": {
                     "type": "string"
                 },

@@ -48,13 +48,10 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 		smssender(c, err, http.StatusConflict)
 		return
 	}
-	// priceJSON, err := json.Marshal(body.Price)
-	// if err != nil {
-	// 	c.JSON(409, gin.H{"message": "failed to serialize price"})
-	// 	slog.Error("Error serializing price: ", err)
-	// 	smssender(c, err, http.StatusConflict)
-	// 	return
-	// }
+
+	if body.IsPublic {
+		body.CanBuy = false
+	}
 
 	req.Name = string(nameJSON)
 	req.Description = string(descriptionJson)
@@ -64,6 +61,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 	req.ImageUrl = body.ImageUrl
 	req.OrderNum = body.OrderNum
 	req.IsPublic = body.IsPublic
+	req.CanBuy = body.CanBuy
 
 	slog.Info("Create course", "Course", req)
 	res, err := h.Clients.Course.Create(context.Background(), &req)
@@ -203,6 +201,10 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 		return
 	}
 
+	if body.IsPublic {
+		body.CanBuy = false
+	}
+
 	req.Id = id
 	req.Name = string(nameJSON)
 	req.Description = string(descriptionJson)
@@ -212,6 +214,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 	req.ImageUrl = body.ImageUrl
 	req.OrderNum = body.OrderNum
 	req.IsPublic = body.IsPublic
+	req.CanBuy = body.CanBuy
 
 	slog.Info("Update Course", req)
 	_, err = h.Clients.Course.Update(context.Background(), &req)
@@ -509,7 +512,6 @@ func (h *Handler) GetAllMobileCourses(c *gin.Context) {
 	name := c.Query("name")
 	subject_id := c.Query("subject_id")
 	is_public := c.Query("is_public")
-
 	user_id := claimData(c, "user_id")
 
 	lang := getLanguage(c)

@@ -68,6 +68,7 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		app_version,
 		app_links,
 		payment_min_version,
+		buy_course,
 		created_at,
 		updated_at
 	FROM
@@ -92,6 +93,7 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		&rawAppVersion,
 		&rawAppLinks,
 		&app_route.PaymentMinVersion,
+		&app_route.BuyCourse,
 		&app_route.CreatedAt,
 		&app_route.UpdatedAt,
 	)
@@ -124,6 +126,7 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 		app_version,
 		app_links,
 		payment_min_version,
+		buy_course,
 		created_at,
 		updated_at
 	FROM
@@ -161,6 +164,7 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 			&rawAppVersion,
 			&rawAppLinks,
 			&app_route.PaymentMinVersion,
+			&app_route.BuyCourse,
 			&app_route.CreatedAt,
 			&app_route.UpdatedAt,
 		)
@@ -217,6 +221,9 @@ func (r *AppRouteRepo) Update(req *m.AppRouteUpdateReq) (*m.Void, error) {
 
 	conditions = append(conditions, " payment_min_version = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.PaymentMinVersion)
+
+	conditions = append(conditions, " buy_course = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.BuyCourse)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")

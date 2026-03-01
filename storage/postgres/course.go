@@ -35,8 +35,9 @@ func (r *CourseRepo) Create(req *m.CourseCreateReq) (*m.ById, error) {
 		image_url,
 		price,
 		is_public,
-		order_num
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		order_num,
+		can_buy
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`
 
 	_, err := r.db.Exec(query,
@@ -49,6 +50,7 @@ func (r *CourseRepo) Create(req *m.CourseCreateReq) (*m.ById, error) {
 		req.Price,
 		req.IsPublic,
 		req.OrderNum,
+		req.CanBuy,
 	)
 
 	if err != nil {
@@ -70,6 +72,7 @@ func (r *CourseRepo) GetById(req *m.ById) (*m.CourseRes, error) {
 			c.image_url,
 			c.is_public,
 			c.order_num,
+			c.can_buy,
 			c.subject_id,
 			s.name,
 			c.teacher_id,
@@ -105,6 +108,7 @@ func (r *CourseRepo) GetById(req *m.ById) (*m.CourseRes, error) {
 		&course.ImageUrl,
 		&course.IsPublic,
 		&course.OrderNum,
+		&course.CanBuy,
 		&course.SubjectId,
 		&subjectNameJSON,
 		&course.TeacherId,
@@ -141,6 +145,7 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 			c.image_url,
 			c.is_public,
 			c.order_num,
+			c.can_buy,
 			c.subject_id,
 			s.name,
 			c.teacher_id,
@@ -206,6 +211,7 @@ func (r *CourseRepo) GetAll(req *m.CourseGetListReq) (*m.PaginationResponse, *m.
 			&course.ImageUrl,
 			&course.IsPublic,
 			&course.OrderNum,
+			&course.CanBuy,
 			&course.SubjectId,
 			&subjectNameJSON,
 			&course.TeacherId,
@@ -275,6 +281,9 @@ func (r *CourseRepo) Update(req *m.CourseUpdateReq) (*m.Void, error) {
 
 	conditions = append(conditions, " is_public = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.IsPublic)
+
+	conditions = append(conditions, " can_buy = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.CanBuy)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")
@@ -695,6 +704,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		  c.image_url          AS image_url,
 		  c.price              AS price,
 		  c.is_public 		   AS is_public,
+		  c.can_buy            AS can_buy,
 	  
 		  c.total_lessons      AS lessons,
 		  c.total_sources      AS total_sources,
@@ -774,6 +784,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		cb.has_access,
 		cb.price,
 		cb.is_public,
+		cb.can_buy,
 	  
 		cb.tests,
 		cb.documents,
@@ -800,6 +811,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		&res.HasAccess,
 		&res.Price,
 		&res.IsPublic,
+		&res.CanBuy,
 		&res.Tests,
 		&res.Documents,
 		&res.Duration,
@@ -807,6 +819,10 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		&modulesRaw,
 	); err != nil {
 		return nil, err
+	}
+
+	if res.HasAccess {
+		res.CanBuy = false
 	}
 
 	if len(modulesRaw) > 0 {
