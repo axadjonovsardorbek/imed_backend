@@ -50,7 +50,7 @@ func SendMessage(message string) error {
 	return nil
 }
 
-const charset = "abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
+const charset = "0123456789"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
