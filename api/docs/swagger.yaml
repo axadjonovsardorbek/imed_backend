@@ -150,6 +150,9 @@ definitions:
         type: object
       app_version:
         type: object
+      buy_course:
+        example: true
+        type: boolean
       call_center:
         example: "+998901234567"
         type: string
@@ -175,6 +178,9 @@ definitions:
         type: object
       app_version:
         type: object
+      buy_course:
+        example: true
+        type: boolean
       call_center:
         example: "+998901234567"
         type: string
@@ -345,6 +351,8 @@ definitions:
     type: object
   models.CourseCreateBody:
     properties:
+      can_buy:
+        type: boolean
       description:
         additionalProperties:
           type: string
@@ -416,6 +424,8 @@ definitions:
     type: object
   models.CourseRes:
     properties:
+      can_buy:
+        type: boolean
       created_at:
         type: string
       description:
@@ -455,6 +465,8 @@ definitions:
     type: object
   models.CourseUpdateBody:
     properties:
+      can_buy:
+        type: boolean
       description:
         additionalProperties:
           type: string
@@ -731,6 +743,8 @@ definitions:
     type: object
   models.MobileCourseRes:
     properties:
+      can_buy:
+        type: boolean
       description:
         type: string
       documents:

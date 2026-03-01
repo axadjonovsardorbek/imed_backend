@@ -22,6 +22,7 @@ type AppRouteRes struct {
 	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
+	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
 	CreatedAt         string        `json:"created_at" example:"2026-02-10T10:00:00Z"`
 	UpdatedAt         string        `json:"updated_at" example:"2026-02-10T10:00:00Z"`
 }
@@ -41,6 +42,7 @@ type AppRouteUpdateReq struct {
 	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
+	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
 }
 
 type AppRouteUpdateBody struct {
@@ -49,6 +51,7 @@ type AppRouteUpdateBody struct {
 	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
+	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
 }
 
 type AppRouteGetListReq struct {

@@ -21,6 +21,7 @@ type CourseCreateReq struct {
 	Price       PriceField `json:"price"`
 	ImageUrl    string     `json:"image_url"`
 	IsPublic    bool       `json:"is_public"`
+	CanBuy      bool       `json:"can_buy"`
 	OrderNum    int        `json:"order_num"`
 }
 
@@ -32,6 +33,7 @@ type CourseCreateBody struct {
 	Price       PriceField        `json:"price"`
 	ImageUrl    string            `json:"image_url"`
 	IsPublic    bool              `json:"is_public"`
+	CanBuy      bool              `json:"can_buy"`
 	OrderNum    int               `json:"order_num"`
 }
 
@@ -47,6 +49,7 @@ type CourseRes struct {
 	Price              PriceField        `db:"price" json:"price"`
 	ImageUrl           *string           `json:"image_url"`
 	IsPublic           *bool             `json:"is_public"`
+	CanBuy             *bool             `json:"can_buy"`
 	OrderNum           *int              `json:"order_num"`
 	CreatedAt          *string           `json:"created_at"`
 	UpdatedAt          *string           `json:"updated_at"`
@@ -76,6 +79,7 @@ type CourseUpdateBody struct {
 	Price       PriceField        `json:"price"`
 	ImageUrl    string            `json:"image_url"`
 	IsPublic    bool              `json:"is_public"`
+	CanBuy      bool              `json:"can_buy"`
 	OrderNum    int               `json:"order_num"`
 }
 
@@ -88,6 +92,7 @@ type CourseUpdateReq struct {
 	Price       PriceField `json:"price"`
 	ImageUrl    string     `json:"image_url"`
 	IsPublic    bool       `json:"is_public"`
+	CanBuy      bool       `json:"can_buy"`
 	OrderNum    int        `json:"order_num"`
 }
 
@@ -210,6 +215,7 @@ type MobileCourseRes struct {
 	TeacherId   string                  `json:"teacher_id"`
 	TeacherName *string                 `json:"teacher_name"`
 	HasAccess   bool                    `json:"has_access"`
+	CanBuy      bool                    `json:"can_buy"`
 	Price       PriceField              `json:"price"`
 	Tests       int                     `json:"tests"`
 	Documents   int                     `json:"documents"`
