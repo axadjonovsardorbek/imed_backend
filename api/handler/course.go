@@ -201,7 +201,7 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 		return
 	}
 
-	if !body.IsPublic {
+	if body.IsPublic {
 		body.CanBuy = false
 	}
 
