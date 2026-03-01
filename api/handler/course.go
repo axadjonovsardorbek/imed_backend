@@ -49,7 +49,7 @@ func (h *Handler) CreateCourse(c *gin.Context) {
 		return
 	}
 
-	if !body.IsPublic {
+	if body.IsPublic {
 		body.CanBuy = false
 	}
 
