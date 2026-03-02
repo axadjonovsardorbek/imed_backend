@@ -26,6 +26,9 @@ func NewUserService(storage *st.Storage, rdb *redis.Client) *UserService {
 func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfirmationCodeReq) (*m.Void, error) {
 	otp := helper.GenerateOtp()
 	cfg := config.Load()
+	fmt.Println("-------------------------------")
+	fmt.Println("Generated OTP:", otp)
+	fmt.Println("-------------------------------")
 
 	if req.Email == "samandarahadjonov@gmail.com" {
 		otp = "111111"

@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
@@ -8,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"net/smtp"
 	"net/url"
@@ -50,24 +51,14 @@ func SendMessage(message string) error {
 	return nil
 }
 
-const charset = "0123456789"
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func GenerateOtp() string {
-	num := rand.Intn(900000) + 100000
-	str := strconv.Itoa(num)
-	return str
+	n, _ := rand.Int(rand.Reader, big.NewInt(1000000))
+	return fmt.Sprintf("%06d", n.Int64())
 }
 
 func GeneratePassword() string {
-	b := make([]byte, 10)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
-	}
-	return string(b)
+	n, _ := rand.Int(rand.Reader, big.NewInt(10000000000))
+	return fmt.Sprintf("%06d", n.Int64())
 }
 
 func GetStartEndDate(month int) (string, string) {
