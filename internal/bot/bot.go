@@ -74,6 +74,10 @@ func BotAuth(config *config.Config) {
 			// Bosqich 3: Tasdiqlash kodi yaratish
 			otp := helper.GenerateOtp()
 
+			fmt.Println("-------------------------------")
+			fmt.Println("Generated OTP:", otp)
+			fmt.Println("-------------------------------")
+
 			// Bosqich 4: Kodingni bot orqali foydalanuvchiga yuborish
 			text := fmt.Sprintf(`👋 Salom %s
 
