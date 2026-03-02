@@ -3,7 +3,6 @@ package bot
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -23,8 +22,6 @@ func BotAuth(config *config.Config) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: rAddr,
 	})
-
-	rand.Seed(time.Now().UnixNano()) // kod generatsiya uchun
 
 	bot, err := tgbotapi.NewBotAPI(config.NEW_BOT_TOKEN)
 	if err != nil {
