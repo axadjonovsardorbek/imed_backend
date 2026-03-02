@@ -57,12 +57,6 @@ func init() {
 }
 
 func GenerateOtp() string {
-	// b := make([]byte, 6)
-	// for i := range b {
-	// 	b[i] = charset[rand.Intn(len(charset))]
-	// }
-	rand.Seed(time.Now().UnixNano())
-
 	num := rand.Intn(900000) + 100000
 	str := strconv.Itoa(num)
 	return str
