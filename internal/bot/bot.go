@@ -93,16 +93,7 @@ func BotAuth(config *config.Config) {
 				name, otp,
 			)
 
-			loginURL := fmt.Sprintf(config.CONFIRM_PAGE_URL+"?code=%s", otp)
-
-			btn := tgbotapi.NewInlineKeyboardButtonURL("🔑 Tasdiqlash panelga o‘tish", loginURL)
-			keyboard := tgbotapi.NewInlineKeyboardMarkup(
-				tgbotapi.NewInlineKeyboardRow(btn),
-			)
-
 			msg := tgbotapi.NewMessage(chatID, text)
-			msg.ParseMode = "Markdown"
-			msg.ReplyMarkup = keyboard
 			msg.ParseMode = "Markdown"
 			bot.Send(msg)
 
