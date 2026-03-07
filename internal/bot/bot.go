@@ -75,13 +75,13 @@ func BotAuth(config *config.Config) {
 				msg := tgbotapi.NewMessage(chatID,
 					"❌ Bu telefon raqam uchun login so‘rovi topilmadi.\n\nAvval sayt yoki ilova orqali login qilishni boshlang.")
 				bot.Send(msg)
-				return
+				continue
 			} else if err != nil {
 				log.Printf("redis get error: %v", err)
 				msg := tgbotapi.NewMessage(chatID,
 					"⚠️ Xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.")
 				bot.Send(msg)
-				return
+				continue
 			}
 			fmt.Println("-------------------------------")
 			fmt.Println("Generated OTP:", otp)
