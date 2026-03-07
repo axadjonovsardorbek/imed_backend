@@ -7203,7 +7203,11 @@ const docTemplate = `{
                 "confirmation_code": {
                     "type": "string"
                 },
-                "email": {
+                "identifier": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"email\" or \"telegram\"",
                     "type": "string"
                 }
             }
@@ -8398,7 +8402,11 @@ const docTemplate = `{
         "models.SendConfirmationCodeReq": {
             "type": "object",
             "properties": {
-                "email": {
+                "identifier": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"email\" or \"telegram\"",
                     "type": "string"
                 }
             }
@@ -8846,7 +8854,7 @@ const docTemplate = `{
         "models.UserCheckReq": {
             "type": "object",
             "properties": {
-                "phone_number": {
+                "identifier": {
                     "type": "string"
                 }
             }

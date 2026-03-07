@@ -304,7 +304,10 @@ definitions:
     properties:
       confirmation_code:
         type: string
-      email:
+      identifier:
+        type: string
+      type:
+        description: '"email" or "telegram"'
         type: string
     type: object
   models.ContactCreateReq:
@@ -1087,7 +1090,10 @@ definitions:
     type: object
   models.SendConfirmationCodeReq:
     properties:
-      email:
+      identifier:
+        type: string
+      type:
+        description: '"email" or "telegram"'
         type: string
     type: object
   models.SourceCreateBody:
@@ -1378,7 +1384,7 @@ definitions:
     type: object
   models.UserCheckReq:
     properties:
-      phone_number:
+      identifier:
         type: string
     type: object
   models.UserCheckRes:
