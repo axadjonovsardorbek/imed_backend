@@ -259,13 +259,13 @@ func (h *Handler) CheckUser(c *gin.Context) {
 		return
 	}
 
-	check := isValidPhone(req.PhoneNumber)
+	check := isValidIdentifier(req.Identifier)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "phone number is not valid",
+			"message": "invalid identifier",
 		})
-		slog.Error("Error binding request body: Phone number is not valid")
-		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
+		slog.Error("Error binding request body: Invalid identifier")
+		smssender(c, fmt.Errorf("invalid identifier"), http.StatusBadRequest)
 		return
 	}
 

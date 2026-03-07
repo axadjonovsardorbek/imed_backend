@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"imed/internal/config"
-	"imed/internal/helper"
 
 	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -68,9 +67,22 @@ func BotAuth(config *config.Config) {
 
 			log.Printf("✅ Raqam qabul qilindi: %s (Telegram ID: %d)", phone, userID)
 
+			phone_number := NormalizePhone(phone)
 			// Bosqich 3: Tasdiqlash kodi yaratish
-			otp := helper.GenerateOtp()
+			otp, err := rdb.Get(phone_number).Result()
 
+			if err == redis.Nil {
+				msg := tgbotapi.NewMessage(chatID,
+					"❌ Bu telefon raqam uchun login so‘rovi topilmadi.\n\nAvval sayt yoki ilova orqali login qilishni boshlang.")
+				bot.Send(msg)
+				return
+			} else if err != nil {
+				log.Printf("redis get error: %v", err)
+				msg := tgbotapi.NewMessage(chatID,
+					"⚠️ Xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.")
+				bot.Send(msg)
+				return
+			}
 			fmt.Println("-------------------------------")
 			fmt.Println("Generated OTP:", otp)
 			fmt.Println("-------------------------------")
@@ -97,10 +109,7 @@ func BotAuth(config *config.Config) {
 			msg.ParseMode = "Markdown"
 			bot.Send(msg)
 
-			phone_number := NormalizePhone(phone)
-
-			rdb.Set(otp, phone_number, time.Minute*5)
-			rdb.Set(phone_number, name, time.Minute*5)
+			rdb.Set(fmt.Sprintf("tg:%s", phone_number), name, time.Minute*5)
 		}
 	}
 }

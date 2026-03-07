@@ -115,16 +115,16 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			return
 		}
 
-		var event m.PushEvent
+		var push_event m.PushEvent
 		if code == 0 {
-			event = m.PushEvent{
+			push_event = m.PushEvent{
 				Type:       m.EventPaymentSuccess,
 				OrderID:    order.Id,
 				CourseID:   order.CourseId,
 				CourseName: order.CourseName,
 			}
 		} else if code != 0 && code != -4 {
-			event = m.PushEvent{
+			push_event = m.PushEvent{
 				Type:       m.EventPaymentFailed,
 				OrderID:    order.Id,
 				CourseID:   order.CourseId,
@@ -132,9 +132,25 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			}
 		}
 
+		push_target := m.PushTarget{Type: m.TargetUser, UserID: order.UserId}
+
+		_ = s.push.SendPush(ctx,
+			push_target,
+			push_event,
+		)
+
+		msg := m.BuildUzPushMessage(push_event)
+
+		s.storage.NotificationS.Create(&m.NotificationCreateReq{
+			Title:    msg.Title,
+			Message:  msg.Body,
+			Type:     "selected",
+			CourseId: order.CourseId,
+		})
+
 		if err := s.push.SendPush(pushCtx,
-			m.PushTarget{Type: m.TargetUser, UserID: order.UserId},
-			event,
+			push_target,
+			push_event,
 		); err != nil {
 			fmt.Println("push send error:", err)
 		}

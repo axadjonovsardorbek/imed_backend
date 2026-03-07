@@ -131,10 +131,10 @@ func (r *UserRepo) Check(req *m.UserCheckReq) (*m.UserCheckRes, error) {
 		SELECT 1
 		FROM users
 		WHERE deleted_at = 0
-		AND phone_number = $1
+		AND (phone_number = $1 OR email = $1)
 	)
 	`
-	row := r.db.QueryRow(query, req.PhoneNumber)
+	row := r.db.QueryRow(query, req.Identifier)
 	err := row.Scan(&res.HasAccount)
 	if err != nil {
 		return &res, fmt.Errorf("error while checking user existence: %w", err)
@@ -162,7 +162,7 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 	GROUP BY id
 	`
 
-	row := r.db.QueryRow(query, req.Email)
+	row := r.db.QueryRow(query, req.Identifier)
 
 	err := row.Scan(
 		&count,
@@ -192,7 +192,7 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 			) VALUES($1, $2, $3)
 			`
 
-		_, err = r.db.Exec(query, id, req.Email, "Foydalanuvchi")
+		_, err = r.db.Exec(query, id, req.Identifier, "Foydalanuvchi")
 
 		if err != nil {
 			return nil, err

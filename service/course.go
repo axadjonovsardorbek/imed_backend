@@ -30,14 +30,25 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 
 	courseNameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
 
+	push_target := m.PushTarget{Type: m.TargetAllUsers}
+	push_event := m.PushEvent{
+		Type:       m.EventNewCourse,
+		CourseID:   res.Id,
+		CourseName: courseNameUz,
+	}
+
 	_ = s.push.SendPush(ctx,
-		m.PushTarget{Type: m.TargetAllUsers},
-		m.PushEvent{
-			Type:       m.EventNewCourse,
-			CourseID:   res.Id,
-			CourseName: courseNameUz,
-		},
+		push_target,
+		push_event,
 	)
+
+	msg := m.BuildUzPushMessage(push_event)
+
+	s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		Title:   msg.Title,
+		Message: msg.Body,
+		Type:    "all",
+	})
 
 	return res, nil
 }
@@ -106,14 +117,27 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 	}
 
 	course, _ := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
+	
+	push_target := m.PushTarget{Type: m.TargetUser, UserID: req.UserId}
+	push_event := m.PushEvent{
+		Type:       m.EventCourseAssigned,
+		CourseID:   course.Id,
+		CourseName: course.Name["uz"],
+	}
 	_ = s.push.SendPush(ctx,
-		m.PushTarget{Type: m.TargetUser, UserID: req.UserId},
-		m.PushEvent{
-			Type:       m.EventCourseAssigned,
-			CourseID:   course.Id,
-			CourseName: course.Name["uz"],
-		},
+		push_target,
+		push_event,
 	)
+
+	msg := m.BuildUzPushMessage(push_event)
+
+	s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		Title:    msg.Title,
+		Message:  msg.Body,
+		Type:     "selected",
+		UserId:   req.UserId,
+		CourseId: req.CourseId,
+	})
 
 	return res, nil
 }

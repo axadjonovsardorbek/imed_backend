@@ -76,8 +76,12 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 	var user_ids []string
 	var row *sql.Rows
 
-	if req.Type == "all" {
-		user_query = `
+	if req.UserId != "" && req.UserId != "string" {
+		user_ids = append(user_ids, req.UserId)
+	} else {
+
+		if req.Type == "all" {
+			user_query = `
 		SELECT 
 			id
 		FROM
@@ -86,14 +90,14 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 			deleted_at = 0
 		`
 
-		row, err = tz.Query(user_query)
-		if err != nil {
-			return nil, fmt.Errorf("error while getting users: %w", err)
-		}
-		defer row.Close()
+			row, err = tz.Query(user_query)
+			if err != nil {
+				return nil, fmt.Errorf("error while getting users: %w", err)
+			}
+			defer row.Close()
 
-	} else {
-		user_query = `
+		} else {
+			user_query = `
 		SELECT
 			user_id
 		FROM
@@ -103,11 +107,12 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 		AND 
 			deleted_at = 0
 		`
-		row, err = tz.Query(user_query, req.CourseId)
-		if err != nil {
-			return nil, fmt.Errorf("error while getting users by course id: %w", err)
+			row, err = tz.Query(user_query, req.CourseId)
+			if err != nil {
+				return nil, fmt.Errorf("error while getting users by course id: %w", err)
+			}
+			defer row.Close()
 		}
-		defer row.Close()
 	}
 
 	for row.Next() {
@@ -120,6 +125,7 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 		}
 		user_ids = append(user_ids, user_id)
 	}
+
 	if len(user_ids) > 0 {
 		valueStrings := []string{}
 		valueArgs := []interface{}{}

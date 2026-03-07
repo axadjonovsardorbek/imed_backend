@@ -29,16 +29,28 @@ func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.
 
 	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: res.Id})
 	if err == nil {
+
+		push_target := m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.CourseId}
+		push_event := m.PushEvent{
+			Type:       m.EventLessonAdded,
+			CourseID:   info.CourseId,
+			CourseName: info.CourseName,
+			LessonID:   info.LessonId,
+			LessonName: info.LessonName,
+		}
 		_ = s.push.SendPush(ctx,
-			m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.CourseId},
-			m.PushEvent{
-				Type:       m.EventLessonAdded,
-				CourseID:   info.CourseId,
-				CourseName: info.CourseName,
-				LessonID:   info.LessonId,
-				LessonName: info.LessonName,
-			},
+			push_target,
+			push_event,
 		)
+
+		msg := m.BuildUzPushMessage(push_event)
+
+		s.storage.NotificationS.Create(&m.NotificationCreateReq{
+			Title:    msg.Title,
+			Message:  msg.Body,
+			Type:     "selected",
+			CourseId: info.CourseId,
+		})
 	}
 
 	return res, nil

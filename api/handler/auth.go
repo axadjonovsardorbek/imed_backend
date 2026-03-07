@@ -32,21 +32,28 @@ func (h *Handler) SendConfirmation(c *gin.Context) {
 		return
 	}
 
-	check := isValidEmail(req.Email)
-	if !check {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid email format"})
-		slog.Error("Invalid email format")
-		smssender(c, fmt.Errorf("invalid email format"), http.StatusBadRequest)
+	if req.Type != "email" && req.Type != "telegram" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid type, must be 'email' or 'telegram'"})
+		slog.Error("Invalid type, must be 'email' or 'telegram'")
+		smssender(c, fmt.Errorf("invalid type, must be 'email' or 'telegram'"), http.StatusBadRequest)
 		return
 	}
 
-	slog.Info("Email:", req)
+	check := isValidIdentifier(req.Identifier)
+	if !check {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid identifier format"})
+		slog.Error("Invalid identifier format")
+		smssender(c, fmt.Errorf("invalid identifier format"), http.StatusBadRequest)
+		return
+	}
+
+	slog.Info("Identifier:", req)
 	res, err := h.Clients.User.SendConfirmationCode(context.Background(), &req)
 	slog.Info("Send Confirmation res:", res)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		slog.Error("Error while login", err)
+		slog.Error("Error while sending otp", err)
 		smssender(c, err, http.StatusInternalServerError)
 		return
 	}
@@ -76,14 +83,30 @@ func (h *Handler) VerifyConfirmation(c *gin.Context) {
 		return
 	}
 
-	if req.Email != "" && req.Email != "string" {
-		check := isValidEmail(req.Email)
+	if req.Identifier != "" && req.Identifier != "string" {
+
+		check := isValidIdentifier(req.Identifier)
+
 		if !check {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "invalid email format"})
-			slog.Error("Invalid email format")
-			smssender(c, fmt.Errorf("invalid email format"), http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"message": "invalid identifier format"})
+			slog.Error("Invalid identifier format")
+			smssender(c, fmt.Errorf("invalid identifier format"), http.StatusBadRequest)
 			return
 		}
+	}
+
+	if req.ConfirmationCode == "" || req.ConfirmationCode == "string" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "confirmation code is required"})
+		slog.Error("Confirmation code is required")
+		smssender(c, fmt.Errorf("confirmation code is required"), http.StatusBadRequest)
+		return
+	}
+
+	if req.Type != "email" && req.Type != "telegram" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid type, must be 'email' or 'telegram'"})
+		slog.Error("Invalid type, must be 'email' or 'telegram'")
+		smssender(c, fmt.Errorf("invalid type, must be 'email' or 'telegram'"), http.StatusBadRequest)
+		return
 	}
 
 	slog.Info("Verify Confirmation Code:", req)
