@@ -1839,6 +1839,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
                         "description": "FCM token",
                         "name": "fcm_token",
                         "in": "formData"

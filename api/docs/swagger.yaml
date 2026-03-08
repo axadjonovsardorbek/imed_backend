@@ -2726,6 +2726,10 @@ paths:
         in: formData
         name: phone_number
         type: string
+      - description: Email
+        in: formData
+        name: email
+        type: string
       - description: FCM token
         in: formData
         name: fcm_token

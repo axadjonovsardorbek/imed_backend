@@ -477,6 +477,7 @@ func (h *Handler) GetProfileUser(c *gin.Context) {
 // @Security BearerAuth
 // @Param name formData string false "User name"
 // @Param phone_number formData string false "Phone number"
+// @Param email formData string false "Email"
 // @Param fcm_token formData string false "FCM token"
 // @Param language formData string false "Language (e.g. uz, ru, en)"
 // @Param image formData file false "Profile image (jpg/png/webp)"
@@ -491,6 +492,7 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 		PhoneNumber: formStr(c, "phone_number"),
 		FCMToken:    formStr(c, "fcm_token"),
 		Language:    formStr(c, "language"),
+		Email:       formStr(c, "email"),
 	}
 
 	user_id := claimData(c, "user_id")
