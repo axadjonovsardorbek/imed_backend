@@ -99,8 +99,9 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 	  ) AS teachers,
 	
 	  (SELECT COUNT(DISTINCT ua.user_id)
-		FROM user_activities ua, bounds b
+		FROM user_activities ua
 		JOIN users u ON u.id = ua.user_id
+		CROSS JOIN bounds b
 		WHERE u.deleted_at = 0
 		  AND ua.activity <> 0
 		  AND (b.from_ts IS NULL OR ua.day >= b.from_ts::date)
