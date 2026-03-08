@@ -52,9 +52,9 @@ func (h *Handler) SendConfirmation(c *gin.Context) {
 	slog.Info("Send Confirmation res:", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while sending otp", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -114,9 +114,9 @@ func (h *Handler) VerifyConfirmation(c *gin.Context) {
 	slog.Info("Verify Confirmation res:", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while verifying confirmation code", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

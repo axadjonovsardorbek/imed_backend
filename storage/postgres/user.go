@@ -500,7 +500,25 @@ func (r *UserRepo) Update(req *m.UserUpdateReq) (*m.Void, error) {
 		args = append(args, req.Name)
 	}
 	if req.PhoneNumber != "" && req.PhoneNumber != "string" {
-		conditions = append(conditions, " phone_number = $"+strconv.Itoa(len(args)+1))
+		var exists bool
+		checkQuery := `
+			SELECT EXISTS(
+				SELECT 1
+				FROM users
+				WHERE phone_number = $1
+				  AND id <> $2
+				  AND deleted_at = 0
+			)
+		`
+		err := r.db.QueryRow(checkQuery, req.PhoneNumber, req.Id).Scan(&exists)
+		if err != nil {
+			return nil, fmt.Errorf("error while checking phone number: %w", err)
+		}
+		if exists {
+			return nil, fmt.Errorf("bu telefon raqam allaqachon mavjud")
+		}
+
+		conditions = append(conditions, "phone_number = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.PhoneNumber)
 	}
 	if req.FCMToken != "" && req.FCMToken != "string" {
@@ -516,7 +534,25 @@ func (r *UserRepo) Update(req *m.UserUpdateReq) (*m.Void, error) {
 		args = append(args, req.Language)
 	}
 	if req.Email != "" && req.Email != "string" {
-		conditions = append(conditions, " email = $"+strconv.Itoa(len(args)+1))
+		var exists bool
+		checkQuery := `
+			SELECT EXISTS(
+				SELECT 1
+				FROM users
+				WHERE email = $1
+				  AND id <> $2
+				  AND deleted_at = 0
+			)
+		`
+		err := r.db.QueryRow(checkQuery, req.Email, req.Id).Scan(&exists)
+		if err != nil {
+			return nil, fmt.Errorf("error while checking email: %w", err)
+		}
+		if exists {
+			return nil, fmt.Errorf("bu email allaqachon mavjud")
+		}
+
+		conditions = append(conditions, "email = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.Email)
 	}
 

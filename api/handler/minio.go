@@ -41,8 +41,8 @@ func (h *Handler) UploadFile(c *gin.Context) {
 	// MinIO ga yuklash (avvalgi MinIO.Upload funksiyangizdan foydalanamiz)
 	minioURL, err := h.MinIO.Upload(fileName, tempFilePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to upload to MinIO"})
-		smssender(c, err, http.StatusInternalServerError)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "failed to upload to MinIO"})
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

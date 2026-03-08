@@ -56,9 +56,9 @@ func (h *Handler) CreatePromoCode(c *gin.Context) {
 	res, err := h.Clients.PromoCode.Create(context.Background(), &req)
 	slog.Info("Create promocode response", "PromoCode", res)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error creating promocode: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -89,9 +89,9 @@ func (h *Handler) GetByIdPromoCode(c *gin.Context) {
 	slog.Info("PromoCode details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting promocode by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -136,9 +136,9 @@ func (h *Handler) GetAllPromoCodes(c *gin.Context) {
 	slog.Info("All promocode", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting promocode: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -205,9 +205,9 @@ func (h *Handler) UpdatePromoCode(c *gin.Context) {
 	_, err := h.Clients.PromoCode.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating PromoCode: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -237,9 +237,9 @@ func (h *Handler) DeletePromoCode(c *gin.Context) {
 	_, err := h.Clients.PromoCode.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting promocode", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -286,7 +286,7 @@ func (h *Handler) CheckPromoCode(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, res)
 		slog.Error("Error checking promocode: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -314,9 +314,9 @@ func (h *Handler) GetByIdUserPromoCode(c *gin.Context) {
 	slog.Info("PromoCode details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting promocode by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -361,9 +361,9 @@ func (h *Handler) GetAllUserPromoCodes(c *gin.Context) {
 	slog.Info("All promocode", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting promocode: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
