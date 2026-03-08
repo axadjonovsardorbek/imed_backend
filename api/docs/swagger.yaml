@@ -495,6 +495,8 @@ definitions:
     type: object
   models.DashboardRes:
     properties:
+      active_users:
+        type: integer
       courses:
         type: integer
       documents:

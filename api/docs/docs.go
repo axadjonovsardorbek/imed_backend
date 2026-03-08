@@ -7495,6 +7495,9 @@ const docTemplate = `{
         "models.DashboardRes": {
             "type": "object",
             "properties": {
+                "active_users": {
+                    "type": "integer"
+                },
                 "courses": {
                     "type": "integer"
                 },
