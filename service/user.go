@@ -168,6 +168,11 @@ func (s *UserService) Confirmation(ctx context.Context, req *m.ConfirmationReq) 
 				return nil, err
 			}
 
+			err = s.rdb.Del(req.Identifier).Err()
+			if err != nil {
+				fmt.Printf("Failed to delete OTP from Redis for identifier %s: %v\n", req.Identifier, err)
+			}
+
 			return res, nil
 		} else if req.Type == "telegram" {
 			name, err := s.rdb.Get(fmt.Sprintf("tg:%s", req.Identifier)).Result()
@@ -175,6 +180,12 @@ func (s *UserService) Confirmation(ctx context.Context, req *m.ConfirmationReq) 
 			if err != nil {
 				return nil, err
 			}
+
+			err = s.rdb.Del(req.Identifier).Err()
+			if err != nil {
+				fmt.Printf("Failed to delete OTP from Redis for identifier %s: %v\n", req.Identifier, err)
+			}
+
 			return res, nil
 		}
 
