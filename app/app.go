@@ -34,7 +34,7 @@ func Run(cf *config.Config) {
 	}
 	slog.Info("Redis connected successfully")
 
-	conn, err := postgres.NewPostgresStorage(*cf)
+	conn, err := postgres.NewPostgresStorage(*cf, rdb)
 
 	if err != nil {
 		slog.Error("Failed to connect postgres:", "err", err)
@@ -67,7 +67,7 @@ func Run(cf *config.Config) {
 
 	go bot.BotAuth(cf)
 
-	router := api.NewApi(handlers)
+	router := api.NewApi(handlers, rdb)
 	log.Println("Server is running on port ", cf)
 	if err := router.Run(cf.AUTH_PORT); err != nil {
 		slog.Error("Error:", "err", err)

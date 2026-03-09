@@ -14,17 +14,20 @@ import (
 	"imed/pkg/models"
 	m "imed/pkg/models"
 
+	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepo struct {
-	db *sql.DB
+	db  *sql.DB
+	rdb *redis.Client
 }
 
-func NewUserRepo(db *sql.DB) *UserRepo {
+func NewUserRepo(db *sql.DB, rdb *redis.Client) *UserRepo {
 	return &UserRepo{
-		db: db,
+		db:  db,
+		rdb: rdb,
 	}
 }
 
@@ -174,7 +177,7 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 	}
 
 	if count == 1 && user_id != "string" {
-		tkn = token.GenerateJWTToken(user_id, "user")
+		tkn = token.GenerateJWTToken(user_id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -197,7 +200,7 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 		if err != nil {
 			return nil, err
 		}
-		tkn = token.GenerateJWTToken(id, "user")
+		tkn = token.GenerateJWTToken(id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -238,7 +241,7 @@ func (r *UserRepo) TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error) {
 	}
 
 	if count == 1 && user_id != "string" {
-		tkn = token.GenerateJWTToken(user_id, "user")
+		tkn = token.GenerateJWTToken(user_id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -261,7 +264,7 @@ func (r *UserRepo) TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error) {
 		if err != nil {
 			return nil, err
 		}
-		tkn = token.GenerateJWTToken(id, "user")
+		tkn = token.GenerateJWTToken(id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -329,7 +332,7 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 			return nil, fmt.Errorf("error while registering user: %w", err)
 		}
 
-		tkn := token.GenerateJWTToken(id, role)
+		tkn := token.GenerateJWTToken(id, role, r.rdb)
 
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
@@ -360,7 +363,7 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	tkn := token.GenerateJWTToken(id, role)
+	tkn := token.GenerateJWTToken(id, role, r.rdb)
 
 	return &m.TokenRes{
 		AccessToken:  tkn.AccessToken,
