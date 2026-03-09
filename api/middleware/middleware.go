@@ -54,8 +54,19 @@ func NewAuth(enforcer *casbin.Enforcer, rdb *redis.Client) gin.HandlerFunc {
 			return
 		}
 
+		tokenSessionID, ok := claims["session_id"].(string)
+		if !ok || tokenSessionID == "" {
+			tokenSessionID = ""
+		}
+
 		redisKey := "user_session:" + claims["user_id"].(string)
 		storedSessionID, err := rdb.Get(redisKey).Result()
+
+		if (err == redis.Nil || storedSessionID == "") && tokenSessionID == "" {
+			ctx.Set("claims", claims)
+			ctx.Set("user_id", claims["user_id"])
+			ctx.Next()
+		}
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "session expired or not found",
@@ -63,7 +74,7 @@ func NewAuth(enforcer *casbin.Enforcer, rdb *redis.Client) gin.HandlerFunc {
 			return
 		}
 
-		if storedSessionID != claims["session_id"].(string) {
+		if storedSessionID != tokenSessionID {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "you are logged in from another device",
 			})
