@@ -45,12 +45,21 @@ func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.
 
 		msg := m.BuildUzPushMessage(push_event)
 
-		s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
 			Title:    msg.Title,
 			Message:  msg.Body,
 			Type:     "selected",
 			CourseId: info.CourseId,
 		})
+
+		if err != nil {
+			fmt.Println("Failed to create notification:", err)
+		}
+
+		fmt.Println("Push event sent:", push_event)
+		fmt.Println("Push message:", msg)
+		fmt.Println("Lesson created with ID:", res.Id)
+		fmt.Println("Notification created with ID:", ntf.Id)
 	}
 
 	return res, nil

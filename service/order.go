@@ -141,12 +141,21 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 
 		msg := m.BuildUzPushMessage(push_event)
 
-		s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
 			Title:    msg.Title,
 			Message:  msg.Body,
 			Type:     "selected",
 			CourseId: order.CourseId,
 		})
+
+		if err != nil {
+			fmt.Println("Failed to create notification:", err)
+		}
+
+		fmt.Println("Push event sent:", push_event)
+		fmt.Println("Push message:", msg)
+		fmt.Println("Order ID:", orderID, "Payment code:", code)
+		fmt.Println("Notification created with ID:", ntf.Id)
 
 		if err := s.push.SendPush(pushCtx,
 			push_target,

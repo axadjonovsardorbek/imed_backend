@@ -117,7 +117,7 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 	}
 
 	course, _ := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
-	
+
 	push_target := m.PushTarget{Type: m.TargetUser, UserID: req.UserId}
 	push_event := m.PushEvent{
 		Type:       m.EventCourseAssigned,
@@ -131,13 +131,22 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 
 	msg := m.BuildUzPushMessage(push_event)
 
-	s.storage.NotificationS.Create(&m.NotificationCreateReq{
+	ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
 		Title:    msg.Title,
 		Message:  msg.Body,
 		Type:     "selected",
 		UserId:   req.UserId,
 		CourseId: req.CourseId,
 	})
+
+	if err != nil {
+		fmt.Println("Failed to create notification:", err)
+	}
+
+	fmt.Println("Push event sent:", push_event)
+	fmt.Println("Push message:", msg)
+	fmt.Println("Course bought successfully for user:", req.UserId)
+	fmt.Println("Notification created with ID:", ntf.Id)
 
 	return res, nil
 }
