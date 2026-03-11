@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 	"time"
@@ -140,10 +141,11 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 		)
 
 		msg := m.BuildUzPushMessage(push_event)
+		title, body := helper.StringToJSON(msg.Title, msg.Body)
 
 		ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
-			Title:    msg.Title,
-			Message:  msg.Body,
+			Title:    title,
+			Message:  body,
 			Type:     "selected",
 			CourseId: order.CourseId,
 		})

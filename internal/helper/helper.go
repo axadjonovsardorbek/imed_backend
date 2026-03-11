@@ -67,6 +67,25 @@ func GetStartEndDate(month int) (string, string) {
 	return start, end
 }
 
+func StringToJSON(title, body string) (string, string) {
+	a, _ := json.Marshal(map[string]string{
+		"uz": title,
+		"ru": title,
+		"en": title,
+	})
+
+	b, _ := json.Marshal(map[string]string{
+		"uz": body,
+		"ru": body,
+		"en": body,
+	})
+
+	title = string(a)
+	body = string(b)
+
+	return title, body
+}
+
 func CheckDjangoPBKDF2(password, stored string) (bool, error) {
 	parts := strings.Split(stored, "$")
 	if len(parts) != 4 {
