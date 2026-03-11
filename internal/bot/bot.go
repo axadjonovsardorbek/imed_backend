@@ -41,22 +41,52 @@ func BotAuth(config *config.Config) {
 		chatID := update.Message.Chat.ID
 
 		// Bosqich 1: /start
-		if update.Message.Text == "/start" {
-			msg := tgbotapi.NewMessage(chatID, "📱 Iltimos, raqamingizni yuboring:")
-			msg.ReplyMarkup = tgbotapi.ReplyKeyboardMarkup{
-				Keyboard: [][]tgbotapi.KeyboardButton{
-					{
+		if update.Message.Text != "" {
+			text := strings.TrimSpace(update.Message.Text)
+			log.Printf("incoming text: %q", text)
+
+			if strings.HasPrefix(text, "/start") {
+				fields := strings.Fields(text)
+
+				payload := ""
+				if len(fields) > 1 {
+					payload = fields[1]
+				}
+
+				if payload == "login" {
+					msg := tgbotapi.NewMessage(chatID, "📱 Iltimos, raqamingizni yuboring:")
+					msg.ReplyMarkup = tgbotapi.ReplyKeyboardMarkup{
+						Keyboard: [][]tgbotapi.KeyboardButton{
+							{
+								{
+									Text:           "📲 Raqamni yuborish",
+									RequestContact: true,
+								},
+							},
+						},
+						ResizeKeyboard:  true,
+						OneTimeKeyboard: true,
+					}
+					bot.Send(msg)
+					continue
+				}
+
+				msg := tgbotapi.NewMessage(chatID, "📱 Iltimos, raqamingizni yuboring:")
+				msg.ReplyMarkup = tgbotapi.ReplyKeyboardMarkup{
+					Keyboard: [][]tgbotapi.KeyboardButton{
 						{
-							Text:           "📲 Raqamni yuborish",
-							RequestContact: true,
+							{
+								Text:           "📲 Raqamni yuborish",
+								RequestContact: true,
+							},
 						},
 					},
-				},
-				ResizeKeyboard:  true,
-				OneTimeKeyboard: true,
+					ResizeKeyboard:  true,
+					OneTimeKeyboard: true,
+				}
+				bot.Send(msg)
+				continue
 			}
-			bot.Send(msg)
-			continue
 		}
 
 		// Bosqich 2: Raqam yuborildi
