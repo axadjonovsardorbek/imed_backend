@@ -44,7 +44,7 @@ func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, p
 		Source:       service.NewSourceService(conn, rdb),
 		Subject:      service.NewSubjectService(conn, rdb),
 		Teacher:      service.NewTeacherService(conn, rdb),
-		Notification: service.NewNotificationService(conn, rdb),
+		Notification: service.NewNotificationService(conn, rdb, pushSvc),
 		AppRoute:     service.NewAppRouteService(conn, rdb),
 		Order:        service.NewOrderService(conn, rdb, pushSvc),
 		Tariff:       service.NewTariffService(conn, rdb),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 	"time"
@@ -14,14 +15,46 @@ import (
 type NotificationService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewNotificationService(storage *st.Storage, rdb *redis.Client) *NotificationService {
-	return &NotificationService{storage: *storage, rdb: rdb}
+func NewNotificationService(storage *st.Storage, rdb *redis.Client, push *PushService) *NotificationService {
+	return &NotificationService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCreateReq) (*m.ById, error) {
-	return s.storage.NotificationS.Create(req)
+
+	res, err := s.storage.NotificationS.Create(req)
+	if err != nil {
+		return nil, err
+	}
+
+	titleUz, _ := helper.PickFromJSONStr(req.Title, "uz")
+	messageUz, _ := helper.PickFromJSONStr(req.Message, "uz")
+	push_target := m.PushTarget{Type: m.TargetAllUsers}
+	push_event := m.PushEvent{
+		Type:       m.EventNewCourse,
+		CourseID:   titleUz,
+		CourseName: messageUz,
+	}
+
+	if req.Type == "selected" && req.CourseId != "" {
+		course, _ := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
+
+		push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: req.CourseId}
+		push_event = m.PushEvent{
+			Type:       m.EventNewCourse,
+			CourseID:   req.CourseId,
+			CourseName: course.Name["uz"],
+		}
+	}
+
+	_ = s.push.SendPush(ctx,
+		push_target,
+		push_event,
+	)
+
+	return res, nil
 }
 
 func (s *NotificationService) GetById(ctx context.Context, req *m.ById) (*m.MasterNotificationRes, error) {

@@ -23,11 +23,12 @@ type PushTarget struct {
 type PushEventType string
 
 const (
-	EventNewCourse      PushEventType = "new_course"
-	EventLessonAdded    PushEventType = "lesson_added"
-	EventCourseAssigned PushEventType = "course_assigned"
-	EventPaymentSuccess PushEventType = "payment_success"
-	EventPaymentFailed  PushEventType = "payment_failed"
+	EventNewCourse         PushEventType = "new_course"
+	EventLessonAdded       PushEventType = "lesson_added"
+	EventCourseAssigned    PushEventType = "course_assigned"
+	EventPaymentSuccess    PushEventType = "payment_success"
+	EventPaymentFailed     PushEventType = "payment_failed"
+	EventAdminNotification PushEventType = "admin_notification"
 )
 
 type PushEvent struct {
@@ -112,6 +113,16 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 				"order_id":  e.OrderID,
 				"course_id": e.CourseID,
 				"amount":    e.Amount,
+			},
+		}
+
+	case EventAdminNotification:
+		return PushMessage{
+			Title: "Admin bildirishnomasi",
+			Body:  e.CourseName, // CourseName may be used for custom message
+			Data: map[string]string{
+				"type": "admin_notification",
+				"info": e.CourseName, // Custom info field for admin messages
 			},
 		}
 
