@@ -118,11 +118,11 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 
 	case EventAdminNotification:
 		return PushMessage{
-			Title: "Admin bildirishnomasi",
-			Body:  e.CourseName, // CourseName may be used for custom message
+			Title: e.CourseID,
+			Body:  e.CourseName,
 			Data: map[string]string{
 				"type": "admin_notification",
-				"info": e.CourseName, // Custom info field for admin messages
+				"info": e.CourseName,
 			},
 		}
 

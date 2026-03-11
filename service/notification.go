@@ -49,10 +49,19 @@ func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCre
 		}
 	}
 
-	_ = s.push.SendPush(ctx,
+	err = s.push.SendPush(ctx,
 		push_target,
 		push_event,
 	)
+	if err != nil {
+		fmt.Println("\n\n\n\\Failed to send push:", err)
+	}
+
+	fmt.Println("Push event sent:", push_event)
+
+	fmt.Printf("Notification created: %s\n", res.Id)
+	fmt.Println("Push event sent:", push_event)
+	fmt.Println()
 
 	return res, nil
 }
