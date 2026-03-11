@@ -1,16 +1,17 @@
 package models
 
 type DashboardRes struct {
-	Tariffs   int `json:"tariffs"`
-	Subjects  int `json:"subjects"`
-	Courses   int `json:"courses"`
-	Modules   int `json:"modules"`
-	Lessons   int `json:"lessons"`
-	Tests     int `json:"tests"`
-	Documents int `json:"documents"`
-	Videos    int `json:"videos"`
-	Users     int `json:"users"`
-	Teachers  int `json:"teachers"`
+	Tariffs     int `json:"tariffs"`
+	Subjects    int `json:"subjects"`
+	Courses     int `json:"courses"`
+	Modules     int `json:"modules"`
+	Lessons     int `json:"lessons"`
+	Tests       int `json:"tests"`
+	Documents   int `json:"documents"`
+	Videos      int `json:"videos"`
+	Users       int `json:"users"`
+	Teachers    int `json:"teachers"`
+	ActiveUsers int `json:"active_users"`
 }
 
 type GetDashboardReq struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 	"time"
@@ -29,16 +30,39 @@ func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.
 
 	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: res.Id})
 	if err == nil {
+
+		push_target := m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.CourseId}
+		push_event := m.PushEvent{
+			Type:       m.EventLessonAdded,
+			CourseID:   info.CourseId,
+			CourseName: info.CourseName,
+			LessonID:   info.LessonId,
+			LessonName: info.LessonName,
+		}
 		_ = s.push.SendPush(ctx,
-			m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.CourseId},
-			m.PushEvent{
-				Type:       m.EventLessonAdded,
-				CourseID:   info.CourseId,
-				CourseName: info.CourseName,
-				LessonID:   info.LessonId,
-				LessonName: info.LessonName,
-			},
+			push_target,
+			push_event,
 		)
+
+		msg := m.BuildUzPushMessage(push_event)
+
+		title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+		ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
+			Title:    title,
+			Message:  body,
+			Type:     "selected",
+			CourseId: info.CourseId,
+		})
+
+		if err != nil {
+			fmt.Println("Failed to create notification:", err)
+		}
+
+		fmt.Println("Push event sent:", push_event)
+		fmt.Println("Push message:", msg)
+		fmt.Println("Lesson created with ID:", res.Id)
+		fmt.Println("Notification created with ID:", ntf.Id)
 	}
 
 	return res, nil

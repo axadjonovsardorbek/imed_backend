@@ -48,9 +48,9 @@ func (h *Handler) CreateUser(c *gin.Context) {
 	slog.Info("User create response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while creating", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -121,9 +121,9 @@ func (h *Handler) ChangePasswordWeb(c *gin.Context) {
 	slog.Info("Change password response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while check", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -191,9 +191,9 @@ func (h *Handler) ChangePasswordMobile(c *gin.Context) {
 	slog.Info("Change password response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while check", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -228,9 +228,9 @@ func (h *Handler) RefreshPassword(c *gin.Context) {
 	slog.Info("Refreshed password", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error refreshing password: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -259,13 +259,13 @@ func (h *Handler) CheckUser(c *gin.Context) {
 		return
 	}
 
-	check := isValidPhone(req.PhoneNumber)
+	check := isValidIdentifier(req.Identifier)
 	if !check {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "phone number is not valid",
+			"message": "invalid identifier",
 		})
-		slog.Error("Error binding request body: Phone number is not valid")
-		smssender(c, fmt.Errorf("phone number is not valid"), http.StatusBadRequest)
+		slog.Error("Error binding request body: Invalid identifier")
+		smssender(c, fmt.Errorf("invalid identifier"), http.StatusBadRequest)
 		return
 	}
 
@@ -274,9 +274,9 @@ func (h *Handler) CheckUser(c *gin.Context) {
 	slog.Info("User check response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while check", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -320,9 +320,9 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	slog.Info("User login response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while login", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -349,9 +349,9 @@ func (h *Handler) GetByIdUser(c *gin.Context) {
 	slog.Info("User details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting user by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -393,9 +393,9 @@ func (h *Handler) GetAllUsers(c *gin.Context) {
 	slog.Info("All user", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting user: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -426,9 +426,9 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 	_, err := h.Clients.User.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting user", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -458,9 +458,9 @@ func (h *Handler) GetProfileUser(c *gin.Context) {
 	slog.Info("User details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting user by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -477,6 +477,7 @@ func (h *Handler) GetProfileUser(c *gin.Context) {
 // @Security BearerAuth
 // @Param name formData string false "User name"
 // @Param phone_number formData string false "Phone number"
+// @Param email formData string false "Email"
 // @Param fcm_token formData string false "FCM token"
 // @Param language formData string false "Language (e.g. uz, ru, en)"
 // @Param image formData file false "Profile image (jpg/png/webp)"
@@ -491,6 +492,7 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 		PhoneNumber: formStr(c, "phone_number"),
 		FCMToken:    formStr(c, "fcm_token"),
 		Language:    formStr(c, "language"),
+		Email:       formStr(c, "email"),
 	}
 
 	user_id := claimData(c, "user_id")
@@ -523,8 +525,8 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 	if tempFilePath != "" && fileName != "" {
 		minioURL, err := h.MinIO.Upload(fileName, tempFilePath)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to upload to MinIO"})
-			smssender(c, err, http.StatusInternalServerError)
+			c.JSON(http.StatusBadRequest, gin.H{"message": "failed to upload to MinIO"})
+			smssender(c, err, http.StatusBadRequest)
 			return
 		}
 		req.ImageUrl = minioURL
@@ -535,9 +537,9 @@ func (h *Handler) UpdateProfileUser(c *gin.Context) {
 	slog.Info("User profile updated")
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating user profile: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -570,9 +572,9 @@ func (h *Handler) DeleteProfileUser(c *gin.Context) {
 	slog.Info("User profile deleted")
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting user profile", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -615,9 +617,9 @@ func (h *Handler) CreateActivity(c *gin.Context) {
 	slog.Info("Create activity response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while create activity", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -691,9 +693,9 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 	slog.Info("Get activity stats request", "req", req)
 	statsRes, err := h.Clients.User.GetActivities(context.Background(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while get activity stats", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -746,8 +748,8 @@ func (h *Handler) GetRating(c *gin.Context) {
 	res, err := h.Clients.User.GetRating(context.Background(), &req)
 	if err != nil {
 		slog.Error("Error while get rating", err)
-		smssender(c, err, http.StatusInternalServerError)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		smssender(c, err, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 

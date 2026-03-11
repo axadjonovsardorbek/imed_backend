@@ -67,9 +67,9 @@ func (h *Handler) CreateBanner(c *gin.Context) {
 	res, err := h.Clients.Banner.Create(context.Background(), &req)
 	slog.Info("Create banner response", "Banner", res)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error creating banner: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -100,9 +100,9 @@ func (h *Handler) GetByIdBanner(c *gin.Context) {
 	slog.Info("Banner details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting banner by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -141,9 +141,9 @@ func (h *Handler) GetAllBanners(c *gin.Context) {
 	slog.Info("All banner", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting banner: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -211,9 +211,9 @@ func (h *Handler) UpdateBanner(c *gin.Context) {
 	_, err = h.Clients.Banner.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating Banner: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -243,9 +243,9 @@ func (h *Handler) DeleteBanner(c *gin.Context) {
 	_, err := h.Clients.Banner.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting banner", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -275,9 +275,9 @@ func (h *Handler) GetByIdMobileBanner(c *gin.Context) {
 	slog.Info("Banner details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting banner by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -309,9 +309,9 @@ func (h *Handler) GetAllMobileBanners(c *gin.Context) {
 	slog.Info("All banner", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting banner: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

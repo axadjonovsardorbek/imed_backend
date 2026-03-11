@@ -30,9 +30,9 @@ func (h *Handler) GetByIdAdmin(c *gin.Context) {
 	slog.Info("Admin details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting admin by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -67,9 +67,9 @@ func (h *Handler) Login(c *gin.Context) {
 	slog.Info("Admin login response", res)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error while login", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

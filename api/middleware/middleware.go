@@ -10,6 +10,7 @@ import (
 	"imed/api/token"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/go-redis/redis"
 	"github.com/golang-jwt/jwt"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ const (
 
 var ErrTokenExpired = errors.New("token expired")
 
-func NewAuth(enforcer *casbin.Enforcer) gin.HandlerFunc {
+func NewAuth(enforcer *casbin.Enforcer, rdb *redis.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		allow, err := CheckPermission(ctx.FullPath(), ctx.Request, enforcer)
 
@@ -50,6 +51,33 @@ func NewAuth(enforcer *casbin.Enforcer) gin.HandlerFunc {
 				return
 			}
 			InvalidToken(ctx)
+			return
+		}
+
+		tokenSessionID, ok := claims["session_id"].(string)
+		if !ok || tokenSessionID == "" {
+			tokenSessionID = ""
+		}
+
+		redisKey := "user_session:" + claims["user_id"].(string)
+		storedSessionID, err := rdb.Get(redisKey).Result()
+
+		if (err == redis.Nil || storedSessionID == "") && tokenSessionID == "" {
+			ctx.Set("claims", claims)
+			ctx.Set("user_id", claims["user_id"])
+			ctx.Next()
+		}
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "session expired or not found",
+			})
+			return
+		}
+
+		if storedSessionID != tokenSessionID {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "you are logged in from another device",
+			})
 			return
 		}
 

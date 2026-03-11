@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 	"time"
@@ -115,16 +116,16 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			return
 		}
 
-		var event m.PushEvent
+		var push_event m.PushEvent
 		if code == 0 {
-			event = m.PushEvent{
+			push_event = m.PushEvent{
 				Type:       m.EventPaymentSuccess,
 				OrderID:    order.Id,
 				CourseID:   order.CourseId,
 				CourseName: order.CourseName,
 			}
 		} else if code != 0 && code != -4 {
-			event = m.PushEvent{
+			push_event = m.PushEvent{
 				Type:       m.EventPaymentFailed,
 				OrderID:    order.Id,
 				CourseID:   order.CourseId,
@@ -132,9 +133,35 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			}
 		}
 
+		push_target := m.PushTarget{Type: m.TargetUser, UserID: order.UserId}
+
+		_ = s.push.SendPush(ctx,
+			push_target,
+			push_event,
+		)
+
+		msg := m.BuildUzPushMessage(push_event)
+		title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+		ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
+			Title:    title,
+			Message:  body,
+			Type:     "selected",
+			CourseId: order.CourseId,
+		})
+
+		if err != nil {
+			fmt.Println("Failed to create notification:", err)
+		}
+
+		fmt.Println("Push event sent:", push_event)
+		fmt.Println("Push message:", msg)
+		fmt.Println("Order ID:", orderID, "Payment code:", code)
+		fmt.Println("Notification created with ID:", ntf.Id)
+
 		if err := s.push.SendPush(pushCtx,
-			m.PushTarget{Type: m.TargetUser, UserID: order.UserId},
-			event,
+			push_target,
+			push_event,
 		); err != nil {
 			fmt.Println("push send error:", err)
 		}

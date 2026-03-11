@@ -14,17 +14,20 @@ import (
 	"imed/pkg/models"
 	m "imed/pkg/models"
 
+	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepo struct {
-	db *sql.DB
+	db  *sql.DB
+	rdb *redis.Client
 }
 
-func NewUserRepo(db *sql.DB) *UserRepo {
+func NewUserRepo(db *sql.DB, rdb *redis.Client) *UserRepo {
 	return &UserRepo{
-		db: db,
+		db:  db,
+		rdb: rdb,
 	}
 }
 
@@ -131,10 +134,10 @@ func (r *UserRepo) Check(req *m.UserCheckReq) (*m.UserCheckRes, error) {
 		SELECT 1
 		FROM users
 		WHERE deleted_at = 0
-		AND phone_number = $1
+		AND (phone_number = $1 OR email = $1)
 	)
 	`
-	row := r.db.QueryRow(query, req.PhoneNumber)
+	row := r.db.QueryRow(query, req.Identifier)
 	err := row.Scan(&res.HasAccount)
 	if err != nil {
 		return &res, fmt.Errorf("error while checking user existence: %w", err)
@@ -162,7 +165,7 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 	GROUP BY id
 	`
 
-	row := r.db.QueryRow(query, req.Email)
+	row := r.db.QueryRow(query, req.Identifier)
 
 	err := row.Scan(
 		&count,
@@ -174,7 +177,7 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 	}
 
 	if count == 1 && user_id != "string" {
-		tkn = token.GenerateJWTToken(user_id, "user")
+		tkn = token.GenerateJWTToken(user_id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -192,12 +195,12 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 			) VALUES($1, $2, $3)
 			`
 
-		_, err = r.db.Exec(query, id, req.Email, "Foydalanuvchi")
+		_, err = r.db.Exec(query, id, req.Identifier, "Foydalanuvchi")
 
 		if err != nil {
 			return nil, err
 		}
-		tkn = token.GenerateJWTToken(id, "user")
+		tkn = token.GenerateJWTToken(id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -238,7 +241,7 @@ func (r *UserRepo) TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error) {
 	}
 
 	if count == 1 && user_id != "string" {
-		tkn = token.GenerateJWTToken(user_id, "user")
+		tkn = token.GenerateJWTToken(user_id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -261,7 +264,7 @@ func (r *UserRepo) TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error) {
 		if err != nil {
 			return nil, err
 		}
-		tkn = token.GenerateJWTToken(id, "user")
+		tkn = token.GenerateJWTToken(id, "user", r.rdb)
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -329,7 +332,7 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 			return nil, fmt.Errorf("error while registering user: %w", err)
 		}
 
-		tkn := token.GenerateJWTToken(id, role)
+		tkn := token.GenerateJWTToken(id, role, r.rdb)
 
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
@@ -360,7 +363,7 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	tkn := token.GenerateJWTToken(id, role)
+	tkn := token.GenerateJWTToken(id, role, r.rdb)
 
 	return &m.TokenRes{
 		AccessToken:  tkn.AccessToken,
@@ -500,7 +503,25 @@ func (r *UserRepo) Update(req *m.UserUpdateReq) (*m.Void, error) {
 		args = append(args, req.Name)
 	}
 	if req.PhoneNumber != "" && req.PhoneNumber != "string" {
-		conditions = append(conditions, " phone_number = $"+strconv.Itoa(len(args)+1))
+		var exists bool
+		checkQuery := `
+			SELECT EXISTS(
+				SELECT 1
+				FROM users
+				WHERE phone_number = $1
+				  AND id <> $2
+				  AND deleted_at = 0
+			)
+		`
+		err := r.db.QueryRow(checkQuery, req.PhoneNumber, req.Id).Scan(&exists)
+		if err != nil {
+			return nil, fmt.Errorf("error while checking phone number: %w", err)
+		}
+		if exists {
+			return nil, fmt.Errorf("bu telefon raqam allaqachon mavjud")
+		}
+
+		conditions = append(conditions, "phone_number = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.PhoneNumber)
 	}
 	if req.FCMToken != "" && req.FCMToken != "string" {
@@ -516,7 +537,25 @@ func (r *UserRepo) Update(req *m.UserUpdateReq) (*m.Void, error) {
 		args = append(args, req.Language)
 	}
 	if req.Email != "" && req.Email != "string" {
-		conditions = append(conditions, " email = $"+strconv.Itoa(len(args)+1))
+		var exists bool
+		checkQuery := `
+			SELECT EXISTS(
+				SELECT 1
+				FROM users
+				WHERE email = $1
+				  AND id <> $2
+				  AND deleted_at = 0
+			)
+		`
+		err := r.db.QueryRow(checkQuery, req.Email, req.Id).Scan(&exists)
+		if err != nil {
+			return nil, fmt.Errorf("error while checking email: %w", err)
+		}
+		if exists {
+			return nil, fmt.Errorf("bu email allaqachon mavjud")
+		}
+
+		conditions = append(conditions, "email = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.Email)
 	}
 

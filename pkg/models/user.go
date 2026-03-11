@@ -6,15 +6,17 @@ type TelegramLoginReq struct {
 }
 
 type SendConfirmationCodeReq struct {
-	Email string `json:"email"`
+	Identifier string `json:"identifier"`
+	Type       string `json:"type"` // "email" or "telegram"
 }
 
 type ConfirmationReq struct {
-	Email            string `json:"email"`
+	Identifier       string `json:"identifier"`
 	ConfirmationCode string `json:"confirmation_code"`
+	Type             string `json:"type"` // "email" or "telegram"
 }
 type UserCheckReq struct {
-	PhoneNumber string `json:"phone_number"`
+	Identifier string `json:"identifier"`
 }
 
 type UserCheckRes struct {

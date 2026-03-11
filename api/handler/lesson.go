@@ -53,9 +53,9 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 	res, err := h.Clients.Lesson.Create(context.Background(), &req)
 	slog.Info("Create lesson response", "Lesson", res)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error creating lesson: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -86,9 +86,9 @@ func (h *Handler) GetByIdLesson(c *gin.Context) {
 	slog.Info("Lesson details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting lesson by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -136,9 +136,9 @@ func (h *Handler) GetAllLessons(c *gin.Context) {
 	slog.Info("All lesson", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting lesson: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -192,9 +192,9 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 	_, err = h.Clients.Lesson.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating Lesson: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -224,9 +224,9 @@ func (h *Handler) DeleteLesson(c *gin.Context) {
 	_, err := h.Clients.Lesson.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting lesson", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -261,9 +261,9 @@ func (h *Handler) EndLesson(c *gin.Context) {
 	_, err := h.Clients.Lesson.EndLesson(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating Lesson: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -298,9 +298,9 @@ func (h *Handler) GetByIdMobileLesson(c *gin.Context) {
 	slog.Info("Lesson details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting lesson by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

@@ -30,21 +30,26 @@ func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfi
 	fmt.Println("Generated OTP:", otp)
 	fmt.Println("-------------------------------")
 
-	if req.Email == "samandarahadjonov@gmail.com" {
-		otp = "111111"
-		fmt.Printf("Generated OTP for email %s: %s\n", req.Email, otp)
-		s.rdb.Set(req.Email, otp, 5*time.Minute)
-	} else if req.Email != "" && req.Email != "string" {
-		s.rdb.Set(req.Email, otp, 5*time.Minute)
-		fmt.Printf("Generated OTP for email %s: %s\n", req.Email, otp)
-	} else {
-		return nil, errors.New("email is required")
-	}
+	if req.Type == "telegram" {
+		s.rdb.Set(req.Identifier, otp, 5*time.Minute)
+		fmt.Printf("Generated OTP for Telegram user %s: %s\n", req.Identifier, otp)
+		return &m.Void{}, nil
+	} else if req.Type == "email" {
+		if req.Identifier == "samandarahadjonov@gmail.com" {
+			otp = "111111"
+			fmt.Printf("Generated OTP for email %s: %s\n", req.Identifier, otp)
+			s.rdb.Set(req.Identifier, otp, 5*time.Minute)
+		} else if req.Identifier != "" && req.Identifier != "string" {
+			s.rdb.Set(req.Identifier, otp, 5*time.Minute)
+			fmt.Printf("Generated OTP for email %s: %s\n", req.Identifier, otp)
+		} else {
+			return nil, errors.New("email is required")
+		}
 
-	from := cfg.EMAIL_NAME
-	logoURL := cfg.EMAIL_LOGO
+		from := cfg.EMAIL_NAME
+		logoURL := cfg.EMAIL_LOGO
 
-	htmlBody := fmt.Sprintf(`<!doctype html>
+		htmlBody := fmt.Sprintf(`<!doctype html>
 	<html lang="uz">
 	<head>
 	  <meta charset="utf-8" />
@@ -106,9 +111,9 @@ func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfi
 	</body>
 	</html>`, logoURL, otp)
 
-	subject := "iMedTeam.uz — Kirish uchun tasdiqlash kodi"
+		subject := "iMedTeam.uz — Kirish uchun tasdiqlash kodi"
 
-	message := fmt.Sprintf(`
+		message := fmt.Sprintf(`
 	Assalomu alaykum!
 
 	Siz iMedTeam.uz platformasiga kirish uchun so‘rov yubordingiz.
@@ -122,26 +127,29 @@ func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfi
 	Hurmat bilan,
 	iMedTeam.uz
 	`, otp,
-	)
+		)
 
-	err := helper.SendVerificationCode(m.Params{
-		From:     from,
-		Subject:  subject,
-		To:       req.Email,
-		Message:  message,
-		HTMLBody: htmlBody,
-	}, cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send verification code: %v", err)
+		err := helper.SendVerificationCode(m.Params{
+			From:     from,
+			Subject:  subject,
+			To:       req.Identifier,
+			Message:  message,
+			HTMLBody: htmlBody,
+		}, cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to send verification code: %v", err)
+		}
+
+		return &m.Void{}, nil
+	} else {
+		return nil, errors.New("invalid type")
 	}
-
-	return &m.Void{}, nil
 }
 
 func (s *UserService) Confirmation(ctx context.Context, req *m.ConfirmationReq) (*m.TokenRes, error) {
 
-	if req.Email != "" && req.Email != "string" {
-		storedOtp, err := s.rdb.Get(req.Email).Result()
+	if req.Identifier != "" && req.Identifier != "string" {
+		storedOtp, err := s.rdb.Get(req.Identifier).Result()
 
 		if err == redis.Nil {
 			return nil, errors.New("verification code is invalid or expired")
@@ -153,38 +161,38 @@ func (s *UserService) Confirmation(ctx context.Context, req *m.ConfirmationReq) 
 			return nil, errors.New("verification code is incorrect")
 		}
 
-		res, err := s.storage.UserS.EmailLogin(&m.ConfirmationReq{Email: req.Email})
-		if err != nil {
-			return nil, err
+		if req.Type == "email" {
+
+			res, err := s.storage.UserS.EmailLogin(&m.ConfirmationReq{Identifier: req.Identifier})
+			if err != nil {
+				return nil, err
+			}
+
+			err = s.rdb.Del(req.Identifier).Err()
+			if err != nil {
+				fmt.Printf("Failed to delete OTP from Redis for identifier %s: %v\n", req.Identifier, err)
+			}
+
+			return res, nil
+		} else if req.Type == "telegram" {
+			name, err := s.rdb.Get(fmt.Sprintf("tg:%s", req.Identifier)).Result()
+			res, err := s.storage.UserS.TelegramLogin(&m.TelegramLoginReq{Phone: req.Identifier, Name: name})
+			if err != nil {
+				return nil, err
+			}
+
+			err = s.rdb.Del(req.Identifier).Err()
+			if err != nil {
+				fmt.Printf("Failed to delete OTP from Redis for identifier %s: %v\n", req.Identifier, err)
+			}
+
+			return res, nil
 		}
 
-		return res, nil
-
-	} else if req.ConfirmationCode != "" && req.ConfirmationCode != "string" {
-		phone, err := s.rdb.Get(req.ConfirmationCode).Result()
-
-		if err == redis.Nil {
-			return nil, errors.New("verification code is invalid or expired")
-		} else if err != nil {
-			return nil, errors.New("failed to retrieve verification code from Redis")
-		}
-
-		name, err := s.rdb.Get(phone).Result()
-		if err == redis.Nil {
-			return nil, errors.New("verification code is invalid or expired")
-		} else if err != nil {
-			return nil, errors.New("failed to retrieve verification code from Redis")
-		}
-
-		res, err := s.storage.UserS.TelegramLogin(&m.TelegramLoginReq{Phone: phone, Name: name})
-		if err != nil {
-			return nil, err
-		}
-
-		return res, nil
 	} else {
-		return nil, errors.New("there is no such verification code")
+		return nil, errors.New("identifier is required")
 	}
+	return nil, errors.New("invalid type")
 }
 
 func (s *UserService) Create(ctx context.Context, req *m.UserLoginReq) (*m.ById, error) {
@@ -287,8 +295,6 @@ func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.R
 
 	fmt.Println("RATING SERVICE RETURNING")
 	return res, nil
-
-	// return s.storage.UserS.GetRating(req)
 }
 
 func clampLimit(limit int) int {

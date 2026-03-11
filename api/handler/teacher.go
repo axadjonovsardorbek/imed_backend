@@ -47,9 +47,9 @@ func (h *Handler) CreateTeacher(c *gin.Context) {
 	res, err := h.Clients.Teacher.Create(context.Background(), &req)
 	slog.Info("Create teacher response", "Teacher", res)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error creating meacher: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -80,9 +80,9 @@ func (h *Handler) GetByIdTeacher(c *gin.Context) {
 	slog.Info("Teacher details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting teacher by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -124,9 +124,9 @@ func (h *Handler) GetAllTeachers(c *gin.Context) {
 	slog.Info("All teacher", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting teacher: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -178,9 +178,9 @@ func (h *Handler) UpdateTeacher(c *gin.Context) {
 	_, err := h.Clients.Teacher.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating teacher: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -210,9 +210,9 @@ func (h *Handler) DeleteTeacher(c *gin.Context) {
 	_, err := h.Clients.Teacher.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting teacher", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

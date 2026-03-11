@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"imed/internal/config"
-	"imed/internal/helper"
 
 	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -42,22 +41,52 @@ func BotAuth(config *config.Config) {
 		chatID := update.Message.Chat.ID
 
 		// Bosqich 1: /start
-		if update.Message.Text == "/start" {
-			msg := tgbotapi.NewMessage(chatID, "📱 Iltimos, raqamingizni yuboring:")
-			msg.ReplyMarkup = tgbotapi.ReplyKeyboardMarkup{
-				Keyboard: [][]tgbotapi.KeyboardButton{
-					{
+		if update.Message.Text != "" {
+			text := strings.TrimSpace(update.Message.Text)
+			log.Printf("incoming text: %q", text)
+
+			if strings.HasPrefix(text, "/start") {
+				fields := strings.Fields(text)
+
+				payload := ""
+				if len(fields) > 1 {
+					payload = fields[1]
+				}
+
+				if payload == "login" {
+					msg := tgbotapi.NewMessage(chatID, "📱 Iltimos, raqamingizni yuboring:")
+					msg.ReplyMarkup = tgbotapi.ReplyKeyboardMarkup{
+						Keyboard: [][]tgbotapi.KeyboardButton{
+							{
+								{
+									Text:           "📲 Raqamni yuborish",
+									RequestContact: true,
+								},
+							},
+						},
+						ResizeKeyboard:  true,
+						OneTimeKeyboard: true,
+					}
+					bot.Send(msg)
+					continue
+				}
+
+				msg := tgbotapi.NewMessage(chatID, "📱 Iltimos, raqamingizni yuboring:")
+				msg.ReplyMarkup = tgbotapi.ReplyKeyboardMarkup{
+					Keyboard: [][]tgbotapi.KeyboardButton{
 						{
-							Text:           "📲 Raqamni yuborish",
-							RequestContact: true,
+							{
+								Text:           "📲 Raqamni yuborish",
+								RequestContact: true,
+							},
 						},
 					},
-				},
-				ResizeKeyboard:  true,
-				OneTimeKeyboard: true,
+					ResizeKeyboard:  true,
+					OneTimeKeyboard: true,
+				}
+				bot.Send(msg)
+				continue
 			}
-			bot.Send(msg)
-			continue
 		}
 
 		// Bosqich 2: Raqam yuborildi
@@ -68,9 +97,22 @@ func BotAuth(config *config.Config) {
 
 			log.Printf("✅ Raqam qabul qilindi: %s (Telegram ID: %d)", phone, userID)
 
+			phone_number := NormalizePhone(phone)
 			// Bosqich 3: Tasdiqlash kodi yaratish
-			otp := helper.GenerateOtp()
+			otp, err := rdb.Get(phone_number).Result()
 
+			if err == redis.Nil {
+				msg := tgbotapi.NewMessage(chatID,
+					"❌ Bu telefon raqam uchun login so‘rovi topilmadi.\n\nAvval sayt yoki ilova orqali login qilishni boshlang.")
+				bot.Send(msg)
+				continue
+			} else if err != nil {
+				log.Printf("redis get error: %v", err)
+				msg := tgbotapi.NewMessage(chatID,
+					"⚠️ Xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.")
+				bot.Send(msg)
+				continue
+			}
 			fmt.Println("-------------------------------")
 			fmt.Println("Generated OTP:", otp)
 			fmt.Println("-------------------------------")
@@ -97,10 +139,7 @@ func BotAuth(config *config.Config) {
 			msg.ParseMode = "Markdown"
 			bot.Send(msg)
 
-			phone_number := NormalizePhone(phone)
-
-			rdb.Set(otp, phone_number, time.Minute*5)
-			rdb.Set(phone_number, name, time.Minute*5)
+			rdb.Set(fmt.Sprintf("tg:%s", phone_number), name, time.Minute*5)
 		}
 	}
 }

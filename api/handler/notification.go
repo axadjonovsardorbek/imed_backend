@@ -59,9 +59,9 @@ func (h *Handler) CreateNotification(c *gin.Context) {
 	res, err := h.Clients.Notification.Create(context.Background(), &req)
 	slog.Info("Create notification response", "Notification", res)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error creating notification: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -92,9 +92,9 @@ func (h *Handler) GetByIdNotification(c *gin.Context) {
 	slog.Info("otification details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting notification by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -136,9 +136,9 @@ func (h *Handler) GetAllNotifications(c *gin.Context) {
 	slog.Info("All notification", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting notification: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -196,9 +196,9 @@ func (h *Handler) UpdateNotification(c *gin.Context) {
 	_, err = h.Clients.Notification.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating Notification: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -228,9 +228,9 @@ func (h *Handler) DeleteNotification(c *gin.Context) {
 	_, err := h.Clients.Notification.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting notification", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -271,9 +271,9 @@ func (h *Handler) GetAllUserNotifications(c *gin.Context) {
 	slog.Info("All notification", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting notification: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -310,9 +310,9 @@ func (h *Handler) ReadNotification(c *gin.Context) {
 	_, err := h.Clients.Notification.MarkAsRead(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating Notification: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

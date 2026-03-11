@@ -47,9 +47,9 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 	slog.Info("Create order", "order", req)
 	res, err := h.Clients.Order.Create(context.Background(), &req)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error creating order: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -79,9 +79,9 @@ func (h *Handler) GetByIdOrder(c *gin.Context) {
 	slog.Info("Get order by ID", "order_id", id)
 	res, err := h.Clients.Order.GetById(context.Background(), &req)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting order by ID: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -194,9 +194,9 @@ func (h *Handler) GetAllOrders(c *gin.Context) {
 	slog.Info("Get all orders", "filters", req)
 	res, _, err := h.Clients.Order.GetAll(context.Background(), &req)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting all orders: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 

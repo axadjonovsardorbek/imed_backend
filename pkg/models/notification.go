@@ -12,6 +12,7 @@ type NotificationCreateReq struct {
 	Message  string `json:"message"`
 	Type     string `json:"type"`
 	CourseId string `json:"course_id"`
+	UserId   string `json:"user_id"`
 }
 
 type MasterNotificationRes struct {

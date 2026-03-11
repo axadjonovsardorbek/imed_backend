@@ -9,6 +9,7 @@ import (
 	mid "imed/api/middleware"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/go-redis/redis"
 
 	_ "imed/api/docs"
 
@@ -25,7 +26,7 @@ import (
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-func NewApi(h *handler.Handler) *gin.Engine {
+func NewApi(h *handler.Handler, rdb *redis.Client) *gin.Engine {
 	router := gin.Default()
 
 	enforcer, err := casbin.NewEnforcer("./api/casbin/model.conf", "./api/casbin/policy.csv")
@@ -62,23 +63,23 @@ func NewApi(h *handler.Handler) *gin.Engine {
 
 	web := router.Group("/web")
 	{
-		auth := web.Group("/auth").Use(mid.NewAuth(enforcer))
+		auth := web.Group("/auth").Use(mid.NewAuth(enforcer, rdb))
 		{
 			auth.POST("/user/create", h.CreateUser)
 			auth.PUT("/password/change", h.ChangePasswordWeb)
 			auth.PUT("/password/refresh", h.RefreshPassword)
 		}
 
-		user := web.Group("/user").Use(mid.NewAuth(enforcer))
+		user := web.Group("/user").Use(mid.NewAuth(enforcer, rdb))
 		{
 			user.GET("", h.GetAllUsers)
 			user.GET("/:id", h.GetByIdUser)
 			user.DELETE("/:id/delete", h.DeleteUser)
 		}
 
-		web.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer))
+		web.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer, rdb))
 
-		banner := web.Group("/banner").Use(mid.NewAuth(enforcer))
+		banner := web.Group("/banner").Use(mid.NewAuth(enforcer, rdb))
 		{
 			banner.POST("", h.CreateBanner)
 			banner.GET("", h.GetAllBanners)
@@ -87,7 +88,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			banner.DELETE("/:id/delete", h.DeleteBanner)
 		}
 
-		about := web.Group("/about").Use(mid.NewAuth(enforcer))
+		about := web.Group("/about").Use(mid.NewAuth(enforcer, rdb))
 		{
 			about.POST("", h.CreateAbout)
 			about.GET("", h.GetAllAbouts)
@@ -96,7 +97,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			about.DELETE("/:id/delete", h.DeleteAbout)
 		}
 
-		app_route := web.Group("/app-route").Use(mid.NewAuth(enforcer))
+		app_route := web.Group("/app-route").Use(mid.NewAuth(enforcer, rdb))
 		{
 			// app_route.POST("", h.CreateAppRoute)
 			app_route.GET("", h.GetAllAppRoutes)
@@ -105,7 +106,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			// app_route.DELETE("/:id/delete", h.DeleteAppRoute)
 		}
 
-		faq := web.Group("/faq").Use(mid.NewAuth(enforcer))
+		faq := web.Group("/faq").Use(mid.NewAuth(enforcer, rdb))
 		{
 			faq.POST("", h.CreateFaq)
 			faq.GET("", h.GetAllFaqs)
@@ -114,7 +115,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			faq.DELETE("/:id/delete", h.DeleteFaq)
 		}
 
-		course := web.Group("/course").Use(mid.NewAuth(enforcer))
+		course := web.Group("/course").Use(mid.NewAuth(enforcer, rdb))
 		{
 			course.POST("", h.CreateCourse)
 			course.GET("", h.GetAllCourses)
@@ -128,7 +129,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			course.DELETE("/permission/:id/delete", h.DeleteUserCourse)
 		}
 
-		contact := web.Group("/contact").Use(mid.NewAuth(enforcer))
+		contact := web.Group("/contact").Use(mid.NewAuth(enforcer, rdb))
 		{
 			contact.POST("", h.CreateContact)
 			contact.GET("", h.GetAllContacts)
@@ -137,7 +138,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			contact.DELETE("/:id/delete", h.DeleteContact)
 		}
 
-		tariff := web.Group("/tariff").Use(mid.NewAuth(enforcer))
+		tariff := web.Group("/tariff").Use(mid.NewAuth(enforcer, rdb))
 		{
 			tariff.POST("", h.CreateTariff)
 			tariff.GET("", h.GetAllTariffs)
@@ -146,7 +147,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			tariff.DELETE("/:id/delete", h.DeleteTariff)
 		}
 
-		lesson := web.Group("/lesson").Use(mid.NewAuth(enforcer))
+		lesson := web.Group("/lesson").Use(mid.NewAuth(enforcer, rdb))
 		{
 			lesson.POST("", h.CreateLesson)
 			lesson.GET("", h.GetAllLessons)
@@ -155,7 +156,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			lesson.DELETE("/:id/delete", h.DeleteLesson)
 		}
 
-		module := web.Group("/module").Use(mid.NewAuth(enforcer))
+		module := web.Group("/module").Use(mid.NewAuth(enforcer, rdb))
 		{
 			module.POST("", h.CreateModule)
 			module.GET("", h.GetAllModules)
@@ -164,7 +165,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			module.DELETE("/:id/delete", h.DeleteModule)
 		}
 
-		teacher := web.Group("/teacher").Use(mid.NewAuth(enforcer))
+		teacher := web.Group("/teacher").Use(mid.NewAuth(enforcer, rdb))
 		{
 			teacher.POST("", h.CreateTeacher)
 			teacher.GET("", h.GetAllTeachers)
@@ -173,7 +174,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			teacher.DELETE("/:id/delete", h.DeleteTeacher)
 		}
 
-		source := web.Group("/source").Use(mid.NewAuth(enforcer))
+		source := web.Group("/source").Use(mid.NewAuth(enforcer, rdb))
 		{
 			source.POST("", h.CreateSource)
 			source.GET("", h.GetAllSources)
@@ -182,7 +183,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			source.DELETE("/:id/delete", h.DeleteSource)
 		}
 
-		subject := web.Group("/subject").Use(mid.NewAuth(enforcer))
+		subject := web.Group("/subject").Use(mid.NewAuth(enforcer, rdb))
 		{
 			subject.POST("", h.CreateSubject)
 			subject.GET("", h.GetAllSubjects)
@@ -191,7 +192,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			subject.DELETE("/:id/delete", h.DeleteSubject)
 		}
 
-		notification := web.Group("/notification").Use(mid.NewAuth(enforcer))
+		notification := web.Group("/notification").Use(mid.NewAuth(enforcer, rdb))
 		{
 			notification.POST("", h.CreateNotification)
 			notification.GET("", h.GetAllNotifications)
@@ -202,7 +203,7 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			notification.GET("/user", h.GetAllUserNotifications)
 		}
 
-		promocode := web.Group("/promocode").Use(mid.NewAuth(enforcer))
+		promocode := web.Group("/promocode").Use(mid.NewAuth(enforcer, rdb))
 		{
 			promocode.POST("", h.CreatePromoCode)
 			promocode.GET("", h.GetAllPromoCodes)
@@ -213,28 +214,28 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			promocode.GET("/redemption/:id", h.GetByIdUserPromoCode)
 		}
 
-		order := web.Group("/order").Use(mid.NewAuth(enforcer))
+		order := web.Group("/order").Use(mid.NewAuth(enforcer, rdb))
 		{
 			order.GET("/:id", h.GetByIdOrder)
 			order.GET("", h.GetAllOrders)
 		}
 
-		dashboard := web.Group("/dashboard").Use(mid.NewAuth(enforcer))
+		dashboard := web.Group("/dashboard").Use(mid.NewAuth(enforcer, rdb))
 		{
 			dashboard.GET("", h.GetDashboard)
 		}
 
-		web.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer))
+		web.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer, rdb))
 	}
 
 	mobile := router.Group("/mobile")
 	{
-		auth := mobile.Group("/auth").Use(mid.NewAuth(enforcer))
+		auth := mobile.Group("/auth").Use(mid.NewAuth(enforcer, rdb))
 		{
 			auth.PUT("/password/change", h.ChangePasswordMobile)
 		}
 
-		user := mobile.Group("/user").Use(mid.NewAuth(enforcer))
+		user := mobile.Group("/user").Use(mid.NewAuth(enforcer, rdb))
 		{
 			user.GET("/get/profile", h.GetProfileUser)
 			user.PUT("/update/profile", h.UpdateProfileUser)
@@ -244,25 +245,25 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			user.GET("/rating", h.GetRating)
 		}
 
-		banner := mobile.Group("/banner").Use(mid.NewAuth(enforcer))
+		banner := mobile.Group("/banner").Use(mid.NewAuth(enforcer, rdb))
 		{
 			banner.GET("", h.GetAllMobileBanners)
 			banner.GET("/:id", h.GetByIdMobileBanner)
 		}
 
-		about := mobile.Group("/about").Use(mid.NewAuth(enforcer))
+		about := mobile.Group("/about").Use(mid.NewAuth(enforcer, rdb))
 		{
 			about.GET("", h.GetAllMobileAbouts)
 			about.GET("/:id", h.GetByIdMobileAbout)
 		}
 
-		faq := mobile.Group("/faq").Use(mid.NewAuth(enforcer))
+		faq := mobile.Group("/faq").Use(mid.NewAuth(enforcer, rdb))
 		{
 			faq.GET("", h.GetAllMobileFaqs)
 			faq.GET("/:id", h.GetByIdMobileFaq)
 		}
 
-		course := mobile.Group("/course").Use(mid.NewAuth(enforcer))
+		course := mobile.Group("/course").Use(mid.NewAuth(enforcer, rdb))
 		{
 			course.GET("", h.GetAllMobileCourses)
 			course.GET("/:id", h.GetByIdMobileCourse)
@@ -271,55 +272,55 @@ func NewApi(h *handler.Handler) *gin.Engine {
 			course.GET("/permission", h.UserMobileCourses)
 		}
 
-		contact := mobile.Group("/contact").Use(mid.NewAuth(enforcer))
+		contact := mobile.Group("/contact").Use(mid.NewAuth(enforcer, rdb))
 		{
 			contact.GET("", h.GetAllContacts)
 			contact.GET("/:id", h.GetByIdContact)
 		}
 
-		lesson := mobile.Group("/lesson").Use(mid.NewAuth(enforcer))
+		lesson := mobile.Group("/lesson").Use(mid.NewAuth(enforcer, rdb))
 		{
 			// lesson.GET("", h.GetAllLessons)
 			lesson.GET("/:id", h.GetByIdMobileLesson)
 			lesson.PUT("/:id/end", h.EndLesson)
 		}
 
-		// module := mobile.Group("/module").Use(mid.NewAuth(enforcer))
+		// module := mobile.Group("/module").Use(mid.NewAuth(enforcer, rdb))
 		// {
 		// 	module.GET("", h.GetAllModules)
 		// 	module.GET("/:id", h.GetByIdModule)
 		// }
 
-		// source := mobile.Group("/source").Use(mid.NewAuth(enforcer))
+		// source := mobile.Group("/source").Use(mid.NewAuth(enforcer, rdb))
 		// {
 		// 	source.GET("", h.GetAllSources)
 		// 	source.GET("/:id", h.GetByIdSource)
 		// }
 
-		subject := mobile.Group("/subject").Use(mid.NewAuth(enforcer))
+		subject := mobile.Group("/subject").Use(mid.NewAuth(enforcer, rdb))
 		{
 			subject.GET("", h.GetAllMobileSubjects)
 			subject.GET("/:id", h.GetByIdMobileSubject)
 		}
 
-		notification := mobile.Group("/notification").Use(mid.NewAuth(enforcer))
+		notification := mobile.Group("/notification").Use(mid.NewAuth(enforcer, rdb))
 		{
 			notification.PUT("/:id/read", h.ReadNotification)
 			notification.GET("/user", h.GetAllUserNotifications)
 		}
 
-		tariff := mobile.Group("/tariff").Use(mid.NewAuth(enforcer))
+		tariff := mobile.Group("/tariff").Use(mid.NewAuth(enforcer, rdb))
 		{
 			tariff.GET("", h.GetAllTariffs)
 			tariff.GET("/:id", h.GetByIdTariff)
 		}
 
-		order := mobile.Group("/order").Use(mid.NewAuth(enforcer))
+		order := mobile.Group("/order").Use(mid.NewAuth(enforcer, rdb))
 		{
 			order.POST("", h.CreateOrder)
 		}
 
-		promocode := mobile.Group("/promocode").Use(mid.NewAuth(enforcer))
+		promocode := mobile.Group("/promocode").Use(mid.NewAuth(enforcer, rdb))
 		{
 			promocode.POST("/check", h.CheckPromoCode)
 		}

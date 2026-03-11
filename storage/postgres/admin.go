@@ -7,16 +7,19 @@ import (
 	"imed/api/token"
 	m "imed/pkg/models"
 
+	"github.com/go-redis/redis"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AdminRepo struct {
-	db *sql.DB
+	db  *sql.DB
+	rdb *redis.Client
 }
 
-func NewAdminRepo(db *sql.DB) *AdminRepo {
+func NewAdminRepo(db *sql.DB, rdb *redis.Client) *AdminRepo {
 	return &AdminRepo{
-		db: db,
+		db:  db,
+		rdb: rdb,
 	}
 }
 
@@ -54,7 +57,7 @@ func (r *AdminRepo) Login(req *m.LoginReq) (*m.TokenRes, error) {
 		return nil, fmt.Errorf("invalid password: %w", err)
 	}
 
-	tkn := token.GenerateJWTToken(id, "admin")
+	tkn := token.GenerateJWTToken(id, "admin", r.rdb)
 
 	return &m.TokenRes{
 		AccessToken:  tkn.AccessToken,

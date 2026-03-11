@@ -1839,6 +1839,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
                         "description": "FCM token",
                         "name": "fcm_token",
                         "in": "formData"
@@ -7203,7 +7209,11 @@ const docTemplate = `{
                 "confirmation_code": {
                     "type": "string"
                 },
-                "email": {
+                "identifier": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"email\" or \"telegram\"",
                     "type": "string"
                 }
             }
@@ -7491,6 +7501,9 @@ const docTemplate = `{
         "models.DashboardRes": {
             "type": "object",
             "properties": {
+                "active_users": {
+                    "type": "integer"
+                },
                 "courses": {
                     "type": "integer"
                 },
@@ -8398,7 +8411,11 @@ const docTemplate = `{
         "models.SendConfirmationCodeReq": {
             "type": "object",
             "properties": {
-                "email": {
+                "identifier": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"email\" or \"telegram\"",
                     "type": "string"
                 }
             }
@@ -8846,7 +8863,7 @@ const docTemplate = `{
         "models.UserCheckReq": {
             "type": "object",
             "properties": {
-                "phone_number": {
+                "identifier": {
                     "type": "string"
                 }
             }

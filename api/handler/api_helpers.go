@@ -30,6 +30,10 @@ func isValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
+func isValidIdentifier(input string) bool {
+	return isValidEmail(input) || isValidPhone(input)
+}
+
 func isValidPhone(phone string) bool {
 	re := regexp.MustCompile(phoneRegex)
 	return re.MatchString(phone)

@@ -30,14 +30,35 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 
 	courseNameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
 
+	push_target := m.PushTarget{Type: m.TargetAllUsers}
+	push_event := m.PushEvent{
+		Type:       m.EventNewCourse,
+		CourseID:   res.Id,
+		CourseName: courseNameUz,
+	}
+
 	_ = s.push.SendPush(ctx,
-		m.PushTarget{Type: m.TargetAllUsers},
-		m.PushEvent{
-			Type:       m.EventNewCourse,
-			CourseID:   res.Id,
-			CourseName: courseNameUz,
-		},
+		push_target,
+		push_event,
 	)
+
+	msg := m.BuildUzPushMessage(push_event)
+
+	title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+	ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		Title:   title,
+		Message: body,
+		Type:    "all",
+	})
+
+	if err != nil {
+		fmt.Println("Failed to create notification:", err)
+	}
+
+	fmt.Println("Push event sent:", push_event)
+	fmt.Println("Push message:", msg)
+	fmt.Println("Notification created with ID:", ntf.Id)
 
 	return res, nil
 }
@@ -106,14 +127,38 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 	}
 
 	course, _ := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
+
+	push_target := m.PushTarget{Type: m.TargetUser, UserID: req.UserId}
+	push_event := m.PushEvent{
+		Type:       m.EventCourseAssigned,
+		CourseID:   course.Id,
+		CourseName: course.Name["uz"],
+	}
 	_ = s.push.SendPush(ctx,
-		m.PushTarget{Type: m.TargetUser, UserID: req.UserId},
-		m.PushEvent{
-			Type:       m.EventCourseAssigned,
-			CourseID:   course.Id,
-			CourseName: course.Name["uz"],
-		},
+		push_target,
+		push_event,
 	)
+
+	msg := m.BuildUzPushMessage(push_event)
+
+	title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+	ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		Title:    title,
+		Message:  body,
+		Type:     "selected",
+		UserId:   req.UserId,
+		CourseId: req.CourseId,
+	})
+
+	if err != nil {
+		fmt.Println("Failed to create notification:", err)
+	}
+
+	fmt.Println("Push event sent:", push_event)
+	fmt.Println("Push message:", msg)
+	fmt.Println("Course bought successfully for user:", req.UserId)
+	fmt.Println("Notification created with ID:", ntf.Id)
 
 	return res, nil
 }

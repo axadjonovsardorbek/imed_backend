@@ -44,9 +44,9 @@ func (h *Handler) CreateAppRoute(c *gin.Context) {
 	res, err := h.Clients.AppRoute.Create(context.Background(), &req)
 	slog.Info("Create appRoute response", "AppRoute", res)
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error creating appRoute: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -78,9 +78,9 @@ func (h *Handler) GetByIdAppRoute(c *gin.Context) {
 	slog.Info("AppRoute details", res)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting appRoute by ID: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -109,9 +109,9 @@ func (h *Handler) GetAllAppRoutes(c *gin.Context) {
 	slog.Info("All appRoute", data)
 
 	if err != nil {
-		c.JSON(500, gin.H{"message": err.Error()})
+		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting appRoute: ", err.Error())
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -171,9 +171,9 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 	_, err = h.Clients.AppRoute.Update(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error updating AppRoute: ", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
@@ -203,9 +203,9 @@ func (h *Handler) DeleteAppRoute(c *gin.Context) {
 	_, err := h.Clients.AppRoute.Delete(context.Background(), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		slog.Error("Error deleting appRoute", err)
-		smssender(c, err, http.StatusInternalServerError)
+		smssender(c, err, http.StatusBadRequest)
 		return
 	}
 
