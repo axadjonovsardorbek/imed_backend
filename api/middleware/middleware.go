@@ -66,6 +66,8 @@ func NewAuth(enforcer *casbin.Enforcer, rdb *redis.Client) gin.HandlerFunc {
 			ctx.Set("claims", claims)
 			ctx.Set("user_id", claims["user_id"])
 			ctx.Next()
+
+			return
 		}
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
