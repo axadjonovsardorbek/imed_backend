@@ -140,7 +140,7 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 	
 	  -- Orders
 	  (SELECT COUNT(*) FROM orders o, bounds b
-		WHERE o.status='PAID
+		WHERE o.status='PAID'
 		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
 	  ) AS paid_orders,
