@@ -140,25 +140,25 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 	
 	  -- Orders
 	  (SELECT COUNT(*) FROM orders o, bounds b
-		WHERE o.status='PAID' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		WHERE o.status='PAID
 		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
 	  ) AS paid_orders,
 	
 	  (SELECT COUNT(*) FROM orders o, bounds b
-		WHERE o.payment_type='admin' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		WHERE o.payment_type='admin'
 		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
 	  ) AS admin_orders,
 	
 	  (SELECT COUNT(*) FROM orders o, bounds b
-		WHERE o.payment_type='click' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		WHERE o.payment_type='click'
 		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
 	  ) AS click_orders,
 	
 	  (SELECT COUNT(*) FROM orders o, bounds b
-		WHERE o.status='CANCELLED' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		WHERE o.status='CANCELLED'
 		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
 	  ) AS cancelled_orders,
