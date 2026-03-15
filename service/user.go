@@ -9,6 +9,7 @@ import (
 	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -35,6 +36,7 @@ func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfi
 		fmt.Printf("Generated OTP for Telegram user %s: %s\n", req.Identifier, otp)
 		return &m.Void{}, nil
 	} else if req.Type == "email" {
+		req.Identifier = strings.ToLower(req.Identifier)
 		if req.Identifier == "samandarahadjonov@gmail.com" {
 			otp = "111111"
 			fmt.Printf("Generated OTP for email %s: %s\n", req.Identifier, otp)
