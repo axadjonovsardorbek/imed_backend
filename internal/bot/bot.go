@@ -130,25 +130,26 @@ func BotAuth(config *config.Config) {
 			fmt.Println("-------------------------------")
 
 			// Bosqich 4: Kodingni bot orqali foydalanuvchiga yuborish
-			text := fmt.Sprintf(`👋 Salom %s
-
-			Siz *iMedTeam.uz* akkauntingizga kirish uchun so‘rov yubordingiz.
+			text := fmt.Sprintf(`
+			👋 Salom <b>%s</b>
 			
-			🔐 *Tasdiqlash kodingiz:*
+			Siz <b>iMedTeam.uz</b> akkauntingizga kirish uchun so‘rov yubordingiz.
 			
-			`+"`%s`"+`
+			🔐 <b>Tasdiqlash kodingiz:</b>
 			
-			⏳ Kod *5 daqiqa* davomida amal qiladi.
+			<code>%s</code>
+			
+			⏳ Kod <b>5 daqiqa</b> davomida amal qiladi.
 			
 			⚠️ Hech qachon bu kodni boshqalar bilan ulashmang.
 			Agar bu so‘rovni siz yubormagan bo‘lsangiz, xabarni e’tiborsiz qoldiring.
-
-			📋 Kod ustiga bosib, uni nusxalashingiz mumkin.`,
-				name, otp,
-			)
+			
+			📋 Kod ustiga bosib, uni nusxalashingiz mumkin.
+			`, name, otp)
 
 			msg := tgbotapi.NewMessage(chatID, text)
-			msg.ParseMode = "Markdown"
+			msg.ParseMode = "HTML"
+
 			_, err = bot.Send(msg)
 			if err != nil {
 				log.Println("telegram send error:", err)
