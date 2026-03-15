@@ -146,13 +146,13 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 	  ) AS paid_orders,
 	
 	  (SELECT COUNT(*) FROM orders o, bounds b
-		WHERE o.payment_type='admin'
+		WHERE o.payment_type='admin' AND o.status='PAID'
 		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
 	  ) AS admin_orders,
 	
 	  (SELECT COUNT(*) FROM orders o, bounds b
-		WHERE o.payment_type='click'
+		WHERE o.payment_type='click' AND o.status='PAID'
 		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
 	  ) AS click_orders,
