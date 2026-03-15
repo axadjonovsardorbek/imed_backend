@@ -67,7 +67,10 @@ func BotAuth(config *config.Config) {
 						ResizeKeyboard:  true,
 						OneTimeKeyboard: true,
 					}
-					bot.Send(msg)
+					_, err := bot.Send(msg)
+					if err != nil {
+						log.Println("telegram send error:", err)
+					}
 					continue
 				}
 
@@ -84,7 +87,10 @@ func BotAuth(config *config.Config) {
 					ResizeKeyboard:  true,
 					OneTimeKeyboard: true,
 				}
-				bot.Send(msg)
+				_, err := bot.Send(msg)
+				if err != nil {
+					log.Println("telegram send error:", err)
+				}
 				continue
 			}
 		}
@@ -104,13 +110,19 @@ func BotAuth(config *config.Config) {
 			if err == redis.Nil {
 				msg := tgbotapi.NewMessage(chatID,
 					"❌ Bu telefon raqam uchun login so‘rovi topilmadi.\n\nAvval sayt yoki ilova orqali login qilishni boshlang.")
-				bot.Send(msg)
+				_, err := bot.Send(msg)
+				if err != nil {
+					log.Println("telegram send error:", err)
+				}
 				continue
 			} else if err != nil {
 				log.Printf("redis get error: %v", err)
 				msg := tgbotapi.NewMessage(chatID,
 					"⚠️ Xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.")
-				bot.Send(msg)
+				_, err := bot.Send(msg)
+				if err != nil {
+					log.Println("telegram send error:", err)
+				}
 				continue
 			}
 			fmt.Println("-------------------------------")
@@ -137,7 +149,10 @@ func BotAuth(config *config.Config) {
 
 			msg := tgbotapi.NewMessage(chatID, text)
 			msg.ParseMode = "Markdown"
-			bot.Send(msg)
+			_, err = bot.Send(msg)
+			if err != nil {
+				log.Println("telegram send error:", err)
+			}
 
 			rdb.Set(fmt.Sprintf("tg:%s", phone_number), name, time.Minute*5)
 		}

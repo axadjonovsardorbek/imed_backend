@@ -152,6 +152,8 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 	var user_id string
 	var tkn *token.Tokens
 
+	req.Identifier = strings.ToLower(req.Identifier)
+
 	query := `
 	SELECT 
 		COUNT(id) OVER() as count,
