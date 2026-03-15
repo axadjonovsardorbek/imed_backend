@@ -106,7 +106,75 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 		  AND ua.activity <> 0
 		  AND (b.from_ts IS NULL OR ua.day >= b.from_ts::date)
 		  AND (b.to_ts   IS NULL OR ua.day <  b.to_ts::date)
-	  ) AS active_users
+	  ) AS active_users,
+	  
+	  -- User courses
+	  (SELECT COUNT(*) FROM user_courses uc, bounds b
+		WHERE uc.deleted_at = 0
+		  AND (b.from_ts IS NULL OR uc.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR uc.created_at < b.to_ts)
+	  ) AS user_courses,
+	
+	  -- Active user courses
+	  (SELECT COUNT(*) FROM user_courses uc, bounds b
+		WHERE uc.deleted_at = 0
+		  AND uc.started_at <= now() 
+		  AND uc.ended_at > now()
+		  AND (b.from_ts IS NULL OR uc.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR uc.created_at < b.to_ts)
+	  ) AS active_user_courses,
+	  
+	  -- Inactive user courses
+	  (SELECT COUNT(*) FROM user_courses uc, bounds b
+		WHERE uc.deleted_at = 0
+		  AND uc.ended_at <= now()
+		  AND (b.from_ts IS NULL OR uc.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR uc.created_at < b.to_ts)
+	  ) AS inactive_user_courses,
+	
+	  (SELECT COUNT(*) FROM user_courses uc, bounds b
+		WHERE uc.deleted_at <> 0
+		  AND (b.from_ts IS NULL OR uc.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR uc.created_at < b.to_ts)
+	  ) AS deleted_user_courses,
+	
+	  -- Orders
+	  (SELECT COUNT(*) FROM orders o, bounds b
+		WHERE o.status='PAID' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS paid_orders,
+	
+	  (SELECT COUNT(*) FROM orders o, bounds b
+		WHERE o.payment_type='admin' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS admin_orders,
+	
+	  (SELECT COUNT(*) FROM orders o, bounds b
+		WHERE o.payment_type='click' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS click_orders,
+	
+	  (SELECT COUNT(*) FROM orders o, bounds b
+		WHERE o.status='CANCELLED' AND (o.deleted_at IS NULL OR o.deleted_at = 0)
+		  AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS cancelled_orders,
+	
+	  -- Promo codes
+	  (SELECT COUNT(*) FROM promocodes p, bounds b
+		WHERE p.deleted_at = 0
+		  AND (b.from_ts IS NULL OR p.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR p.created_at < b.to_ts)
+	  ) AS promocodes,
+	
+	  (SELECT COUNT(*) FROM promocodes p, bounds b
+		WHERE p.deleted_at = 0 AND p.is_active = TRUE
+		  AND (b.from_ts IS NULL OR p.created_at >= b.from_ts)
+		  AND (b.to_ts   IS NULL OR p.created_at < b.to_ts)
+	  ) AS active_promocodes;
 	`
 
 	row := r.db.QueryRow(query, req.Type, req.Day, req.From, req.To)
@@ -124,6 +192,16 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 		&dashboard.Users,
 		&dashboard.Teachers,
 		&dashboard.ActiveUsers,
+		&dashboard.UserCourses,
+		&dashboard.ActiveUserCourses,
+		&dashboard.InactiveUserCourses,
+		&dashboard.DeletedUserCourses,
+		&dashboard.PaidOrders,
+		&dashboard.AdminOrders,
+		&dashboard.ClickOrders,
+		&dashboard.CancelledOrders,
+		&dashboard.PromoCodes,
+		&dashboard.ActivePromoCodes,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting dashboard: %w", err)

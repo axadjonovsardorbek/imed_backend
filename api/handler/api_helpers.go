@@ -71,6 +71,10 @@ func validateAppRouteCreate(req models.AppRouteCreateReq) error {
 		return fmt.Errorf("invalid support_url")
 	}
 
+	if !isValidURL(req.FeedbackUrl) {
+		return fmt.Errorf("invalid feedback_url")
+	}
+
 	if !isValidAppVersion(req.AppVersion) {
 		return fmt.Errorf("invalid app_version format")
 	}

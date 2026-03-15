@@ -125,8 +125,14 @@ definitions:
         type: object
       app_version:
         type: object
+      buy_course:
+        example: true
+        type: boolean
       call_center:
         example: "+998901234567"
+        type: string
+      feedback_url:
+        example: https://t.me/feedback
         type: string
       payment_min_version:
         example: 1.0.5
@@ -159,6 +165,9 @@ definitions:
       created_at:
         example: "2026-02-10T10:00:00Z"
         type: string
+      feedback_url:
+        example: https://t.me/feedback
+        type: string
       id:
         example: uuid-string
         type: string
@@ -183,6 +192,9 @@ definitions:
         type: boolean
       call_center:
         example: "+998901234567"
+        type: string
+      feedback_url:
+        example: https://t.me/feedback
         type: string
       payment_min_version:
         example: 1.0.5
@@ -495,15 +507,33 @@ definitions:
     type: object
   models.DashboardRes:
     properties:
+      active_promocodes:
+        type: integer
+      active_user_courses:
+        type: integer
       active_users:
+        type: integer
+      admin_orders:
+        type: integer
+      cancelled_orders:
+        type: integer
+      click_orders:
         type: integer
       courses:
         type: integer
+      deleted_user_courses:
+        type: integer
       documents:
+        type: integer
+      inactive_user_courses:
         type: integer
       lessons:
         type: integer
       modules:
+        type: integer
+      paid_orders:
+        type: integer
+      promocodes:
         type: integer
       subjects:
         type: integer
@@ -512,6 +542,8 @@ definitions:
       teachers:
         type: integer
       tests:
+        type: integer
+      user_courses:
         type: integer
       users:
         type: integer
