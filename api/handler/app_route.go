@@ -149,6 +149,7 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 	req.CallCenter = body.CallCenter
 	req.AppVersion = body.AppVersion
 	req.SupportUrl = body.SupportUrl
+	req.FeedbackUrl = body.FeedbackUrl
 	req.AppLinks = body.AppLinks
 	req.PaymentMinVersion = body.PaymentMinVersion
 	req.BuyCourse = body.BuyCourse
@@ -157,6 +158,7 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 		CallCenter:        req.CallCenter,
 		AppVersion:        req.AppVersion,
 		SupportUrl:        req.SupportUrl,
+		FeedbackUrl:       req.FeedbackUrl,
 		AppLinks:          req.AppLinks,
 		PaymentMinVersion: req.PaymentMinVersion,
 	})

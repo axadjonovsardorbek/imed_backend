@@ -59,10 +59,15 @@ func NewAuth(enforcer *casbin.Enforcer, rdb *redis.Client) gin.HandlerFunc {
 			tokenSessionID = ""
 		}
 
+		tokenRole, ok := claims["role"].(string)
+		if !ok || tokenRole == "" {
+			tokenRole = ""
+		}
+
 		redisKey := "user_session:" + claims["user_id"].(string)
 		storedSessionID, err := rdb.Get(redisKey).Result()
 
-		if (err == redis.Nil || storedSessionID == "") && tokenSessionID == "" {
+		if ((err == redis.Nil || storedSessionID == "") && tokenSessionID == "") || tokenRole == "admin" {
 			ctx.Set("claims", claims)
 			ctx.Set("user_id", claims["user_id"])
 			ctx.Next()

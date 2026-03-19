@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS promocodes (
     min_order_amount  NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (min_order_amount >= 0),
     max_discount      NUMERIC(12,2),
     max_uses_total    INT,
-    max_uses_per_user INT NOT NULL DEFAULT 1,
+    max_uses_per_user INT NOT NULL DEFAULT 0,
     created_at        TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at        TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at        BIGINT NOT NULL DEFAULT 0

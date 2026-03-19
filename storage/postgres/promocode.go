@@ -402,7 +402,7 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		res.Message = ErrPromoNotStarted
 		return res, fmt.Errorf(ErrPromoNotStarted)
 	}
-	if amount < minOrderAmount {
+	if (amount < minOrderAmount) && minOrderAmount > 0 {
 		res.Message = ErrSmallAmount
 		return res, fmt.Errorf(ErrSmallAmount)
 	}
@@ -421,7 +421,7 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		return res, fmt.Errorf(ErrUnExpected)
 	}
 
-	if usedByUser >= maxUsesPerUser {
+	if usedByUser >= maxUsesPerUser && maxUsesPerUser > 0 {
 		res.Message = ErrPromoLimitForUser
 		return res, fmt.Errorf(ErrPromoLimitForUser)
 	}
@@ -440,7 +440,7 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 			return res, fmt.Errorf(ErrUnExpected)
 		}
 
-		if usedTotal >= int(maxUsesTotal.Int64) {
+		if usedTotal >= int(maxUsesTotal.Int64) && maxUsesTotal.Int64 > 0 {
 			// ✅ limit to'lgan bo'lsa promo'ni inactive qilib qo'yamiz
 			_, _ = r.db.Exec(`
 				UPDATE promocodes
@@ -642,7 +642,7 @@ func ComputeDiscount(amount float64, discountType string, discountValue float64,
 	switch discountType {
 	case "percent":
 		d = amount * discountValue / 100.0
-		if maxDiscount != nil && d > *maxDiscount {
+		if (maxDiscount != nil && d > *maxDiscount) && *maxDiscount > 0 {
 			d = *maxDiscount
 		}
 	case "fixed":

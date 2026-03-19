@@ -19,6 +19,7 @@ type AppRouteRes struct {
 	Id                string        `json:"id" db:"id" example:"uuid-string"`
 	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
 	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	FeedbackUrl       string        `json:"feedback_url" db:"feedback_url" example:"https://t.me/feedback"`
 	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
@@ -30,15 +31,18 @@ type AppRouteRes struct {
 type AppRouteCreateReq struct {
 	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
 	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	FeedbackUrl       string        `json:"feedback_url" db:"feedback_url" example:"https://t.me/feedback"`
 	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
+	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
 }
 
 type AppRouteUpdateReq struct {
 	Id                string        `json:"id" binding:"required"`
 	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
 	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	FeedbackUrl       string        `json:"feedback_url" db:"feedback_url" example:"https://t.me/feedback"`
 	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
@@ -48,6 +52,7 @@ type AppRouteUpdateReq struct {
 type AppRouteUpdateBody struct {
 	CallCenter        string        `json:"call_center" db:"call_center" example:"+998901234567"`
 	SupportUrl        string        `json:"support_url" db:"support_url" example:"https://t.me/support"`
+	FeedbackUrl       string        `json:"feedback_url" db:"feedback_url" example:"https://t.me/feedback"`
 	AppVersion        AppVersionRes `json:"app_version" swaggertype:"object"`
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`

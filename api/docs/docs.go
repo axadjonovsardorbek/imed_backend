@@ -6942,9 +6942,17 @@ const docTemplate = `{
                 "app_version": {
                     "type": "object"
                 },
+                "buy_course": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "call_center": {
                     "type": "string",
                     "example": "+998901234567"
+                },
+                "feedback_url": {
+                    "type": "string",
+                    "example": "https://t.me/feedback"
                 },
                 "payment_min_version": {
                     "type": "string",
@@ -6991,6 +6999,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-02-10T10:00:00Z"
                 },
+                "feedback_url": {
+                    "type": "string",
+                    "example": "https://t.me/feedback"
+                },
                 "id": {
                     "type": "string",
                     "example": "uuid-string"
@@ -7025,6 +7037,10 @@ const docTemplate = `{
                 "call_center": {
                     "type": "string",
                     "example": "+998901234567"
+                },
+                "feedback_url": {
+                    "type": "string",
+                    "example": "https://t.me/feedback"
                 },
                 "payment_min_version": {
                     "type": "string",
@@ -7501,19 +7517,46 @@ const docTemplate = `{
         "models.DashboardRes": {
             "type": "object",
             "properties": {
+                "active_promocodes": {
+                    "type": "integer"
+                },
+                "active_user_courses": {
+                    "type": "integer"
+                },
                 "active_users": {
+                    "type": "integer"
+                },
+                "admin_orders": {
+                    "type": "integer"
+                },
+                "cancelled_orders": {
+                    "type": "integer"
+                },
+                "click_orders": {
                     "type": "integer"
                 },
                 "courses": {
                     "type": "integer"
                 },
+                "deleted_user_courses": {
+                    "type": "integer"
+                },
                 "documents": {
+                    "type": "integer"
+                },
+                "inactive_user_courses": {
                     "type": "integer"
                 },
                 "lessons": {
                     "type": "integer"
                 },
                 "modules": {
+                    "type": "integer"
+                },
+                "paid_orders": {
+                    "type": "integer"
+                },
+                "promocodes": {
                     "type": "integer"
                 },
                 "subjects": {
@@ -7526,6 +7569,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "tests": {
+                    "type": "integer"
+                },
+                "user_courses": {
                     "type": "integer"
                 },
                 "users": {

@@ -12,6 +12,19 @@ type DashboardRes struct {
 	Users       int `json:"users"`
 	Teachers    int `json:"teachers"`
 	ActiveUsers int `json:"active_users"`
+
+	UserCourses         int `json:"user_courses"`
+	ActiveUserCourses   int `json:"active_user_courses"`
+	InactiveUserCourses int `json:"inactive_user_courses"`
+	DeletedUserCourses  int `json:"deleted_user_courses"`
+
+	PaidOrders      int `json:"paid_orders"`
+	AdminOrders     int `json:"admin_orders"`
+	ClickOrders     int `json:"click_orders"`
+	CancelledOrders int `json:"cancelled_orders"`
+
+	PromoCodes       int `json:"promocodes"`
+	ActivePromoCodes int `json:"active_promocodes"`
 }
 
 type GetDashboardReq struct {

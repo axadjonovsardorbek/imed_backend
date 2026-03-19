@@ -179,7 +179,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 			return nil, fmt.Errorf("promocode not started")
 		}
 
-		if float64(price) < p.MinAmount {
+		if float64(price) < p.MinAmount && p.MinAmount > 0 {
 			return nil, fmt.Errorf("order amount is too small for this promocode")
 		}
 
@@ -194,7 +194,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		if err != nil {
 			return nil, err
 		}
-		if usedByUser >= p.MaxPerUser {
+		if usedByUser >= p.MaxPerUser && p.MaxPerUser > 0 {
 			return nil, fmt.Errorf("promocode usage limit reached for user")
 		}
 
@@ -210,7 +210,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 				return nil, err
 			}
 
-			if usedTotal >= int(p.MaxUsesTotal.Int64) {
+			if usedTotal >= int(p.MaxUsesTotal.Int64) && p.MaxUsesTotal.Int64 > 0 {
 				_, _ = tz.Exec(`
 						UPDATE promocodes
 						SET is_active = FALSE, updated_at = now()

@@ -148,6 +148,7 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			Message:  body,
 			Type:     "selected",
 			CourseId: order.CourseId,
+			UserId:   order.UserId,
 		})
 
 		if err != nil {
