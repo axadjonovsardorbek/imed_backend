@@ -244,22 +244,22 @@ func (r *PromoCodeRepo) Update(req *m.PromoCodeUpdateReq) (*m.Void, error) {
 		args = append(args, req.StartsAt)
 	}
 
-	if req.MinOrderAmount > 0 {
+	if req.MinOrderAmount >= 0 {
 		conditions = append(conditions, " min_order_amount = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MinOrderAmount)
 	}
 
-	if req.MaxDiscount > 0 {
+	if req.MaxDiscount >= 0 {
 		conditions = append(conditions, " max_discount = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MaxDiscount)
 	}
 
-	if req.MaxUsesTotal > 0 {
+	if req.MaxUsesTotal >= 0 {
 		conditions = append(conditions, " max_uses_total = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MaxUsesTotal)
 	}
 
-	if req.MaxUsesPerUser > 0 {
+	if req.MaxUsesPerUser >= 0 {
 		conditions = append(conditions, " max_uses_per_user = $"+strconv.Itoa(len(args)+1))
 		args = append(args, req.MaxUsesPerUser)
 	}
