@@ -70,6 +70,10 @@ WHERE u.deleted_at = 0
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate fcm tokens: %w", err)
 	}
+
+	fmt.Println("Resolved FCM tokens:", len(tokens))
+	slog.Info("Resolved FCM tokens", "count", len(tokens))
+
 	return tokens, nil
 }
 
