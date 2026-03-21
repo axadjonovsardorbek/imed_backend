@@ -33,7 +33,7 @@ func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCre
 	messageUz, _ := helper.PickFromJSONStr(req.Message, "uz")
 	push_target := m.PushTarget{Type: m.TargetAllUsers}
 	push_event := m.PushEvent{
-		Type:       m.EventNewCourse,
+		Type:       m.EventAdminNotification,
 		CourseID:   titleUz,
 		CourseName: messageUz,
 	}
