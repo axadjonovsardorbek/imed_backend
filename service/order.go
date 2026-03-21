@@ -135,10 +135,14 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 
 		push_target := m.PushTarget{Type: m.TargetUser, UserID: order.UserId}
 
-		_ = s.push.SendPush(ctx,
+		err = s.push.SendPush(ctx,
 			push_target,
 			push_event,
 		)
+
+		if err != nil {
+			fmt.Println("Failed to send push:", err)
+		}
 
 		msg := m.BuildUzPushMessage(push_event)
 		title, body := helper.StringToJSON(msg.Title, msg.Body)

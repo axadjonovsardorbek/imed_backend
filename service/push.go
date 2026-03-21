@@ -63,9 +63,11 @@ func (s *PushService) ResolveTokens(ctx context.Context, t m.PushTarget) ([]stri
 func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m.PushEvent) error {
 	tokens, err := s.ResolveTokens(ctx, target)
 	if err != nil {
+		fmt.Println("Failed to resolve tokens:", err)
 		return err
 	}
 	if len(tokens) == 0 {
+		fmt.Println("No tokens found for target:", target)
 		return nil
 	}
 
@@ -73,6 +75,7 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 
 	for _, part := range chunkStrings(tokens, 500) {
 		if _, err := s.push.SendToManyTokens(ctx, part, msg.Title, msg.Body, msg.Data); err != nil {
+			fmt.Println("Failed to send push to tokens:", err)
 			return err
 		}
 	}

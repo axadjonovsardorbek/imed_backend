@@ -39,10 +39,14 @@ func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.
 			LessonID:   info.LessonId,
 			LessonName: info.LessonName,
 		}
-		_ = s.push.SendPush(ctx,
+		err = s.push.SendPush(ctx,
 			push_target,
 			push_event,
 		)
+
+		if err != nil {
+			fmt.Println("Failed to send push:", err)
+		}
 
 		msg := m.BuildUzPushMessage(push_event)
 

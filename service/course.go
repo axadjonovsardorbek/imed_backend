@@ -37,10 +37,14 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 		CourseName: courseNameUz,
 	}
 
-	_ = s.push.SendPush(ctx,
+	err = s.push.SendPush(ctx,
 		push_target,
 		push_event,
 	)
+
+	if err != nil {
+		fmt.Println("Failed to send push:", err)
+	}
 
 	msg := m.BuildUzPushMessage(push_event)
 
@@ -134,10 +138,14 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 		CourseID:   course.Id,
 		CourseName: course.Name["uz"],
 	}
-	_ = s.push.SendPush(ctx,
+	err = s.push.SendPush(ctx,
 		push_target,
 		push_event,
 	)
+
+	if err != nil {
+		fmt.Println("Failed to send push:", err)
+	}
 
 	msg := m.BuildUzPushMessage(push_event)
 
