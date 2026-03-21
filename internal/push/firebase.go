@@ -63,6 +63,9 @@ type MulticastResult struct {
 // SendToManyTokens: ko‘p userga push (tokenlar list)
 // Batching (500) bilan yuboradi. Invalid tokenlarni qaytaradi.
 func (c *Client) SendToManyTokens(ctx context.Context, tokens []string, title, body string, data map[string]string) (MulticastResult, error) {
+
+	fmt.Println("Sending push to tokens count:", len(tokens))
+
 	if c == nil || c.msg == nil {
 		return MulticastResult{}, fmt.Errorf("push client not initialized")
 	}
@@ -119,6 +122,8 @@ func (c *Client) SendToManyTokens(ctx context.Context, tokens []string, title, b
 			}
 		}
 	}
+
+	fmt.Println("Multicast push result - Total:", res.Total, "Successes:", res.Successes, "Failures:", res.Failures, "InvalidTokens:", len(res.InvalidTokens))
 
 	return res, nil
 }

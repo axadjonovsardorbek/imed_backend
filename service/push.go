@@ -66,6 +66,9 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 		fmt.Println("Failed to resolve tokens:", err)
 		return err
 	}
+
+	fmt.Println("Resolved tokens for target:", target, "tokens count:", len(tokens))
+
 	if len(tokens) == 0 {
 		fmt.Println("No tokens found for target:", target)
 		return nil
