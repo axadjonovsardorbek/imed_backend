@@ -22,7 +22,7 @@ import (
 )
 
 const semverRegex = `^\d+\.\d+\.\d+$`
-const phoneRegex = `^(\+998)?[0-9]{9}$`
+const phoneRegex = `^\+?[1-9]\d{7,14}$`
 const emailRegex = `^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 
 func isValidEmail(email string) bool {
