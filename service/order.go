@@ -111,7 +111,7 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 		defer cancel()
 
 		order, err2 := s.storage.OrderS.GetById(&m.ById{Id: orderID})
-		if err2 != nil || order == nil || order.UserId == "" {
+		if err2 != nil || order == nil || *order.UserId == "" {
 			fmt.Println("push skipped, order fetch error:", err2)
 			return
 		}
@@ -121,19 +121,19 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			push_event = m.PushEvent{
 				Type:       m.EventPaymentSuccess,
 				OrderID:    order.Id,
-				CourseID:   order.CourseId,
-				CourseName: order.CourseName,
+				CourseID:   *order.CourseId,
+				CourseName: *order.CourseName,
 			}
 		} else if code != 0 && code != -4 {
 			push_event = m.PushEvent{
 				Type:       m.EventPaymentFailed,
 				OrderID:    order.Id,
-				CourseID:   order.CourseId,
-				CourseName: order.CourseName,
+				CourseID:   *order.CourseId,
+				CourseName: *order.CourseName,
 			}
 		}
 
-		push_target := m.PushTarget{Type: m.TargetUser, UserID: order.UserId}
+		push_target := m.PushTarget{Type: m.TargetUser, UserID: *order.UserId}
 
 		err = s.push.SendPush(ctx,
 			push_target,
@@ -151,8 +151,8 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			Title:    title,
 			Message:  body,
 			Type:     "selected",
-			CourseId: order.CourseId,
-			UserId:   order.UserId,
+			CourseId: *order.CourseId,
+			UserId:   *order.UserId,
 		})
 
 		if err != nil {

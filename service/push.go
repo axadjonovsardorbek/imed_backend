@@ -77,7 +77,11 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 	msg := m.BuildUzPushMessage(event)
 
 	for _, part := range chunkStrings(tokens, 500) {
-		if _, err := s.push.SendToManyTokens(ctx, part, msg.Title, msg.Body, msg.Data); err != nil {
+		res, err := s.push.SendToManyTokens(ctx, part, msg.Title, msg.Body, msg.Data)
+		if res.InvalidTokens != nil && len(res.InvalidTokens) > 0 {
+			fmt.Println("Invalid tokens found, consider cleaning up:", res.InvalidTokens)
+		}
+		if err != nil {
 			fmt.Println("Failed to send push to tokens:", err)
 			return err
 		}
