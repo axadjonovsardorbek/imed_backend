@@ -79,7 +79,12 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 	for _, part := range chunkStrings(tokens, 500) {
 		res, err := s.push.SendToManyTokens(ctx, part, msg.Title, msg.Body, msg.Data)
 		if res.InvalidTokens != nil && len(res.InvalidTokens) > 0 {
-			fmt.Println("Invalid tokens found, consider cleaning up:", res.InvalidTokens)
+			_, err = s.storage.UserS.DeleteToken(res.InvalidTokens)
+			if err != nil {
+				fmt.Println("Failed to delete invalid tokens:", err)
+			} else {
+				fmt.Println("Invalid tokens found, consider cleaning up:", res.InvalidTokens)
+			}
 		}
 		if err != nil {
 			fmt.Println("Failed to send push to tokens:", err)
