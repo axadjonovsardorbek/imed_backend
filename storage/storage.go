@@ -114,6 +114,7 @@ type UserI interface {
 	GetRating(req *m.RatingRequest) (*m.RatingResponse, error)
 	GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error)
 	GetMe(req *m.RatingRequest) (*m.RatingUserItem, error)
+	DeleteToken(req []string) (*m.Void, error)
 }
 
 type NotificationI interface {

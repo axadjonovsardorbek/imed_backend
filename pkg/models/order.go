@@ -2,13 +2,13 @@ package models
 
 type OrderStatisticRes struct {
 	Id             string  `json:"id"`
-	UserId         string  `json:"user_id"`
-	UserName       string  `json:"user_name"`
-	UserPhone      string  `json:"user_phone"`
-	CourseId       string  `json:"course_id"`
-	CourseName     string  `json:"course_name"`
-	TariffId       string  `json:"tariff_id"`
-	TariffName     string  `json:"tariff_name"`
+	UserId         *string `json:"user_id"`
+	UserName       *string `json:"user_name"`
+	UserPhone      *string `json:"user_phone"`
+	CourseId       *string `json:"course_id"`
+	CourseName     *string `json:"course_name"`
+	TariffId       *string `json:"tariff_id"`
+	TariffName     *string `json:"tariff_name"`
 	Duration       int     `json:"duration"`
 	PromoCodeId    *string `json:"promocode_id"`
 	PromoCode      *string `json:"promocode"`

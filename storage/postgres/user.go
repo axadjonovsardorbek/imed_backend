@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -95,6 +97,29 @@ func (r *UserRepo) GetToken(user_id string) (*string, error) {
 
 	return token, nil
 }
+
+func (r *UserRepo) DeleteToken(req []string) (*m.Void, error) {
+	if len(req) == 0 {
+		return &m.Void{}, nil
+	}
+
+	query := `
+	UPDATE users
+	SET fcm_token = NULL
+	WHERE fcm_token = ANY($1)
+	`
+
+	res, err := r.db.Exec(query, pq.Array(req))
+	if err != nil {
+		return nil, fmt.Errorf("error while deleting fcm token: %w", err)
+	}
+
+	rows, _ := res.RowsAffected()
+	log.Println("nulled tokens count:", rows)
+
+	return &m.Void{}, nil
+}
+
 func (r *UserRepo) CreateUser(req *m.UserLoginReq) (*m.ById, error) {
 	if req.Password == "" {
 		password := req.PhoneNumber
