@@ -476,7 +476,12 @@ func (r *UserRepo) GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.User
 		args = append(args, "%"+req.Name+"%")
 	}
 	if req.PhoneNumber != "" && req.PhoneNumber != "string" {
-		query += fmt.Sprintf(" AND phone_number ILIKE $%d", len(args)+1)
+		query += fmt.Sprintf(` 
+		AND (
+			phone_number ILIKE $%d 
+			OR email ILIKE $%d
+		)
+	`, len(args)+1, len(args)+1)
 		args = append(args, "%"+req.PhoneNumber+"%")
 	}
 
