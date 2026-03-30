@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 	"time"
@@ -14,14 +15,50 @@ import (
 type SourceService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewSourceService(storage *st.Storage, rdb *redis.Client) *SourceService {
-	return &SourceService{storage: *storage, rdb: rdb}
+func NewSourceService(storage *st.Storage, rdb *redis.Client, push *PushService) *SourceService {
+	return &SourceService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *SourceService) Create(ctx context.Context, req *m.SourceCreateReq) (*m.ById, error) {
-	return s.storage.SourceS.Create(req)
+	res, err := s.storage.SourceS.Create(req)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: res.Id})
+	if err == nil {
+
+		push_target := m.PushTarget{
+			Type:     m.TargetCourseUsers,
+			CourseID: info.CourseId,
+		}
+
+		push_event := m.PushEvent{
+			Type:       m.EventSourceAdded,
+			CourseID:   info.CourseId,
+			CourseName: info.CourseName,
+			LessonID:   info.LessonId,
+			LessonName: info.LessonName,
+			SourceType: req.Type,
+		}
+
+		_ = s.push.SendPush(ctx, push_target, push_event)
+
+		msg := m.BuildUzPushMessage(push_event)
+		title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
+			Title:    title,
+			Message:  body,
+			Type:     "selected",
+			CourseId: info.CourseId,
+		})
+	}
+
+	return res, nil
 }
 
 func (s *SourceService) GetById(ctx context.Context, req *m.ById) (*m.SourceRes, error) {
