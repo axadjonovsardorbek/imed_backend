@@ -23,12 +23,20 @@ type PushTarget struct {
 type PushEventType string
 
 const (
+	SourceTest     = "test"
+	SourceDocument = "document"
+	SourceVideo    = "video"
+)
+
+const (
 	EventNewCourse         PushEventType = "new_course"
 	EventLessonAdded       PushEventType = "lesson_added"
 	EventCourseAssigned    PushEventType = "course_assigned"
 	EventPaymentSuccess    PushEventType = "payment_success"
 	EventPaymentFailed     PushEventType = "payment_failed"
 	EventAdminNotification PushEventType = "admin_notification"
+	EventModuleAdded       PushEventType = "module_added"
+	EventSourceAdded       PushEventType = "source_added"
 )
 
 type PushEvent struct {
@@ -42,10 +50,16 @@ type PushEvent struct {
 	LessonID   string
 	LessonName string
 
+	// module uchun
+	ModuleID   string
+	ModuleName string
+
 	// payment uchun
 	OrderID    string
 	Amount     string // "1000.00" formatda yuborsang yaxshi
 	FailReason string // optional
+
+	SourceType string // source_added uchun: test, document, video
 }
 
 type PushMessage struct {
@@ -124,6 +138,34 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 				"type": "admin_notification",
 				"info": e.CourseName,
 			},
+		}
+
+	case EventModuleAdded:
+		return PushMessage{
+			Title: "Yangi modul qo‘shildi 📚",
+			Body:  fmt.Sprintf("%s kursiga yangi '%s' modul qo‘shildi", e.CourseName, e.ModuleName),
+		}
+
+	case EventSourceAdded:
+		var sourceName string
+
+		switch e.SourceType {
+		case SourceTest:
+			sourceName = "test"
+		case SourceDocument:
+			sourceName = "hujjat"
+		case SourceVideo:
+			sourceName = "video"
+		}
+
+		return PushMessage{
+			Title: "Yangi material qo‘shildi 📚",
+			Body: fmt.Sprintf(
+				"%s kursining %s darsiga yangi %s qo‘shildi",
+				e.CourseName,
+				e.LessonName,
+				sourceName,
+			),
 		}
 
 	default:
