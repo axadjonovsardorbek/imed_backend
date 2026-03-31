@@ -143,7 +143,7 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 	case EventModuleAdded:
 		return PushMessage{
 			Title: "Yangi modul qo‘shildi 📚",
-			Body:  fmt.Sprintf("%s kursiga yangi '%s' modul qo‘shildi", e.CourseName, e.ModuleName),
+			Body:  fmt.Sprintf("%s kursiga yangi %s nomli modul qo‘shildi", e.CourseName, e.ModuleName),
 		}
 
 	case EventSourceAdded:
