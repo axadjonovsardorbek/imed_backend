@@ -2,12 +2,10 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
-	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -77,33 +75,33 @@ func (s *LessonService) GetById(ctx context.Context, req *m.ById) (*m.LessonRes,
 }
 
 func (s *LessonService) GetAll(ctx context.Context, req *m.LessonGetListReq) (*m.PaginationResponse, *m.LessonList, error) {
-	res := &m.PaginationResponse{}
+	// res := &m.PaginationResponse{}
 
-	key := fmt.Sprintf("module_id:%s_name:%s_type:%s_is_public:%s_page:%d_limit:%d",
-		req.ModuleId, req.Name, req.Type, req.IsPublic, req.Filter.Page, req.Filter.Limit)
+	// key := fmt.Sprintf("module_id:%s_name:%s_type:%s_is_public:%s_page:%d_limit:%d",
+	// 	req.ModuleId, req.Name, req.Type, req.IsPublic, req.Filter.Page, req.Filter.Limit)
 
-	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
+	// if s.rdb != nil {
+	// 	if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+	// 		_ = json.Unmarshal(b, &res)
+	// 	}
+	// }
 
-	if res.Total == 0 {
-		res, _, err := s.storage.LessonS.GetAll(req)
-		if err != nil {
-			return nil, nil, err
-		}
+	// if res.Total == 0 {
+	// 	res, _, err := s.storage.LessonS.GetAll(req)
+	// 	if err != nil {
+	// 		return nil, nil, err
+	// 	}
 
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
-			}
-		}
+	// 	if s.rdb != nil {
+	// 		if b, err := json.Marshal(res); err == nil {
+	// 			_ = s.rdb.Set(key, b, 60*time.Second).Err()
+	// 		}
+	// 	}
 
-		return res, nil, nil
-	}
+	// 	return res, nil, nil
+	// }
 
-	return res, nil, nil
+	return s.storage.LessonS.GetAll(req)
 }
 
 func (s *LessonService) Update(ctx context.Context, req *m.LessonUpdateReq) (*m.Void, error) {
