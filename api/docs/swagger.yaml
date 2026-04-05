@@ -952,6 +952,10 @@ definitions:
     properties:
       code:
         type: string
+      courses:
+        items:
+          type: string
+        type: array
       discount_type:
         type: string
       discount_value:
@@ -968,6 +972,8 @@ definitions:
         type: number
       starts_at:
         type: string
+      type:
+        type: string
     type: object
   models.PromoCodeList:
     properties:
@@ -982,6 +988,10 @@ definitions:
     properties:
       code:
         type: string
+      courses:
+        items:
+          $ref: '#/definitions/models.PromoCourse'
+        type: array
       created_at:
         type: string
       discount_type:
@@ -1004,11 +1014,17 @@ definitions:
         type: number
       starts_at:
         type: string
+      type:
+        type: string
       updated_at:
         type: string
     type: object
   models.PromoCodeUpdateBody:
     properties:
+      courses:
+        items:
+          type: string
+        type: array
       discount_type:
         type: string
       discount_value:
@@ -1026,6 +1042,15 @@ definitions:
       min_order_amount:
         type: number
       starts_at:
+        type: string
+      type:
+        type: string
+    type: object
+  models.PromoCourse:
+    properties:
+      id:
+        type: string
+      name:
         type: string
     type: object
   models.PromoRedemptionList:

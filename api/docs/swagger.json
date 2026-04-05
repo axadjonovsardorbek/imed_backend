@@ -8191,6 +8191,12 @@
                 "code": {
                     "type": "string"
                 },
+                "courses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "discount_type": {
                     "type": "string"
                 },
@@ -8214,6 +8220,9 @@
                 },
                 "starts_at": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -8236,6 +8245,12 @@
             "properties": {
                 "code": {
                     "type": "string"
+                },
+                "courses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PromoCourse"
+                    }
                 },
                 "created_at": {
                     "type": "string"
@@ -8270,6 +8285,9 @@
                 "starts_at": {
                     "type": "string"
                 },
+                "type": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 }
@@ -8278,6 +8296,12 @@
         "models.PromoCodeUpdateBody": {
             "type": "object",
             "properties": {
+                "courses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "discount_type": {
                     "type": "string"
                 },
@@ -8303,6 +8327,20 @@
                     "type": "number"
                 },
                 "starts_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PromoCourse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
