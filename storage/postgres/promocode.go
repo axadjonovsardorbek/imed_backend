@@ -169,7 +169,7 @@ func (r *PromoCodeRepo) GetById(req *m.ById) (*m.PromoCodeRes, error) {
 		rows, err := r.db.Query(`
 			SELECT 
 				c.id,
-				c.name
+				c.name ->> 'uz'
 			FROM promocode_courses pc
 			JOIN courses c ON c.id = pc.course_id
 			WHERE pc.promocode_id = $1
