@@ -8198,6 +8198,12 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
+                "courses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "discount_type": {
                     "type": "string"
                 },
@@ -8221,6 +8227,9 @@ const docTemplate = `{
                 },
                 "starts_at": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -8243,6 +8252,12 @@ const docTemplate = `{
             "properties": {
                 "code": {
                     "type": "string"
+                },
+                "courses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PromoCourse"
+                    }
                 },
                 "created_at": {
                     "type": "string"
@@ -8277,6 +8292,9 @@ const docTemplate = `{
                 "starts_at": {
                     "type": "string"
                 },
+                "type": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 }
@@ -8285,6 +8303,12 @@ const docTemplate = `{
         "models.PromoCodeUpdateBody": {
             "type": "object",
             "properties": {
+                "courses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "discount_type": {
                     "type": "string"
                 },
@@ -8310,6 +8334,20 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "starts_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PromoCourse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }

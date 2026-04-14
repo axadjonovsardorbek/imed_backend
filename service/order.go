@@ -22,23 +22,39 @@ func NewOrderService(storage *st.Storage, rdb *redis.Client, push *PushService) 
 	return &OrderService{storage: *storage, rdb: rdb, push: push}
 }
 
-func (s *OrderService) Create(ctx context.Context, req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
-	if req.PromoCodeId == "" || req.PromoCodeId == "string" {
-		res, err := s.storage.OrderS.Create(req)
-		if err != nil {
-			return nil, err
+func (s *OrderService) getVersion() string {
+	version := "1"
+	if s.rdb != nil {
+		if v, err := s.rdb.Get("order:version").Result(); err == nil && v != "" {
+			version = v
 		}
-		fmt.Println("Order created without promo code:", res)
-		return res, nil
-	} else {
-		res, err := s.storage.OrderS.CreateWithPromoCode(req)
-		if err != nil {
-			return nil, err
-		}
-
-		fmt.Println("Applying promo code:", req.PromoCodeId)
-		return res, nil
 	}
+	return version
+}
+
+func (s *OrderService) Create(ctx context.Context, req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
+
+	var (
+		res *m.OrderCreateRes
+		err error
+	)
+
+	if req.PromoCodeId == "" || req.PromoCodeId == "string" {
+		res, err = s.storage.OrderS.Create(req)
+	} else {
+		res, err = s.storage.OrderS.CreateWithPromoCode(req)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// 🔥 cache invalidation
+	if s.rdb != nil {
+		_ = s.rdb.Incr("order:version").Err()
+	}
+
+	return res, nil
 }
 
 func (s *OrderService) GetById(ctx context.Context, req *m.ById) (*m.OrderStatisticRes, error) {
@@ -50,34 +66,49 @@ func (s *OrderService) GetById(ctx context.Context, req *m.ById) (*m.OrderStatis
 	return order, err
 }
 func (s *OrderService) GetAll(ctx context.Context, req *m.OrderGetListReq) (*m.PaginationResponse, *m.OrderList, error) {
-	res := &m.PaginationResponse{}
 
-	key := fmt.Sprintf("user_id:%s_course_id:%s_tariff_id:%s_promocode_id:%s_status:%s_payment_type:%s_type:%s_day:%s_from:%s_to:%s_page:%d_limit:%d",
-		req.UserId, req.CourseId, req.TariffId, req.PromoCodeId, req.Status, req.PaymentType, req.Type, req.Day, req.From, req.To, req.Filter.Page, req.Filter.Limit)
+	version := s.getVersion()
 
+	key := fmt.Sprintf(
+		"order:list:v%s_user:%s_course:%s_tariff:%s_promo:%s_status:%s_pay:%s_type:%s_day:%s_from:%s_to:%s_page:%d_limit:%d",
+		version,
+		req.UserId,
+		req.CourseId,
+		req.TariffId,
+		req.PromoCodeId,
+		req.Status,
+		req.PaymentType,
+		req.Type,
+		req.Day,
+		req.From,
+		req.To,
+		req.Filter.Page,
+		req.Filter.Limit,
+	)
 	if s.rdb != nil {
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
-
-	if res.Total == 0 {
-		res, _, err := s.storage.OrderS.GetAll(req)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			var cached m.PaginationResponse
+			if err := json.Unmarshal(b, &cached); err == nil {
+				return &cached, nil, nil
 			}
 		}
-
-		return res, nil, nil
 	}
 
-	return res, nil, nil
+	// 🔥 GET FROM DB
+	res, list, err := s.storage.OrderS.GetAll(req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if s.rdb != nil {
+		if b, err := json.Marshal(res); err == nil {
+			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+		}
+	}
+
+	return res, list, nil
 }
+
 func (s *OrderService) GetPayURL(ctx context.Context, req *m.ById) (*m.PayURLRes, error) {
 	return s.storage.OrderS.GetPayURL(req)
 }

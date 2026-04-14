@@ -34,6 +34,17 @@ func (h *Handler) CreatePromoCode(c *gin.Context) {
 		return
 	}
 
+	if req.Type == "string" || req.Type == "" {
+		req.Type = "all"
+	}
+
+	if req.Type != "all" && req.Type != "selected" {
+		c.JSON(400, gin.H{"message": "incorrect type for promocode, all or selected for type"})
+		slog.Error("incorrect type for promocode, all or selected for type")
+		smssender(c, fmt.Errorf("incorrect type for promocode, all or selected for type"), http.StatusBadRequest)
+		return
+	}
+
 	if req.DiscountType != "fixed" && req.DiscountType != "percent" {
 		c.JSON(400, gin.H{"message": "incorrect type for discount, fixed or percent for discout type"})
 		slog.Error("incorrect type for discount, fixed or percent for discout type")
@@ -45,6 +56,15 @@ func (h *Handler) CreatePromoCode(c *gin.Context) {
 		slog.Error("Invalid start/end date")
 		smssender(c, fmt.Errorf("invalid start/end date"), http.StatusBadRequest)
 		c.JSON(http.StatusBadRequest, gin.H{"message": "start/end date must be YYYY-MM-DD"})
+		return
+	}
+
+	if req.Type == "selected" && len(req.Courses) == 0 {
+		msg := "courses are required when type is 'selected'"
+
+		c.JSON(http.StatusBadRequest, gin.H{"message": msg})
+		slog.Error(msg)
+		smssender(c, fmt.Errorf(msg), http.StatusBadRequest)
 		return
 	}
 
@@ -183,6 +203,17 @@ func (h *Handler) UpdatePromoCode(c *gin.Context) {
 	req.MaxUsesTotal = body.MaxUsesTotal
 	req.MinOrderAmount = body.MinOrderAmount
 
+	if req.Type == "string" || req.Type == "" {
+		req.Type = "all"
+	}
+
+	if req.Type != "all" && req.Type != "selected" {
+		c.JSON(400, gin.H{"message": "incorrect type for promocode, all or selected for type"})
+		slog.Error("incorrect type for promocode, all or selected for type")
+		smssender(c, fmt.Errorf("incorrect type for promocode, all or selected for type"), http.StatusBadRequest)
+		return
+	}
+
 	if req.DiscountType != "fixed" && req.DiscountType != "percent" {
 		c.JSON(400, gin.H{"message": "incorrect type for discount, fixed or percent for discout type"})
 		slog.Error("incorrect type for discount, fixed or percent for discout type")
@@ -194,6 +225,15 @@ func (h *Handler) UpdatePromoCode(c *gin.Context) {
 		slog.Error("Invalid start/end date")
 		smssender(c, fmt.Errorf("invalid start/end date"), http.StatusBadRequest)
 		c.JSON(http.StatusBadRequest, gin.H{"message": "start/end date must be YYYY-MM-DD"})
+		return
+	}
+
+	if req.Type == "selected" && len(req.Courses) == 0 {
+		msg := "courses are required when type is 'selected'"
+
+		c.JSON(http.StatusBadRequest, gin.H{"message": msg})
+		slog.Error(msg)
+		smssender(c, fmt.Errorf(msg), http.StatusBadRequest)
 		return
 	}
 

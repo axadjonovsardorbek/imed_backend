@@ -1,31 +1,40 @@
 package models
 
+type PromoCourse struct {
+	Id   *string `json:"id"`
+	Name *string `json:"name"`
+}
+
 type PromoCodeCreateReq struct {
-	Code           string  `json:"code"`
-	DiscountType   string  `json:"discount_type"`
-	DiscountValue  float64 `json:"discount_value"`
-	StartsAt       string  `json:"starts_at"`
-	EndsAt         string  `json:"ends_at"`
-	MinOrderAmount float64 `json:"min_order_amount"`
-	MaxDiscount    float64 `json:"max_discount"`
-	MaxUsesTotal   int     `json:"max_uses_total"`
-	MaxUsesPerUser int     `json:"max_uses_per_user"`
+	Code           string   `json:"code"`
+	DiscountType   string   `json:"discount_type"`
+	DiscountValue  float64  `json:"discount_value"`
+	StartsAt       string   `json:"starts_at"`
+	EndsAt         string   `json:"ends_at"`
+	MinOrderAmount float64  `json:"min_order_amount"`
+	MaxDiscount    float64  `json:"max_discount"`
+	MaxUsesTotal   int      `json:"max_uses_total"`
+	MaxUsesPerUser int      `json:"max_uses_per_user"`
+	Type           string   `json:"type"`
+	Courses        []string `json:"courses"`
 }
 
 type PromoCodeRes struct {
-	Id             *string  `json:"id"`
-	IsActive       *bool    `json:"is_active"`
-	Code           *string  `json:"code"`
-	DiscountType   *string  `json:"discount_type"`
-	DiscountValue  *float64 `json:"discount_value"`
-	StartsAt       *string  `json:"starts_at"`
-	EndsAt         *string  `json:"ends_at"`
-	MinOrderAmount *float64 `json:"min_order_amount"`
-	MaxDiscount    *float64 `json:"max_discount"`
-	MaxUsesTotal   *int     `json:"max_uses_total"`
-	MaxUsesPerUser *int     `json:"max_uses_per_user"`
-	CreatedAt      *string  `json:"created_at"`
-	UpdatedAt      *string  `json:"updated_at"`
+	Id             *string        `json:"id"`
+	IsActive       *bool          `json:"is_active"`
+	Code           *string        `json:"code"`
+	DiscountType   *string        `json:"discount_type"`
+	DiscountValue  *float64       `json:"discount_value"`
+	StartsAt       *string        `json:"starts_at"`
+	EndsAt         *string        `json:"ends_at"`
+	MinOrderAmount *float64       `json:"min_order_amount"`
+	MaxDiscount    *float64       `json:"max_discount"`
+	MaxUsesTotal   *int           `json:"max_uses_total"`
+	MaxUsesPerUser *int           `json:"max_uses_per_user"`
+	Type           *string        `json:"type"`
+	Courses        []*PromoCourse `json:"courses"`
+	CreatedAt      *string        `json:"created_at"`
+	UpdatedAt      *string        `json:"updated_at"`
 }
 
 type PromoCodeList struct {
@@ -41,28 +50,32 @@ type PromoCodeGetListReq struct {
 }
 
 type PromoCodeUpdateBody struct {
-	IsActive       bool    `json:"is_active"`
-	DiscountType   string  `json:"discount_type"`
-	DiscountValue  float64 `json:"discount_value"`
-	StartsAt       string  `json:"starts_at"`
-	EndsAt         string  `json:"ends_at"`
-	MinOrderAmount float64 `json:"min_order_amount"`
-	MaxDiscount    float64 `json:"max_discount"`
-	MaxUsesTotal   int     `json:"max_uses_total"`
-	MaxUsesPerUser int     `json:"max_uses_per_user"`
+	IsActive       bool     `json:"is_active"`
+	DiscountType   string   `json:"discount_type"`
+	DiscountValue  float64  `json:"discount_value"`
+	StartsAt       string   `json:"starts_at"`
+	EndsAt         string   `json:"ends_at"`
+	MinOrderAmount float64  `json:"min_order_amount"`
+	MaxDiscount    float64  `json:"max_discount"`
+	MaxUsesTotal   int      `json:"max_uses_total"`
+	MaxUsesPerUser int      `json:"max_uses_per_user"`
+	Type           string   `json:"type"`
+	Courses        []string `json:"courses"`
 }
 
 type PromoCodeUpdateReq struct {
-	Id             string  `json:"id"`
-	IsActive       bool    `json:"is_active"`
-	DiscountType   string  `json:"discount_type"`
-	DiscountValue  float64 `json:"discount_value"`
-	StartsAt       string  `json:"starts_at"`
-	EndsAt         string  `json:"ends_at"`
-	MinOrderAmount float64 `json:"min_order_amount"`
-	MaxDiscount    float64 `json:"max_discount"`
-	MaxUsesTotal   int     `json:"max_uses_total"`
-	MaxUsesPerUser int     `json:"max_uses_per_user"`
+	Id             string   `json:"id"`
+	IsActive       bool     `json:"is_active"`
+	DiscountType   string   `json:"discount_type"`
+	DiscountValue  float64  `json:"discount_value"`
+	StartsAt       string   `json:"starts_at"`
+	EndsAt         string   `json:"ends_at"`
+	MinOrderAmount float64  `json:"min_order_amount"`
+	MaxDiscount    float64  `json:"max_discount"`
+	MaxUsesTotal   int      `json:"max_uses_total"`
+	MaxUsesPerUser int      `json:"max_uses_per_user"`
+	Type           string   `json:"type"`
+	Courses        []string `json:"courses"`
 }
 
 type PromoCodeCheckRes struct {

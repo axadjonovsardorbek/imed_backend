@@ -22,10 +22,24 @@ func NewCourseService(storage *st.Storage, push *PushService, rdb *redis.Client)
 	return &CourseService{storage: *storage, push: push, rdb: rdb}
 }
 
+func (s *CourseService) getVersion() string {
+	version := "1"
+	if s.rdb != nil {
+		if v, err := s.rdb.Get("course:version").Result(); err == nil && v != "" {
+			version = v
+		}
+	}
+	return version
+}
+
 func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.ById, error) {
 	res, err := s.storage.CourseS.Create(req)
 	if err != nil {
 		return nil, err
+	}
+
+	if s.rdb != nil {
+		_ = s.rdb.Incr("course:version").Err()
 	}
 
 	courseNameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
@@ -70,44 +84,62 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 func (s *CourseService) GetById(ctx context.Context, req *m.ById) (*m.CourseRes, error) {
 	return s.storage.CourseS.GetById(req)
 }
+func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m.PaginationResponse, error) {
+	version := s.getVersion()
+	key := fmt.Sprintf(
+		"course:list:v%s_s:%s_t:%s_name:%s_pub:%s_page:%d_limit:%d",
+		version,
+		req.SubjectId,
+		req.TeacherId,
+		req.Name,
+		req.IsPublic,
+		req.Filter.Page,
+		req.Filter.Limit,
+	)
 
-func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m.PaginationResponse, *m.CourseList, error) {
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			var cached m.PaginationResponse
+			if err := json.Unmarshal(b, &cached); err == nil {
+				return &cached, nil
+			}
+		}
+	}
 
-	// res := &m.PaginationResponse{}
+	res, _, err := s.storage.CourseS.GetAll(req)
+	if err != nil {
+		return nil, err
+	}
 
-	// key := fmt.Sprintf("s_id:%s_t_id:%s_name:%s_is_pub:%s_price:%d_user_id:%s_role:%s_page:%d_limit:%d",
-	// 	req.SubjectId, req.TeacherId, req.Name, req.IsPublic, req.Price, req.UserId, req.Role, req.Filter.Page, req.Filter.Limit)
+	if s.rdb != nil {
+		if b, err := json.Marshal(res); err == nil {
+			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+		}
+	}
 
-	// if s.rdb != nil {
-	// 	if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-	// 		_ = json.Unmarshal(b, &res)
-	// 	}
-	// }
-
-	// if res.Total == 0 {
-	// 	res, _, err := s.storage.CourseS.GetAll(req)
-	// 	if err != nil {
-	// 		return nil, nil, err
-	// 	}
-
-	// 	if s.rdb != nil {
-	// 		if b, err := json.Marshal(res); err == nil {
-	// 			_ = s.rdb.Set(key, b, 30*time.Second).Err()
-	// 		}
-	// 	}
-
-	// 	return res, nil, nil
-	// }
-
-	return s.storage.CourseS.GetAll(req)
+	return res, nil
 }
 
 func (s *CourseService) Update(ctx context.Context, req *m.CourseUpdateReq) (*m.Void, error) {
-	return s.storage.CourseS.Update(req)
+	res, err := s.storage.CourseS.Update(req)
+	if err != nil {
+		return nil, err
+	}
+	if s.rdb != nil {
+		_ = s.rdb.Incr("course:version").Err()
+	}
+	return res, nil
 }
 
 func (s *CourseService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
-	return s.storage.CourseS.Delete(req)
+	res, err := s.storage.CourseS.Delete(req)
+	if err != nil {
+		return nil, err
+	}
+	if s.rdb != nil {
+		_ = s.rdb.Incr("course:version").Err()
+	}
+	return res, nil
 }
 
 func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateReq) (*m.Void, error) {
@@ -170,6 +202,7 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 
 	return res, nil
 }
+
 func (s *CourseService) UserCourse(ctx context.Context, req *m.ById) (*m.UserCourseRes, error) {
 	return s.storage.CourseS.UserCourse(req)
 }
@@ -212,35 +245,41 @@ func (s *CourseService) DeleteUserCourse(ctx context.Context, req *m.ById) (*m.V
 func (s *CourseService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.MobileCourseRes, error) {
 	return s.storage.CourseS.GetByIdMobile(req)
 }
-func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMobileReq) (*m.PaginationResponse, *m.CourseMobileList, error) {
 
-	res := &m.PaginationResponse{}
+func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMobileReq) (*m.PaginationResponse, error) {
+	version := s.getVersion()
 
-	key := fmt.Sprintf("s_id:%s_name:%s_is_pub:%s_user_id:%s_lang:%s",
-		req.SubjectId, req.Name, req.IsPublic, req.UserId, req.Language)
+	key := fmt.Sprintf(
+		"course:mobile:list:v%s_s:%s_u:%s_name:%s_pub:%s_l:%s",
+		version,
+		req.SubjectId,
+		req.UserId,
+		req.Name,
+		req.IsPublic,
+		req.Language,
+	)
 
 	if s.rdb != nil {
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
-
-	if res.Total == 0 {
-		res, _, err := s.storage.CourseS.GetAllMobile(req)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			var cached m.PaginationResponse
+			if err := json.Unmarshal(b, &cached); err == nil {
+				return &cached, nil
 			}
 		}
-
-		return res, nil, nil
 	}
 
-	return res, nil, nil
+	res, _, err := s.storage.CourseS.GetAllMobile(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.rdb != nil {
+		if b, err := json.Marshal(res); err == nil {
+			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+		}
+	}
+
+	return res, nil
 }
 func (s *CourseService) UserCourseMobile(ctx context.Context, req *m.ByIdMobile) (*m.UserCourseMobileRes, error) {
 	return s.storage.CourseS.UserCourseMobile(req)

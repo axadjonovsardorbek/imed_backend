@@ -135,6 +135,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 			EndsAt        sql.NullTime
 			MaxUsesTotal  sql.NullInt64
 			MaxPerUser    int
+			pType         string
 		}
 
 		var p promoRow
@@ -143,7 +144,7 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 				SELECT id, is_active, discount_type, discount_value,
 					   min_order_amount, max_discount,
 					   starts_at, ends_at,
-					   max_uses_total, max_uses_per_user
+					   max_uses_total, max_uses_per_user, type
 				FROM promocodes
 				WHERE id = $1
 				  AND deleted_at = 0
@@ -152,13 +153,35 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 			&p.ID, &p.IsActive, &p.DiscountType, &p.DiscountValue,
 			&p.MinAmount, &p.MaxDiscount,
 			&p.StartsAt, &p.EndsAt,
-			&p.MaxUsesTotal, &p.MaxPerUser,
+			&p.MaxUsesTotal, &p.MaxPerUser, &p.pType,
 		)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				return nil, fmt.Errorf("promocode not found")
 			}
 			return nil, err
+		}
+
+		// 🔥 COURSE MATCH CHECK
+		if p.pType == "selected" {
+			var exists bool
+
+			err = r.db.QueryRow(`
+			SELECT EXISTS (
+				SELECT 1
+				FROM promocode_courses
+				WHERE promocode_id = $1
+				  AND course_id = $2
+			)
+			`, promoID, req.CourseId).Scan(&exists)
+
+			if err != nil {
+				return nil, fmt.Errorf(ErrUnExpected)
+			}
+
+			if !exists {
+				return nil, fmt.Errorf(ErrPromoNotApplicable)
+			}
 		}
 
 		now := time.Now()

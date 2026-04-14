@@ -32,9 +32,27 @@ const (
 	ErrPromoLimitForUser      = "promocode usage limit reached for user"
 	ErrPromoLimitForAll       = "promocode usage limit reached"
 	ErrPromoSuccessfull       = "promocode applied successfully"
+	ErrPromoNotApplicable     = "promo not applicable for this course"
 )
 
 func (r *PromoCodeRepo) Create(req *m.PromoCodeCreateReq) (*m.ById, error) {
+
+	tz, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tz.Rollback()
+			err = fmt.Errorf("panic occurred: %v", p)
+		} else if err != nil {
+			tz.Rollback()
+		} else {
+			err = tz.Commit()
+		}
+	}()
+
 	id := uuid.NewString()
 	query := `
 	INSERT INTO promocodes (
@@ -47,11 +65,12 @@ func (r *PromoCodeRepo) Create(req *m.PromoCodeCreateReq) (*m.ById, error) {
 		min_order_amount,
 		max_discount,
 		max_uses_total,
-		max_uses_per_user
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		max_uses_per_user,
+		type
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
 
-	_, err := r.db.Exec(query,
+	_, err = tz.Exec(query,
 		id,
 		req.Code,
 		req.DiscountType,
@@ -62,10 +81,31 @@ func (r *PromoCodeRepo) Create(req *m.PromoCodeCreateReq) (*m.ById, error) {
 		req.MaxDiscount,
 		req.MaxUsesTotal,
 		req.MaxUsesPerUser,
+		req.Type,
 	)
 
 	if err != nil {
 		return nil, fmt.Errorf("error while creating promocode: %w", err)
+	}
+
+	if req.Type == "selected" && len(req.Courses) > 0 {
+		valueStrings := []string{}
+		valueArgs := []interface{}{}
+
+		for i, courseID := range req.Courses {
+			valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2))
+			valueArgs = append(valueArgs, id, courseID)
+		}
+
+		query := fmt.Sprintf(`
+			INSERT INTO promocode_courses (promocode_id, course_id)
+			VALUES %s
+		`, strings.Join(valueStrings, ","))
+
+		_, err = tz.Exec(query, valueArgs...)
+		if err != nil {
+			return nil, fmt.Errorf("error while inserting promo courses: %w", err)
+		}
 	}
 
 	return &m.ById{Id: id}, nil
@@ -84,6 +124,7 @@ func (r *PromoCodeRepo) GetById(req *m.ById) (*m.PromoCodeRes, error) {
 		max_discount,
 		max_uses_total,
 		max_uses_per_user,
+		type,
 		created_at,
 		updated_at
 	FROM
@@ -109,6 +150,7 @@ func (r *PromoCodeRepo) GetById(req *m.ById) (*m.PromoCodeRes, error) {
 		&promocode.MaxDiscount,
 		&promocode.MaxUsesTotal,
 		&promocode.MaxUsesPerUser,
+		&promocode.Type,
 		&promocode.CreatedAt,
 		&promocode.UpdatedAt,
 	)
@@ -119,6 +161,36 @@ func (r *PromoCodeRepo) GetById(req *m.ById) (*m.PromoCodeRes, error) {
 
 	if err != nil {
 		return nil, fmt.Errorf("error while getting promocode by id: %w", err)
+	}
+
+	promocode.Courses = []*m.PromoCourse{}
+
+	if promocode.Type != nil && *promocode.Type == "selected" {
+		rows, err := r.db.Query(`
+			SELECT 
+				c.id,
+				c.name ->> 'uz'
+			FROM promocode_courses pc
+			JOIN courses c ON c.id = pc.course_id
+			WHERE pc.promocode_id = $1
+		`, req.Id)
+		if err != nil {
+			return nil, fmt.Errorf("error while getting promo courses: %w", err)
+		}
+		defer rows.Close()
+
+		var courses []*m.PromoCourse
+
+		for rows.Next() {
+			course := &m.PromoCourse{}
+			err := rows.Scan(&course.Id, &course.Name)
+			if err != nil {
+				return nil, err
+			}
+			courses = append(courses, course)
+		}
+
+		promocode.Courses = courses
 	}
 
 	return &promocode, nil
@@ -138,6 +210,7 @@ func (r *PromoCodeRepo) GetAll(req *m.PromoCodeGetListReq) (*m.PaginationRespons
 		max_discount,
 		max_uses_total,
 		max_uses_per_user,
+		type,
 		created_at,
 		updated_at
 	FROM
@@ -195,6 +268,7 @@ func (r *PromoCodeRepo) GetAll(req *m.PromoCodeGetListReq) (*m.PaginationRespons
 			&promocode.MaxDiscount,
 			&promocode.MaxUsesTotal,
 			&promocode.MaxUsesPerUser,
+			&promocode.Type,
 			&promocode.CreatedAt,
 			&promocode.UpdatedAt,
 		)
@@ -213,6 +287,23 @@ func (r *PromoCodeRepo) GetAll(req *m.PromoCodeGetListReq) (*m.PaginationRespons
 	return &response, &promocodes, nil
 }
 func (r *PromoCodeRepo) Update(req *m.PromoCodeUpdateReq) (*m.Void, error) {
+
+	tz, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tz.Rollback()
+			err = fmt.Errorf("panic occurred: %v", p)
+		} else if err != nil {
+			tz.Rollback()
+		} else {
+			err = tz.Commit()
+		}
+	}()
+
 	query := `
 	UPDATE promocodes
 	SET
@@ -264,6 +355,11 @@ func (r *PromoCodeRepo) Update(req *m.PromoCodeUpdateReq) (*m.Void, error) {
 		args = append(args, req.MaxUsesPerUser)
 	}
 
+	if req.Type != "" && req.Type != "string" {
+		conditions = append(conditions, " type = $"+strconv.Itoa(len(args)+1))
+		args = append(args, req.Type)
+	}
+
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")
 	}
@@ -274,20 +370,81 @@ func (r *PromoCodeRepo) Update(req *m.PromoCodeUpdateReq) (*m.Void, error) {
 
 	args = append(args, req.Id)
 
-	res, err := r.db.Exec(query, args...)
+	_, err = tz.Exec(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error while updating promocode: %w", err)
 	}
 
-	if r, err := res.RowsAffected(); r == 0 {
-		if err != nil {
-			return nil, err
+	if req.Type == "selected" {
+		if len(req.Courses) == 0 {
+			return nil, fmt.Errorf("courses required when type is selected")
 		}
-		return nil, fmt.Errorf("promocode with id %s couldnt update", req.Id)
+
+		_, err = tz.Exec(`
+		DELETE FROM promocode_courses
+		WHERE promocode_id = $1
+	`, req.Id)
+		if err != nil {
+			return nil, fmt.Errorf("error while deleting old promo courses: %w", err)
+		}
+
+		valueStrings := []string{}
+		valueArgs := []interface{}{}
+
+		for i, courseID := range req.Courses {
+			valueStrings = append(valueStrings,
+				fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2),
+			)
+			valueArgs = append(valueArgs, req.Id, courseID)
+		}
+
+		query := fmt.Sprintf(`
+		INSERT INTO promocode_courses (promocode_id, course_id)
+		VALUES %s
+	`, strings.Join(valueStrings, ","))
+
+		_, err = tz.Exec(query, valueArgs...)
+		if err != nil {
+			return nil, fmt.Errorf("error while inserting promo courses: %w", err)
+		}
+	} else if req.Type == "all" {
+		_, err = tz.Exec(`
+			DELETE FROM promocode_courses
+			WHERE promocode_id = $1
+		`, req.Id)
+		if err != nil {
+			return nil, fmt.Errorf("error while clearing promo courses: %w", err)
+		}
 	}
+
 	return &m.Void{}, nil
 }
 func (r *PromoCodeRepo) Delete(req *m.ById) (*m.Void, error) {
+
+	tz, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tz.Rollback()
+			err = fmt.Errorf("panic occurred: %v", p)
+		} else if err != nil {
+			tz.Rollback()
+		} else {
+			err = tz.Commit()
+		}
+	}()
+
+	_, err = tz.Exec(`
+			DELETE FROM promocode_courses
+			WHERE promocode_id = $1
+		`, req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error while clearing promo courses: %w", err)
+	}
+
 	query := `
 	UPDATE promocodes
 	SET
@@ -298,7 +455,7 @@ func (r *PromoCodeRepo) Delete(req *m.ById) (*m.Void, error) {
 		deleted_at = 0
 	`
 
-	res, err := r.db.Exec(query, req.Id)
+	res, err := tz.Exec(query, req.Id)
 	if err != nil {
 		return nil, fmt.Errorf("error while deleting promocode: %w", err)
 	}
@@ -349,13 +506,14 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		endsAt         sql.NullTime
 		maxUsesTotal   sql.NullInt64
 		maxUsesPerUser int
+		pType          string
 	)
 
 	err = r.db.QueryRow(`
 		SELECT id, is_active, discount_type, discount_value,
 			   min_order_amount, max_discount,
 			   starts_at, ends_at,
-			   max_uses_total, max_uses_per_user
+			   max_uses_total, max_uses_per_user, type
 		FROM promocodes
 		WHERE lower(code) = lower($1)
 		  AND deleted_at = 0
@@ -364,7 +522,7 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		&promoID, &isActive, &discountType, &discountValue,
 		&minOrderAmount, &maxDiscount,
 		&startsAt, &endsAt,
-		&maxUsesTotal, &maxUsesPerUser,
+		&maxUsesTotal, &maxUsesPerUser, &pType,
 	)
 	if err == sql.ErrNoRows {
 		res.Message = ErrPromoNotFound
@@ -373,6 +531,30 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 	if err != nil {
 		res.Message = ErrUnExpected
 		return res, fmt.Errorf(ErrUnExpected)
+	}
+
+	// 🔥 COURSE MATCH CHECK
+	if pType == "selected" {
+		var exists bool
+
+		err = r.db.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM promocode_courses
+			WHERE promocode_id = $1
+			  AND course_id = $2
+		)
+	`, promoID, req.CourseId).Scan(&exists)
+
+		if err != nil {
+			res.Message = ErrUnExpected
+			return res, fmt.Errorf(ErrUnExpected)
+		}
+
+		if !exists {
+			res.Message = ErrPromoNotApplicable
+			return res, fmt.Errorf(ErrPromoNotApplicable)
+		}
 	}
 
 	now := time.Now()
