@@ -115,16 +115,27 @@ func smssender(c *gin.Context, err error, code int) {
 	}
 }
 
+// func IsYYYYMMDD(s string) bool {
+// 	if len(s) != 10 {
+// 		return false
+// 	}
+// 	// tezkor tekshiruv: YYYY-MM-DD
+// 	if s[4] != '-' || s[7] != '-' {
+// 		return false
+// 	}
+// 	_, err := time.Parse("2006-01-02", s)
+// 	return err == nil
+// }
+
 func IsYYYYMMDD(s string) bool {
-	if len(s) != 10 {
-		return false
+	switch len(s) {
+	case 10:
+		_, err := time.Parse("2006-01-02", s)
+		return err == nil
+	default:
+		_, err := time.Parse(time.RFC3339, s)
+		return err == nil
 	}
-	// tezkor tekshiruv: YYYY-MM-DD
-	if s[4] != '-' || s[7] != '-' {
-		return false
-	}
-	_, err := time.Parse("2006-01-02", s)
-	return err == nil
 }
 
 func getLanguage(c *gin.Context) string {
