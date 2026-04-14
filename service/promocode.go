@@ -20,47 +20,92 @@ func NewPromoCodeService(storage *st.Storage, rdb *redis.Client) *PromoCodeServi
 	return &PromoCodeService{storage: *storage, rdb: rdb}
 }
 
+func (s *PromoCodeService) getVersion() string {
+	version := "1"
+	if s.rdb != nil {
+		if v, err := s.rdb.Get("promocode:version").Result(); err == nil && v != "" {
+			version = v
+		}
+	}
+	return version
+}
+
 func (s *PromoCodeService) Create(ctx context.Context, req *m.PromoCodeCreateReq) (*m.ById, error) {
-	return s.storage.PromoCodeS.Create(req)
+	res, err := s.storage.PromoCodeS.Create(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.rdb != nil {
+		_ = s.rdb.Incr("promocode:version").Err()
+	}
+
+	return res, nil
 }
 func (s *PromoCodeService) GetById(ctx context.Context, req *m.ById) (*m.PromoCodeRes, error) {
 	return s.storage.PromoCodeS.GetById(req)
 }
 func (s *PromoCodeService) GetAll(ctx context.Context, req *m.PromoCodeGetListReq) (*m.PaginationResponse, *m.PromoCodeList, error) {
-	// res := &m.PaginationResponse{}
 
-	// key := fmt.Sprintf("code:%s_discount_type:%s_is_active:%s_page:%d_limit:%d",
-	// 	req.Code, req.DiscountType, req.IsActive, req.Filter.Page, req.Filter.Limit)
+	version := s.getVersion()
 
-	// if s.rdb != nil {
-	// 	if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-	// 		_ = json.Unmarshal(b, &res)
-	// 	}
-	// }
+	key := fmt.Sprintf(
+		"promocode:list:v%s_code:%s_type:%s_active:%s_page:%d_limit:%d",
+		version,
+		req.Code,
+		req.DiscountType,
+		req.IsActive,
+		req.Filter.Page,
+		req.Filter.Limit,
+	)
 
-	// if res.Total == 0 {
-	// 	res, _, err := s.storage.PromoCodeS.GetAll(req)
-	// 	if err != nil {
-	// 		return nil, nil, err
-	// 	}
+	var res *m.PaginationResponse
 
-	// 	if s.rdb != nil {
-	// 		if b, err := json.Marshal(res); err == nil {
-	// 			_ = s.rdb.Set(key, b, 60*time.Second).Err()
-	// 		}
-	// 	}
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			var cached m.PaginationResponse
+			if err := json.Unmarshal(b, &cached); err == nil {
+				return &cached, nil, nil
+			}
+		}
+	}
 
-	// 	return res, nil, nil
-	// }
+	res, list, err := s.storage.PromoCodeS.GetAll(req)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	// return res, nil, nil
-	return s.storage.PromoCodeS.GetAll(req)
+	if s.rdb != nil {
+		if b, err := json.Marshal(res); err == nil {
+			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+		}
+	}
+
+	return res, list, nil
 }
 func (s *PromoCodeService) Update(ctx context.Context, req *m.PromoCodeUpdateReq) (*m.Void, error) {
-	return s.storage.PromoCodeS.Update(req)
+	res, err := s.storage.PromoCodeS.Update(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.rdb != nil {
+		_ = s.rdb.Incr("promocode:version").Err()
+	}
+
+	return res, nil
 }
 func (s *PromoCodeService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
-	return s.storage.PromoCodeS.Delete(req)
+	res, err := s.storage.PromoCodeS.Delete(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.rdb != nil {
+		_ = s.rdb.Incr("promocode:version").Err()
+	}
+
+	return res, nil
 }
 func (s *PromoCodeService) Check(ctx context.Context, req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, error) {
 	return s.storage.PromoCodeS.Check(req)
@@ -69,31 +114,38 @@ func (s *PromoCodeService) GetByIdUserPromo(ctx context.Context, req *m.ById) (*
 	return s.storage.PromoCodeS.GetByIdUserPromo(req)
 }
 func (s *PromoCodeService) GetAllUserPromo(ctx context.Context, req *m.PromoRedemptionGetListReq) (*m.PaginationResponse, *m.PromoRedemptionList, error) {
-	res := &m.PaginationResponse{}
 
-	key := fmt.Sprintf("promo_id:%s_user_id:%s_is_active:%s_page:%d_limit:%d",
-		req.PromoId, req.UserId, req.IsActive, req.Filter.Page, req.Filter.Limit)
+	version := s.getVersion()
+
+	key := fmt.Sprintf(
+		"promocode:user:v%s_promo:%s_user:%s_active:%s_page:%d_limit:%d",
+		version,
+		req.PromoId,
+		req.UserId,
+		req.IsActive,
+		req.Filter.Page,
+		req.Filter.Limit,
+	)
 
 	if s.rdb != nil {
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
-
-	if res.Total == 0 {
-		res, _, err := s.storage.PromoCodeS.GetAllUserPromo(req)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+			var cached m.PaginationResponse
+			if err := json.Unmarshal(b, &cached); err == nil {
+				return &cached, nil, nil
 			}
 		}
-
-		return res, nil, nil
 	}
 
-	return res, nil, nil
+	res, list, err := s.storage.PromoCodeS.GetAllUserPromo(req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if s.rdb != nil {
+		if b, err := json.Marshal(res); err == nil {
+			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+		}
+	}
+
+	return res, list, nil
 }

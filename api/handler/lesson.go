@@ -132,7 +132,7 @@ func (h *Handler) GetAllLessons(c *gin.Context) {
 	}
 
 	slog.Info("Get all lesson with filtes", req)
-	data, _, err := h.Clients.Lesson.GetAll(context.Background(), req)
+	data,  err := h.Clients.Lesson.GetAll(context.Background(), req)
 	slog.Info("All lesson", data)
 
 	if err != nil {

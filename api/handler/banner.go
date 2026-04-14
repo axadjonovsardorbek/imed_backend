@@ -137,7 +137,7 @@ func (h *Handler) GetAllBanners(c *gin.Context) {
 	}
 
 	slog.Info("Get all banner with filtes", req)
-	data, _, err := h.Clients.Banner.GetAll(context.Background(), req)
+	data, err := h.Clients.Banner.GetAll(context.Background(), req)
 	slog.Info("All banner", data)
 
 	if err != nil {
@@ -305,7 +305,7 @@ func (h *Handler) GetAllMobileBanners(c *gin.Context) {
 	}
 
 	slog.Info("Get all banner with filtes", req)
-	data, _, err := h.Clients.Banner.GetAllMobile(context.Background(), req)
+	data, err := h.Clients.Banner.GetAllMobile(context.Background(), req)
 	slog.Info("All banner", data)
 
 	if err != nil {

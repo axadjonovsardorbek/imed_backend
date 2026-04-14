@@ -146,7 +146,7 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 	}
 
 	slog.Info("Get all course with filtes", req)
-	data, _, err := h.Clients.Course.GetAll(context.Background(), req)
+	data,  err := h.Clients.Course.GetAll(context.Background(), req)
 	slog.Info("All course", data)
 
 	if err != nil {
@@ -525,7 +525,7 @@ func (h *Handler) GetAllMobileCourses(c *gin.Context) {
 	}
 
 	slog.Info("Get all course with filtes", req)
-	data, _, err := h.Clients.Course.GetAllMobile(context.Background(), req)
+	data,  err := h.Clients.Course.GetAllMobile(context.Background(), req)
 	slog.Info("All course", data)
 
 	if err != nil {

@@ -22,6 +22,16 @@ func NewNotificationService(storage *st.Storage, rdb *redis.Client, push *PushSe
 	return &NotificationService{storage: *storage, rdb: rdb, push: push}
 }
 
+func (s *NotificationService) getVersion() string {
+	version := "1"
+	if s.rdb != nil {
+		if v, err := s.rdb.Get("notification:version").Result(); err == nil && v != "" {
+			version = v
+		}
+	}
+	return version
+}
+
 func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCreateReq) (*m.ById, error) {
 
 	res, err := s.storage.NotificationS.Create(req)
@@ -29,8 +39,14 @@ func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCre
 		return nil, err
 	}
 
+	// 🔥 cache invalidation
+	if s.rdb != nil {
+		_ = s.rdb.Incr("notification:version").Err()
+	}
+
 	titleUz, _ := helper.PickFromJSONStr(req.Title, "uz")
 	messageUz, _ := helper.PickFromJSONStr(req.Message, "uz")
+
 	push_target := m.PushTarget{Type: m.TargetAllUsers}
 	push_event := m.PushEvent{
 		Type:       m.EventAdminNotification,
@@ -49,18 +65,7 @@ func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCre
 		}
 	}
 
-	err = s.push.SendPush(ctx,
-		push_target,
-		push_event,
-	)
-	if err != nil {
-		fmt.Println("Failed to send push:", err)
-	}
-
-	fmt.Println("Push event sent:", push_event)
-
-	fmt.Printf("Notification created: %s\n", res.Id)
-	fmt.Println("Push event sent:", push_event)
+	_ = s.push.SendPush(ctx, push_target, push_event)
 
 	return res, nil
 }
@@ -70,71 +75,102 @@ func (s *NotificationService) GetById(ctx context.Context, req *m.ById) (*m.Mast
 }
 
 func (s *NotificationService) GetAll(ctx context.Context, req *m.NotificationGetListReq) (*m.PaginationResponse, *m.MasterNotificationList, error) {
-	// res := &m.PaginationResponse{}
 
-	// key := fmt.Sprintf("course_id:%s_title:%s_page:%d_limit:%d",
-	// 	req.CourseId, req.Title, req.Filter.Page, req.Filter.Limit)
+	version := s.getVersion()
 
-	// if s.rdb != nil {
-	// 	if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-	// 		_ = json.Unmarshal(b, &res)
-	// 	}
-	// }
-
-	// if res.Total == 0 {
-	// 	res, _, err := s.storage.NotificationS.GetAll(req)
-	// 	if err != nil {
-	// 		return nil, nil, err
-	// 	}
-
-	// 	if s.rdb != nil {
-	// 		if b, err := json.Marshal(res); err == nil {
-	// 			_ = s.rdb.Set(key, b, 30*time.Second).Err()
-	// 		}
-	// 	}
-
-	// 	return res, nil, nil
-	// }
-
-	return s.storage.NotificationS.GetAll(req)
-}
-
-func (s *NotificationService) Update(ctx context.Context, req *m.MasterNotificationUpdateReq) (*m.Void, error) {
-	return s.storage.NotificationS.Update(req)
-}
-
-func (s *NotificationService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
-	return s.storage.NotificationS.Delete(req)
-}
-
-func (s *NotificationService) UserNotifications(ctx context.Context, req *m.NotificationGetListReq) (*m.PaginationResponse, *m.UserNotificationList, error) {
-	res := &m.PaginationResponse{}
-
-	key := fmt.Sprintf("lang:%s_user_id:%s_is_read:%s",
-		req.Language, req.UserId, req.IsRead)
+	key := fmt.Sprintf(
+		"notification:list:v%s_course:%s_title:%s_page:%d_limit:%d",
+		version,
+		req.CourseId,
+		req.Title,
+		req.Filter.Page,
+		req.Filter.Limit,
+	)
 
 	if s.rdb != nil {
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
-
-	if res.Total == 0 {
-		res, _, err := s.storage.NotificationS.UserNotifications(req)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 30*time.Second).Err()
+			var cached m.PaginationResponse
+			if err := json.Unmarshal(b, &cached); err == nil {
+				return &cached, nil, nil
 			}
 		}
-
-		return res, nil, nil
 	}
 
-	return res, nil, nil
+	res, list, err := s.storage.NotificationS.GetAll(req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if s.rdb != nil {
+		if b, err := json.Marshal(res); err == nil {
+			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+		}
+	}
+
+	return res, list, nil
+}
+
+func (s *NotificationService) Update(ctx context.Context, req *m.MasterNotificationUpdateReq) (*m.Void, error) {
+	res, err := s.storage.NotificationS.Update(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.rdb != nil {
+		_ = s.rdb.Incr("notification:version").Err()
+	}
+
+	return res, nil
+}
+
+func (s *NotificationService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
+	res, err := s.storage.NotificationS.Delete(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.rdb != nil {
+		_ = s.rdb.Incr("notification:version").Err()
+	}
+
+	return res, nil
+}
+
+func (s *NotificationService) UserNotifications(ctx context.Context, req *m.NotificationGetListReq) (*m.PaginationResponse, *m.UserNotificationList, error) {
+
+	version := s.getVersion()
+
+	key := fmt.Sprintf(
+		"notification:user:v%s_lang:%s_user:%s_read:%s_page:%d_limit:%d",
+		version,
+		req.Language,
+		req.UserId,
+		req.IsRead,
+		req.Filter.Page,
+		req.Filter.Limit,
+	)
+
+	if s.rdb != nil {
+		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+			var cached m.PaginationResponse
+			if err := json.Unmarshal(b, &cached); err == nil {
+				return &cached, nil, nil
+			}
+		}
+	}
+
+	res, list, err := s.storage.NotificationS.UserNotifications(req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if s.rdb != nil {
+		if b, err := json.Marshal(res); err == nil {
+			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+		}
+	}
+
+	return res, list, nil
 }
 
 func (s *NotificationService) MarkAsRead(ctx context.Context, req *m.NotificationMarkReadReq) (*m.Void, error) {
