@@ -207,34 +207,7 @@ func (s *CourseService) UserCourse(ctx context.Context, req *m.ById) (*m.UserCou
 	return s.storage.CourseS.UserCourse(req)
 }
 func (s *CourseService) UserCourses(ctx context.Context, req *m.UserCourseGetListReq) (*m.PaginationResponse, *m.UserCourseList, error) {
-
-	res := &m.PaginationResponse{}
-
-	key := fmt.Sprintf("user_id:%s_course_id:%s_tariff_id:%s_is_active:%s_page:%d_limit:%d",
-		req.UserId, req.CourseId, req.TariffId, req.IsActive, req.Filter.Page, req.Filter.Limit)
-
-	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
-
-	if res.Total == 0 {
-		res, _, err := s.storage.CourseS.UserCourses(req)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
-			}
-		}
-
-		return res, nil, nil
-	}
-
-	return res, nil, nil
+	return s.storage.CourseS.UserCourses(req)
 }
 func (s *CourseService) UserUpdateCourse(ctx context.Context, req *m.UserCourseUpdateReq) (*m.Void, error) {
 	return s.storage.CourseS.UserUpdateCourse(req)
@@ -286,31 +259,5 @@ func (s *CourseService) UserCourseMobile(ctx context.Context, req *m.ByIdMobile)
 }
 func (s *CourseService) UserCoursesMobile(ctx context.Context, req *m.UserCourseGetListMobileReq) (*m.PaginationResponse, *m.UserCourseMobileList, error) {
 
-	res := &m.PaginationResponse{}
-
-	key := fmt.Sprintf("user_id:%s_tariff_id:%s_is_active:%s_lang:%s",
-		req.UserId, req.TariffId, req.IsActive, req.Language)
-
-	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
-			_ = json.Unmarshal(b, &res)
-		}
-	}
-
-	if res.Total == 0 {
-		res, _, err := s.storage.CourseS.UserCoursesMobile(req)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if s.rdb != nil {
-			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
-			}
-		}
-
-		return res, nil, nil
-	}
-
-	return res, nil, nil
+	return s.storage.CourseS.UserCoursesMobile(req)
 }
