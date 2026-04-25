@@ -174,7 +174,81 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 		WHERE p.deleted_at = 0 AND p.is_active = TRUE
 		  AND (b.from_ts IS NULL OR p.created_at >= b.from_ts)
 		  AND (b.to_ts   IS NULL OR p.created_at < b.to_ts)
-	  ) AS active_promocodes;
+	  ) AS active_promocodes,
+
+	  -- Paid amounts
+	  (SELECT COALESCE(SUM(o.amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status='PAID'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS paid_amount_total,
+	  
+	  (SELECT COALESCE(SUM(o.amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status='PAID' AND o.payment_type='click'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS paid_amount_click,
+	  
+	  (SELECT COALESCE(SUM(o.amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status='PAID' AND o.payment_type='admin'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS paid_amount_admin,
+
+	  (SELECT COALESCE(SUM(o.discount_amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status='PAID'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS paid_discount_total,
+	  
+	  (SELECT COALESCE(SUM(o.discount_amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status='PAID' AND o.payment_type='click'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS paid_discount_click,
+	  
+	  (SELECT COALESCE(SUM(o.discount_amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status='PAID' AND o.payment_type='admin'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS paid_discount_admin,
+
+	  (SELECT COALESCE(SUM(o.course_amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status = 'PAID'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS course_amount_total,
+
+	  (SELECT COALESCE(SUM(o.course_amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status = 'PAID'
+	     AND o.payment_type = 'click'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS course_amount_click,
+
+	  (SELECT COALESCE(SUM(o.course_amount), 0)
+	   FROM orders o, bounds b
+	   WHERE o.status = 'PAID'
+	     AND o.payment_type = 'admin'
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS course_amount_admin,
+
+	  (SELECT COUNT(*)
+	   FROM orders o, bounds b
+	   WHERE o.status = 'PAID'
+	     AND o.promo_id IS NOT NULL
+	     AND (b.from_ts IS NULL OR o.created_at >= b.from_ts)
+	     AND (b.to_ts   IS NULL OR o.created_at < b.to_ts)
+	  ) AS orders_with_promo
 	`
 
 	row := r.db.QueryRow(query, req.Type, req.Day, req.From, req.To)
@@ -202,6 +276,16 @@ func (r *DashboardRepo) GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, e
 		&dashboard.CancelledOrders,
 		&dashboard.PromoCodes,
 		&dashboard.ActivePromoCodes,
+		&dashboard.PaidAmountTotal,
+		&dashboard.PaidAmountClick,
+		&dashboard.PaidAmountAdmin,
+		&dashboard.PaidDiscountTotal,
+		&dashboard.PaidDiscountClick,
+		&dashboard.PaidDiscountAdmin,
+		&dashboard.CourseAmountTotal,
+		&dashboard.CourseAmountClick,
+		&dashboard.CourseAmountAdmin,
+		&dashboard.OrdersWithPromo,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting dashboard: %w", err)
