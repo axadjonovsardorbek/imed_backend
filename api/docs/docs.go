@@ -7536,13 +7536,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "course_amount_admin": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "course_amount_click": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "course_amount_total": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "courses": {
                     "type": "integer"
@@ -7566,22 +7566,22 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "paid_amount_admin": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "paid_amount_click": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "paid_amount_total": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "paid_discount_admin": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "paid_discount_click": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "paid_discount_total": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "paid_orders": {
                     "type": "integer"
