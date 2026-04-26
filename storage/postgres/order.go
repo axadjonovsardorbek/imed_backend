@@ -408,8 +408,10 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 		tariff_id,
 		duration,
 		amount,
+		discount_amount,
+		course_amount,
 		meta
-	) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
 	RETURNING amount
 	`
 	err = tz.QueryRow(query,
@@ -418,6 +420,8 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 		req.CourseId,
 		req.TariffId,
 		duration,
+		price,
+		0,
 		price,
 		string(metaBytes),
 	).Scan(&amount)
