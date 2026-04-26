@@ -183,7 +183,7 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 
 	title, body := helper.StringToJSON(msg.Title, msg.Body)
 
-	ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
+	_, err = s.storage.NotificationS.Create(&m.NotificationCreateReq{
 		Title:    title,
 		Message:  body,
 		Type:     "selected",
@@ -198,7 +198,7 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 	fmt.Println("Push event sent:", push_event)
 	fmt.Println("Push message:", msg)
 	fmt.Println("Course bought successfully for user:", req.UserId)
-	fmt.Println("Notification created with ID:", ntf.Id)
+	// fmt.Println("Notification created with ID:", ntf.Id)
 
 	return res, nil
 }

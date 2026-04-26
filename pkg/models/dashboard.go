@@ -22,9 +22,22 @@ type DashboardRes struct {
 	AdminOrders     int `json:"admin_orders"`
 	ClickOrders     int `json:"click_orders"`
 	CancelledOrders int `json:"cancelled_orders"`
+	OrdersWithPromo int `json:"orders_with_promo"`
 
 	PromoCodes       int `json:"promocodes"`
 	ActivePromoCodes int `json:"active_promocodes"`
+
+	PaidAmountTotal float64 `json:"paid_amount_total"`
+	PaidAmountClick float64 `json:"paid_amount_click"`
+	PaidAmountAdmin float64 `json:"paid_amount_admin"`
+
+	PaidDiscountTotal float64 `json:"paid_discount_total"`
+	PaidDiscountClick float64 `json:"paid_discount_click"`
+	PaidDiscountAdmin float64 `json:"paid_discount_admin"`
+
+	CourseAmountTotal float64 `json:"course_amount_total"`
+	CourseAmountClick float64 `json:"course_amount_click"`
+	CourseAmountAdmin float64 `json:"course_amount_admin"`
 }
 
 type GetDashboardReq struct {

@@ -7535,6 +7535,15 @@ const docTemplate = `{
                 "click_orders": {
                     "type": "integer"
                 },
+                "course_amount_admin": {
+                    "type": "number"
+                },
+                "course_amount_click": {
+                    "type": "number"
+                },
+                "course_amount_total": {
+                    "type": "number"
+                },
                 "courses": {
                     "type": "integer"
                 },
@@ -7552,6 +7561,27 @@ const docTemplate = `{
                 },
                 "modules": {
                     "type": "integer"
+                },
+                "orders_with_promo": {
+                    "type": "integer"
+                },
+                "paid_amount_admin": {
+                    "type": "number"
+                },
+                "paid_amount_click": {
+                    "type": "number"
+                },
+                "paid_amount_total": {
+                    "type": "number"
+                },
+                "paid_discount_admin": {
+                    "type": "number"
+                },
+                "paid_discount_click": {
+                    "type": "number"
+                },
+                "paid_discount_total": {
+                    "type": "number"
                 },
                 "paid_orders": {
                     "type": "integer"
