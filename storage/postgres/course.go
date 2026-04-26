@@ -702,7 +702,13 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		  (c.name->>$1)        AS name,
 		  (c.description->>$1) AS description,
 		  c.image_url          AS image_url,
-		  c.price              AS price,
+		  COALESCE(
+		    (
+		      SELECT jsonb_agg(elem ORDER BY (elem->>'duration')::int)
+		      FROM jsonb_array_elements(COALESCE(c.price, '[]'::jsonb)) AS elem
+		    ),
+		    '[]'::jsonb
+		  ) AS price,
 		  c.is_public 		   AS is_public,
 		  c.can_buy            AS can_buy,
 	  
