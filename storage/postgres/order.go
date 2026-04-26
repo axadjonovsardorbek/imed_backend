@@ -411,7 +411,7 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 		discount_amount,
 		course_amount,
 		meta
-	) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
 	RETURNING amount
 	`
 	err = tz.QueryRow(query,
