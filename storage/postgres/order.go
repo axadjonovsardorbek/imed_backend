@@ -408,6 +408,8 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 		tariff_id,
 		duration,
 		amount,
+		discount_amount,
+		course_amount,
 		meta
 	) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
 	RETURNING amount
@@ -418,6 +420,8 @@ func (r *OrderRepo) Create(req *m.OrderCreateReq) (*m.OrderCreateRes, error) {
 		req.CourseId,
 		req.TariffId,
 		duration,
+		price,
+		0,
 		price,
 		string(metaBytes),
 	).Scan(&amount)
