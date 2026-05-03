@@ -153,9 +153,10 @@ func downloadYouTube(videoURL, videoID string) (string, error) {
 	}
 
 	// Agar cookies.txt fayli mavjud bo'lsa, undan foydalanamiz
-	if _, err := os.Stat("cookies.txt"); err == nil {
-		slog.Info("Using cookies.txt for yt-dlp")
-		args = append(args, "--cookies", "cookies.txt")
+	cookiePath := "internal/secrets/cookies.txt"
+	if _, err := os.Stat(cookiePath); err == nil {
+		slog.Info("Using cookies.txt for yt-dlp from secrets")
+		args = append(args, "--cookies", cookiePath)
 	}
 
 	args = append(args, "https://www.youtube.com/watch?v="+videoID)
