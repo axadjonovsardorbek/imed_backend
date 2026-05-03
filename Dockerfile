@@ -26,7 +26,6 @@ RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /us
 
 COPY .env .
 COPY internal/secrets ./internal/secrets/
-COPY cookies.txt ./cookies.txt
 
 RUN chmod +x ./main
 
