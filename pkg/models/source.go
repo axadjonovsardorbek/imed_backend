@@ -4,6 +4,7 @@ type SourceCreateReq struct {
 	LessonId string `json:"lesson_id"`
 	Name     string `json:"name"`
 	Url      string `json:"url"`
+	VideoUrl string `json:"video_url"`
 	Type     string `json:"type"`
 	OrderNum int    `json:"order_num"`
 }
@@ -22,6 +23,7 @@ type SourceRes struct {
 	LessonId   string            `json:"lesson_id"`
 	LessonName map[string]string `json:"lesson_name"`
 	Url        map[string]string `json:"url"`
+	VideoUrl   map[string]string `json:"video_url"`
 	Type       *string           `json:"type"`
 	OrderNum   *int              `json:"order_num"`
 	CreatedAt  *string           `json:"created_at"`
@@ -44,6 +46,7 @@ type SourceUpdateBody struct {
 	Name     map[string]string `json:"name"`
 	LessonId string            `json:"lesson_id"`
 	Url      map[string]string `json:"url"`
+	VideoUrl map[string]string `json:"video_url"`
 	Type     string            `json:"type"`
 	OrderNum int               `json:"order_num"`
 }
@@ -53,6 +56,7 @@ type SourceUpdateReq struct {
 	Name     string `json:"name"`
 	LessonId string `json:"lesson_id"`
 	Url      string `json:"url"`
+	VideoUrl string `json:"video_url"`
 	Type     string `json:"type"`
 	OrderNum int    `json:"order_num"`
 }

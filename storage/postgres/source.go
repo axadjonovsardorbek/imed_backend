@@ -41,9 +41,10 @@ func (r *SourceRepo) Create(req *m.SourceCreateReq) (*m.ById, error) {
 		name,
 		lesson_id,
 		url,
+		video_url,
 		type,
 		order_num
-	) VALUES ($1, $2, $3, $4, $5, $6)
+	) VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 
 	_, err := r.db.Exec(query,
@@ -51,6 +52,7 @@ func (r *SourceRepo) Create(req *m.SourceCreateReq) (*m.ById, error) {
 		req.Name,
 		req.LessonId,
 		req.Url,
+		req.VideoUrl,
 		req.Type,
 		req.OrderNum,
 	)
@@ -69,6 +71,7 @@ func (r *SourceRepo) GetById(req *m.ById) (*m.SourceRes, error) {
 		s.id,
 		s.name,
 		s.url,
+		s.video_url,
 		s.type,
 		s.order_num,
 		s.lesson_id,
@@ -90,12 +93,14 @@ func (r *SourceRepo) GetById(req *m.ById) (*m.SourceRes, error) {
 	source := m.SourceRes{}
 	var nameJSON []byte
 	var urlJSON []byte
+	var videoUrlJSON []byte
 	var lessonNameJSON []byte
 
 	err := row.Scan(
 		&source.Id,
 		&nameJSON,
 		&urlJSON,
+		&videoUrlJSON,
 		&source.Type,
 		&source.OrderNum,
 		&source.LessonId,
@@ -106,6 +111,7 @@ func (r *SourceRepo) GetById(req *m.ById) (*m.SourceRes, error) {
 
 	json.Unmarshal(nameJSON, &source.Name)
 	json.Unmarshal(urlJSON, &source.Url)
+	json.Unmarshal(videoUrlJSON, &source.VideoUrl)
 	json.Unmarshal(lessonNameJSON, &source.LessonName)
 
 	if err == sql.ErrNoRows {
@@ -124,6 +130,7 @@ func (r *SourceRepo) GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.
 		s.id,
 		s.name,
 		s.url,
+		s.video_url,
 		s.type,
 		s.order_num,
 		s.lesson_id,
@@ -167,6 +174,7 @@ func (r *SourceRepo) GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.
 		source := m.SourceRes{}
 		var nameJSON []byte
 		var urlJSON []byte
+		var videoUrlJSON []byte
 		var lessonNameJSON []byte
 		var totalCount int
 
@@ -175,6 +183,7 @@ func (r *SourceRepo) GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.
 			&source.Id,
 			&nameJSON,
 			&urlJSON,
+			&videoUrlJSON,
 			&source.Type,
 			&source.OrderNum,
 			&source.LessonId,
@@ -185,6 +194,7 @@ func (r *SourceRepo) GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.
 
 		json.Unmarshal(nameJSON, &source.Name)
 		json.Unmarshal(urlJSON, &source.Url)
+		json.Unmarshal(videoUrlJSON, &source.VideoUrl)
 		json.Unmarshal(lessonNameJSON, &source.LessonName)
 
 		if err != nil {
@@ -216,6 +226,9 @@ func (r *SourceRepo) Update(req *m.SourceUpdateReq) (*m.Void, error) {
 
 	conditions = append(conditions, " url = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.Url)
+
+	conditions = append(conditions, " video_url = $"+strconv.Itoa(len(args)+1))
+	args = append(args, req.VideoUrl)
 
 	conditions = append(conditions, " type = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.Type)
@@ -271,6 +284,26 @@ func (r *SourceRepo) Delete(req *m.ById) (*m.Void, error) {
 	}
 
 	return &m.Void{}, nil
+}
+
+func (r *SourceRepo) UpdateVideoUrl(id string, videoUrl string) error {
+	query := `
+	UPDATE sources
+	SET
+		video_url = $1,
+		updated_at = now()
+	WHERE
+		id = $2
+	AND
+		deleted_at = 0
+	`
+
+	_, err := r.db.Exec(query, videoUrl, id)
+	if err != nil {
+		return fmt.Errorf("error while updating video_url: %w", err)
+	}
+
+	return nil
 }
 
 // func (r *SourceRepo)GetByIdMobile(req *m.ById) (*m.SourceMobileRes, error){

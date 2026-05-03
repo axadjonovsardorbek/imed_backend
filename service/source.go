@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"imed/internal/helper"
 	m "imed/pkg/models"
+	"imed/pkg/s3"
 	st "imed/storage/postgres"
+	"strings"
 	"time"
+
+	"log/slog"
 
 	"github.com/go-redis/redis"
 )
@@ -16,10 +20,11 @@ type SourceService struct {
 	storage st.Storage
 	rdb     *redis.Client
 	push    *PushService
+	s3      *s3.S3Service
 }
 
-func NewSourceService(storage *st.Storage, rdb *redis.Client, push *PushService) *SourceService {
-	return &SourceService{storage: *storage, rdb: rdb, push: push}
+func NewSourceService(storage *st.Storage, rdb *redis.Client, push *PushService, s3 *s3.S3Service) *SourceService {
+	return &SourceService{storage: *storage, rdb: rdb, push: push, s3: s3}
 }
 
 func (s *SourceService) getVersion() string {
@@ -71,6 +76,10 @@ func (s *SourceService) Create(ctx context.Context, req *m.SourceCreateReq) (*m.
 			Type:     "selected",
 			CourseId: info.CourseId,
 		})
+	}
+
+	if req.Type == "video" && s.s3 != nil {
+		go s.ProcessYouTubeVideo(res.Id, req.Url)
 	}
 
 	return res, nil
@@ -127,6 +136,10 @@ func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.
 		_ = s.rdb.Incr("source:version").Err()
 	}
 
+	if req.Type == "video" && s.s3 != nil {
+		go s.ProcessYouTubeVideo(req.Id, req.Url)
+	}
+
 	return res, nil
 }
 
@@ -141,4 +154,55 @@ func (s *SourceService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 	}
 
 	return res, nil
+}
+
+func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON string) {
+	var urls map[string]string
+	err := json.Unmarshal([]byte(urlJSON), &urls)
+	if err != nil {
+		slog.Error("Failed to unmarshal youtube urls", "err", err)
+		return
+	}
+
+	// Birinchi mavjud linkni olamiz (uz, ru yoki en)
+	var youtubeURL string
+	for _, u := range urls {
+		if u != "" && (strings.Contains(u, "youtube.com") || strings.Contains(u, "youtu.be")) {
+			youtubeURL = u
+			break
+		}
+	}
+
+	if youtubeURL == "" {
+		return
+	}
+
+	slog.Info("Starting background YouTube processing", "sourceID", sourceID, "url", youtubeURL)
+
+	videoURL, _, err := s.s3.UploadFromYouTube(youtubeURL)
+	if err != nil {
+		slog.Error("Failed to process YouTube video in background", "err", err, "sourceID", sourceID)
+		return
+	}
+
+	// Bazani yangilaymiz. Hamma tillar uchun bir xil S3 linkini qo'yamiz.
+	videoUrls := map[string]string{
+		"uz": videoURL,
+		"ru": videoURL,
+		"en": videoURL,
+	}
+
+	videoUrlsJSON, _ := json.Marshal(videoUrls)
+	err = s.storage.SourceS.UpdateVideoUrl(sourceID, string(videoUrlsJSON))
+	if err != nil {
+		slog.Error("Failed to update video_url in database", "err", err, "sourceID", sourceID)
+		return
+	}
+
+	slog.Info("Successfully processed and updated YouTube video", "sourceID", sourceID, "videoURL", videoURL)
+
+	// Cache invalidation again after update
+	if s.rdb != nil {
+		_ = s.rdb.Incr("source:version").Err()
+	}
 }

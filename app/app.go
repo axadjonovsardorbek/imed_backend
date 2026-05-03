@@ -13,6 +13,7 @@ import (
 	"imed/internal/push"
 	"imed/pkg/clients"
 	"imed/pkg/minio"
+	"imed/pkg/s3"
 	"imed/storage/postgres"
 
 	"github.com/go-redis/redis"
@@ -57,13 +58,19 @@ func Run(cf *config.Config) {
 		return
 	}
 
+	s3Client, err := s3.NewS3(cf)
+	if err != nil {
+		slog.Error("Failed to connect to S3", "err", err)
+		return
+	}
+
 	// services
-	services, err := clients.NewClients(cf, conn, rdb, pushClient)
+	services, err := clients.NewClients(cf, conn, rdb, pushClient, s3Client)
 	if err != nil {
 		log.Fatalf("error while connecting clients. err: %s", err.Error())
 	}
 
-	handlers := handler.NewHandler(*services, minioClient, cf)
+	handlers := handler.NewHandler(*services, minioClient, cf, s3Client)
 
 	go bot.BotAuth(cf)
 

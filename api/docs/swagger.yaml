@@ -1240,6 +1240,8 @@ definitions:
         type: string
       url:
         type: string
+      video_url:
+        type: string
     type: object
   models.SourceRes:
     properties:
@@ -1267,6 +1269,10 @@ definitions:
         additionalProperties:
           type: string
         type: object
+      video_url:
+        additionalProperties:
+          type: string
+        type: object
     type: object
   models.SourceUpdateBody:
     properties:
@@ -1281,6 +1287,10 @@ definitions:
       type:
         type: string
       url:
+        additionalProperties:
+          type: string
+        type: object
+      video_url:
         additionalProperties:
           type: string
         type: object
@@ -1644,6 +1654,11 @@ definitions:
       phone_number:
         type: string
       updated_at:
+        type: string
+    type: object
+  models.YouTubeReq:
+    properties:
+      url:
         type: string
     type: object
 info:
@@ -4244,6 +4259,65 @@ paths:
       - BearerAuth: []
       - BearerAuth: []
       summary: File upload
+      tags:
+      - file-upload
+  /web/file-upload-s3:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload any file directly to S3 storage
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: File upload to S3
+      tags:
+      - file-upload
+  /web/file-upload-youtube:
+    post:
+      consumes:
+      - application/json
+      description: Download video from YouTube and upload to S3 storage
+      parameters:
+      - description: YouTube URL
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.YouTubeReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Upload YouTube video to S3
       tags:
       - file-upload
   /web/lesson:

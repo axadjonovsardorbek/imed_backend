@@ -106,6 +106,8 @@ p, admin, /web/order/:id, GET
 p, admin, /web/order, GET 
 p, admin, /web/dashboard, GET 
 p, admin, /web/file-upload, POST
+p, admin, /web/file-upload-youtube, POST
+p, admin, /web/file-upload-s3, POST
 
 p, user, /mobile/auth/user/check, POST
 p, user, /mobile/auth/user/login, POST
@@ -149,6 +151,7 @@ p, user, /mobile/tariff, GET
 p, user, /mobile/tariff/:id, GET
 p, user, /mobile/promocode/check, POST
 p, user, /web/file-upload, POST
+p, user, /web/file-upload-s3, POST
 
 g, user, unauthorized
 g, teacher, user

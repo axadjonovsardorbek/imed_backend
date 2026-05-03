@@ -3,6 +3,7 @@ package clients
 import (
 	"imed/internal/config"
 	"imed/internal/push"
+	"imed/pkg/s3"
 	"imed/service"
 	"imed/storage/postgres"
 
@@ -30,7 +31,7 @@ type Clients struct {
 	User         *service.UserService
 }
 
-func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, pushClient *push.Client) (*Clients, error) {
+func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, pushClient *push.Client, s3Svc *s3.S3Service) (*Clients, error) {
 	pushSvc := service.NewPushService(conn, pushClient)
 	return &Clients{
 		Admin:        service.NewAdminService(conn),
@@ -41,7 +42,7 @@ func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, p
 		Faq:          service.NewFaqService(conn, rdb),
 		Lesson:       service.NewLessonService(conn, rdb, pushSvc),
 		Module:       service.NewModuleService(conn, rdb, pushSvc),
-		Source:       service.NewSourceService(conn, rdb, pushSvc),
+		Source:       service.NewSourceService(conn, rdb, pushSvc, s3Svc),
 		Subject:      service.NewSubjectService(conn, rdb),
 		Teacher:      service.NewTeacherService(conn, rdb),
 		Notification: service.NewNotificationService(conn, rdb, pushSvc),
