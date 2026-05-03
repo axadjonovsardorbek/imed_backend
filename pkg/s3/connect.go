@@ -145,13 +145,22 @@ func downloadYouTube(videoURL, videoID string) (string, error) {
 	slog.Info("Downloading video using yt-dlp", "videoID", videoID, "output", fileName)
 
 	// yt-dlp buyrug'ini shakllantiramiz
-	// -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' -> MP4 formatida eng yaxshi sifatni olish
-	cmd := exec.Command("yt-dlp",
+	args := []string{
 		"-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
 		"-o", fileName,
 		"--extractor-args", "youtube:player_client=android",
-		"https://www.youtube.com/watch?v="+videoID,
-	)
+		"--no-check-certificate",
+	}
+
+	// Agar cookies.txt fayli mavjud bo'lsa, undan foydalanamiz
+	if _, err := os.Stat("cookies.txt"); err == nil {
+		slog.Info("Using cookies.txt for yt-dlp")
+		args = append(args, "--cookies", "cookies.txt")
+	}
+
+	args = append(args, "https://www.youtube.com/watch?v="+videoID)
+
+	cmd := exec.Command("yt-dlp", args...)
 
 	// Xatoliklarni ko'rish uchun outputni bog'laymiz
 	output, err := cmd.CombinedOutput()

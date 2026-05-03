@@ -11,9 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"log/slog"
-
 	"github.com/go-redis/redis"
+	"log/slog"
 )
 
 type SourceService struct {
@@ -177,11 +176,17 @@ func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON string) {
 		return
 	}
 
+	// Telegramga xabar yuboramiz
+	logMsg := fmt.Sprintf("🎥 <b>YouTube yuklash boshlandi</b>\n\n🔗 <b>Link:</b> %s\n🆔 <b>Source ID:</b> %s", youtubeURL, sourceID)
+	_ = helper.SendMessage(logMsg)
+
 	slog.Info("Starting background YouTube processing", "sourceID", sourceID, "url", youtubeURL)
 
 	videoURL, _, err := s.s3.UploadFromYouTube(youtubeURL)
 	if err != nil {
 		slog.Error("Failed to process YouTube video in background", "err", err, "sourceID", sourceID)
+		errorMsg := fmt.Sprintf("❌ <b>YouTube yuklashda xatolik!</b>\n\n🆔 <b>Source ID:</b> %s\n⚠️ <b>Xato:</b> %v", sourceID, err)
+		_ = helper.SendMessage(errorMsg)
 		return
 	}
 
@@ -200,6 +205,9 @@ func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON string) {
 	}
 
 	slog.Info("Successfully processed and updated YouTube video", "sourceID", sourceID, "videoURL", videoURL)
+
+	successMsg := fmt.Sprintf("✅ <b>Video muvaffaqiyatli yuklandi!</b>\n\n🆔 <b>Source ID:</b> %s\n📥 <b>S3 Link:</b> <a href=\"%s\">Video Link</a>", sourceID, videoURL)
+	_ = helper.SendMessage(successMsg)
 
 	// Cache invalidation again after update
 	if s.rdb != nil {
