@@ -46,6 +46,15 @@ func NewS3(cnf *config.Config) (*S3Service, error) {
 	}
 
 	// Bucketni hamma uchun ochiq (Public) qilish
+	// ARN formatini to'g'irlaymiz (Contabo uchun identifikator bilan)
+	resourceARN := fmt.Sprintf("arn:aws:s3:::%s/*", cnf.S3_BUCKET_NAME)
+	if strings.Contains(cnf.S3_BUCKET_NAME, ":") {
+		parts := strings.Split(cnf.S3_BUCKET_NAME, ":")
+		if len(parts) == 2 {
+			resourceARN = fmt.Sprintf("arn:aws:s3::%s:%s/*", parts[0], parts[1])
+		}
+	}
+
 	policy := fmt.Sprintf(`{
 		"Version": "2012-10-17",
 		"Statement": [
@@ -54,10 +63,10 @@ func NewS3(cnf *config.Config) (*S3Service, error) {
 				"Effect": "Allow",
 				"Principal": "*",
 				"Action": ["s3:GetObject"],
-				"Resource": ["arn:aws:s3:::%s/*"]
+				"Resource": ["%s"]
 			}
 		]
-	}`, cnf.S3_BUCKET_NAME)
+	}`, resourceARN)
 
 	err = client.SetBucketPolicy(context.Background(), cnf.S3_BUCKET_NAME, policy)
 	if err != nil {

@@ -41,10 +41,9 @@ func (r *SourceRepo) Create(req *m.SourceCreateReq) (*m.ById, error) {
 		name,
 		lesson_id,
 		url,
-		video_url,
 		type,
 		order_num
-	) VALUES ($1, $2, $3, $4, $5, $6, $7)
+	) VALUES ($1, $2, $3, $4, $5, $6)
 	`
 
 	_, err := r.db.Exec(query,
@@ -52,7 +51,6 @@ func (r *SourceRepo) Create(req *m.SourceCreateReq) (*m.ById, error) {
 		req.Name,
 		req.LessonId,
 		req.Url,
-		req.VideoUrl,
 		req.Type,
 		req.OrderNum,
 	)
