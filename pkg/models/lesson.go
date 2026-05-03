@@ -117,6 +117,7 @@ type SourceMobile struct {
 	Id       string  `json:"id"`
 	Name     *string `json:"name"`
 	Url      *string `json:"url"`
+	VideoUrl *string `json:"video_url"`
 	Type     *string `json:"type"`
 	OrderNum *int    `json:"order_num"`
 }

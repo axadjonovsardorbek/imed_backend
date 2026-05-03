@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,11 @@ COPY --from=builder /app/api/casbin/model.conf ./api/casbin/
 COPY --from=builder /app/api/casbin/policy.csv ./api/casbin/
 
 
+RUN apk add --no-cache python3 ffmpeg wget nodejs
+RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && chmod a+rx /usr/local/bin/yt-dlp
+
 COPY .env .
+COPY internal/secrets ./internal/secrets/
 
 RUN chmod +x ./main
 

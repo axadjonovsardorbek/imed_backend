@@ -226,6 +226,8 @@ func NewApi(h *handler.Handler, rdb *redis.Client) *gin.Engine {
 		}
 
 		web.POST("/file-upload", h.UploadFile).Use(mid.NewAuth(enforcer, rdb))
+		web.POST("/file-upload-youtube", h.UploadYouTube).Use(mid.NewAuth(enforcer, rdb))
+		web.POST("/file-upload-s3", h.UploadFileToS3).Use(mid.NewAuth(enforcer, rdb))
 	}
 
 	mobile := router.Group("/mobile")

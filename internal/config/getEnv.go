@@ -51,6 +51,12 @@ type Config struct {
 	BREVO_PORT   string
 	BREVO_LOGIN  string
 	BREVO_KEY    string
+
+	S3_ACCESS_KEY string
+	S3_SECRET_KEY string
+	S3_ENDPOINT   string
+	S3_BUCKET_NAME string
+	S3_DOMAIN      string
 }
 
 func Load() Config {
@@ -92,7 +98,7 @@ func Load() Config {
 	config.MINIO_ACCESS_KEY = cast.ToString(coalesce("MINIO_ACCESS_KEY", "minio"))
 	config.MINIO_SECRET_KEY = cast.ToString(coalesce("MINIO_SECRET_KEY", "minio"))
 	config.MINIO_BUCKET_NAME = cast.ToString(coalesce("MINIO_BUCKET_NAME", "test-bucket"))
-	config.MINIO_DOMAIN = cast.ToString(coalesce(("MINIO_DOMAIN"), "minio"))
+	config.MINIO_DOMAIN = cast.ToString(coalesce("MINIO_DOMAIN", "minio"))
 
 	config.CONFIRM_PAGE_URL = cast.ToString(coalesce("CONFIRM_PAGE_URL", "test"))
 
@@ -104,6 +110,11 @@ func Load() Config {
 	config.BREVO_LOGIN = cast.ToString(coalesce("BREVO_LOGIN", "test"))
 	config.BREVO_KEY = cast.ToString(coalesce("BREVO_KEY", "test"))
 
+	config.S3_ACCESS_KEY = cast.ToString(coalesce("S3_ACCESS_KEY", "test"))
+	config.S3_SECRET_KEY = cast.ToString(coalesce("S3_SECRET_KEY", "test"))
+	config.S3_ENDPOINT = cast.ToString(coalesce("S3_ENDPOINT", "eu2.contabostorage.com"))
+	config.S3_BUCKET_NAME = cast.ToString(coalesce("S3_BUCKET_NAME", "imed"))
+	config.S3_DOMAIN = cast.ToString(coalesce("S3_DOMAIN", "https://eu2.contabostorage.com"))
 	return config
 }
 

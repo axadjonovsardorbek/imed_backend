@@ -91,6 +91,7 @@ type SourceI interface {
 	GetAll(req *m.SourceGetListReq) (*m.PaginationResponse, *m.SourceList, error)
 	Update(req *m.SourceUpdateReq) (*m.Void, error)
 	Delete(req *m.ById) (*m.Void, error)
+	UpdateVideoUrl(id string, videoUrl string) error
 	// GetByIdMobile(req *m.ByIdMobile) (*m.SourceMobileRes, error)
 	// GetAllMobile(req *m.SourceGetListMobileReq) (*m.PaginationResponse, *m.SourceMobileList, error)
 }

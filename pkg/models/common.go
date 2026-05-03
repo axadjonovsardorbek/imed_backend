@@ -6,6 +6,10 @@ import (
 	"fmt"
 )
 
+type YouTubeReq struct {
+	URL string `json:"url" binding:""`
+}
+
 type Params struct {
 	From     string
 	To       string

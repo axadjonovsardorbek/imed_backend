@@ -4112,6 +4112,100 @@ const docTemplate = `{
                 }
             }
         },
+        "/web/file-upload-s3": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload any file directly to S3 storage",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file-upload"
+                ],
+                "summary": "File upload to S3",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/file-upload-youtube": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Download video from YouTube and upload to S3 storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file-upload"
+                ],
+                "summary": "Upload YouTube video to S3",
+                "parameters": [
+                    {
+                        "description": "YouTube URL",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.YouTubeReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/web/lesson": {
             "get": {
                 "security": [
@@ -8632,6 +8726,9 @@ const docTemplate = `{
                 },
                 "url": {
                     "type": "string"
+                },
+                "video_url": {
+                    "type": "string"
                 }
             }
         },
@@ -8673,6 +8770,12 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "video_url": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -8695,6 +8798,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "url": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "video_url": {
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
@@ -9254,6 +9363,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.YouTubeReq": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }
