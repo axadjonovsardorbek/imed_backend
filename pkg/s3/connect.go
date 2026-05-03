@@ -152,11 +152,14 @@ func downloadYouTube(videoURL, videoID string) (string, error) {
 		"--no-check-certificate",
 	}
 
-	// Agar cookies.txt fayli mavjud bo'lsa, undan foydalanamiz
+	// Cookies faylini tekshirish
 	cookiePath := "internal/secrets/cookies.txt"
+	absPath, _ := filepath.Abs(cookiePath)
 	if _, err := os.Stat(cookiePath); err == nil {
-		slog.Info("Using cookies.txt for yt-dlp from secrets")
+		slog.Info("COOKIES FOUND", "path", absPath)
 		args = append(args, "--cookies", cookiePath)
+	} else {
+		slog.Warn("COOKIES NOT FOUND", "path", absPath, "err", err)
 	}
 
 	args = append(args, "https://www.youtube.com/watch?v="+videoID)
