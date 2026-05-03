@@ -150,6 +150,8 @@ func downloadYouTube(videoURL, videoID string) (string, error) {
 		"-o", fileName,
 		"--extractor-args", "youtube:player_client=android",
 		"--no-check-certificate",
+		"--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+		"--referer", "https://www.google.com/",
 	}
 
 	// Cookies faylini tekshirish
@@ -212,8 +214,8 @@ type userAgentRoundTripper struct {
 }
 
 func (ua userAgentRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-	req.Header.Set("Referer", "https://www.youtube.com")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+	req.Header.Set("Referer", "https://www.google.com")
 	resp, err := ua.rt.RoundTrip(req)
 	if err == nil && resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(resp.Body)
