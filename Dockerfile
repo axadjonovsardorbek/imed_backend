@@ -25,6 +25,7 @@ RUN apk add --no-cache python3 ffmpeg wget nodejs
 RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && chmod a+rx /usr/local/bin/yt-dlp
 
 COPY .env .
+COPY cookies.txt* . 
 
 RUN chmod +x ./main
 
