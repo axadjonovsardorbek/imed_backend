@@ -362,6 +362,7 @@ func (r *LessonRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes,
 			s.id::text            AS id,
 			(s.name ->> $3)       AS name,
 			(s.url  ->> $3)       AS url,
+			(s.video_url ->> $3)  AS video_url,
 			s.type                AS type,
 			s.order_num::int      AS order_num
 		FROM sources s
