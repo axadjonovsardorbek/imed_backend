@@ -87,6 +87,10 @@ func validateAppRouteCreate(req models.AppRouteCreateReq) error {
 		return fmt.Errorf("invalid payment_min_version")
 	}
 
+	if !isValidURL(req.ApkUrl) {
+		return fmt.Errorf("invalid apk_url")
+	}
+
 	return nil
 }
 

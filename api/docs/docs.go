@@ -7030,6 +7030,10 @@ const docTemplate = `{
         "models.AppRouteCreateReq": {
             "type": "object",
             "properties": {
+                "apk_url": {
+                    "type": "string",
+                    "example": "https://example.com/app.apk"
+                },
                 "app_links": {
                     "type": "object"
                 },
@@ -7075,6 +7079,10 @@ const docTemplate = `{
         "models.AppRouteRes": {
             "type": "object",
             "properties": {
+                "apk_url": {
+                    "type": "string",
+                    "example": "https://example.com/app.apk"
+                },
                 "app_links": {
                     "type": "object"
                 },
@@ -7118,6 +7126,10 @@ const docTemplate = `{
         "models.AppRouteUpdateBody": {
             "type": "object",
             "properties": {
+                "apk_url": {
+                    "type": "string",
+                    "example": "https://example.com/app.apk"
+                },
                 "app_links": {
                     "type": "object"
                 },
