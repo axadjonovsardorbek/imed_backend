@@ -13,6 +13,7 @@ type AppVersionRes struct {
 type AppLinksRes struct {
 	Google string `json:"google" db:"google" example:"https://play.google.com/store/apps/details?id=app"`
 	Apple  string `json:"apple" db:"apple" example:"https://apps.apple.com/app/id123456"`
+	ApkUrl string `json:"apk_url" db:"apk_url" example:"https://example.com/app.apk"`
 }
 
 type AppRouteRes struct {
@@ -24,7 +25,6 @@ type AppRouteRes struct {
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
 	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
-	ApkUrl            string        `json:"apk_url" db:"apk_url" example:"https://example.com/app.apk"`
 	CreatedAt         string        `json:"created_at" example:"2026-02-10T10:00:00Z"`
 	UpdatedAt         string        `json:"updated_at" example:"2026-02-10T10:00:00Z"`
 }
@@ -37,7 +37,6 @@ type AppRouteCreateReq struct {
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
 	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
-	ApkUrl            string        `json:"apk_url" db:"apk_url" example:"https://example.com/app.apk"`
 }
 
 type AppRouteUpdateReq struct {
@@ -49,7 +48,6 @@ type AppRouteUpdateReq struct {
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
 	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
-	ApkUrl            string        `json:"apk_url" db:"apk_url" example:"https://example.com/app.apk"`
 }
 
 type AppRouteUpdateBody struct {
@@ -60,7 +58,6 @@ type AppRouteUpdateBody struct {
 	AppLinks          AppLinksRes   `json:"app_links" swaggertype:"object"`
 	PaymentMinVersion string        `json:"payment_min_version" example:"1.0.5"`
 	BuyCourse         bool          `json:"buy_course" db:"buy_course" example:"true"`
-	ApkUrl            string        `json:"apk_url" db:"apk_url" example:"https://example.com/app.apk"`
 }
 
 type AppRouteGetListReq struct {

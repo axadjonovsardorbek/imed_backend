@@ -42,9 +42,8 @@ func (r *AppRouteRepo) Create(req *m.AppRouteCreateReq) (*m.ById, error) {
 		app_links,
 		payment_min_version,
 		feedback_url,
-		buy_course,
-		apk_url
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		buy_course
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 
 	_, err = r.db.Exec(query,
@@ -56,7 +55,6 @@ func (r *AppRouteRepo) Create(req *m.AppRouteCreateReq) (*m.ById, error) {
 		req.PaymentMinVersion,
 		req.FeedbackUrl,
 		req.BuyCourse,
-		req.ApkUrl,
 	)
 
 	if err != nil {
@@ -76,7 +74,6 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		payment_min_version,
 		buy_course,
 		feedback_url,
-		apk_url,
 		created_at,
 		updated_at
 	FROM
@@ -103,7 +100,6 @@ func (r *AppRouteRepo) GetById(req *m.ById) (*m.AppRouteRes, error) {
 		&app_route.PaymentMinVersion,
 		&app_route.BuyCourse,
 		&app_route.FeedbackUrl,
-		&app_route.ApkUrl,
 		&app_route.CreatedAt,
 		&app_route.UpdatedAt,
 	)
@@ -138,7 +134,6 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 		payment_min_version,
 		buy_course,
 		feedback_url,
-		apk_url,
 		created_at,
 		updated_at
 	FROM
@@ -178,7 +173,6 @@ func (r *AppRouteRepo) GetAll(req *m.AppRouteGetListReq) (*m.PaginationResponse,
 			&app_route.PaymentMinVersion,
 			&app_route.BuyCourse,
 			&app_route.FeedbackUrl,
-			&app_route.ApkUrl,
 			&app_route.CreatedAt,
 			&app_route.UpdatedAt,
 		)
@@ -241,9 +235,6 @@ func (r *AppRouteRepo) Update(req *m.AppRouteUpdateReq) (*m.Void, error) {
 
 	conditions = append(conditions, " feedback_url = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.FeedbackUrl)
-
-	conditions = append(conditions, " apk_url = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.ApkUrl)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")

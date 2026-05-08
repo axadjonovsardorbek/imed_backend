@@ -153,7 +153,6 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 	req.AppLinks = body.AppLinks
 	req.PaymentMinVersion = body.PaymentMinVersion
 	req.BuyCourse = body.BuyCourse
-	req.ApkUrl = body.ApkUrl
 
 	err := validateAppRouteCreate(m.AppRouteCreateReq{
 		CallCenter:        req.CallCenter,
@@ -162,7 +161,6 @@ func (h *Handler) UpdateAppRoute(c *gin.Context) {
 		FeedbackUrl:       req.FeedbackUrl,
 		AppLinks:          req.AppLinks,
 		PaymentMinVersion: req.PaymentMinVersion,
-		ApkUrl:            req.ApkUrl,
 	})
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})

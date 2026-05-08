@@ -49,7 +49,7 @@ func isValidAppVersion(v models.AppVersionRes) bool {
 }
 
 func isValidAppLinks(l models.AppLinksRes) bool {
-	return isValidURL(l.Google) && isValidURL(l.Apple)
+	return isValidURL(l.Google) && isValidURL(l.Apple) && (l.ApkUrl == "" || isValidURL(l.ApkUrl))
 }
 
 func isValidURL(u string) bool {
@@ -85,10 +85,6 @@ func validateAppRouteCreate(req models.AppRouteCreateReq) error {
 
 	if !isValidSemver(req.PaymentMinVersion) {
 		return fmt.Errorf("invalid payment_min_version")
-	}
-
-	if !isValidURL(req.ApkUrl) {
-		return fmt.Errorf("invalid apk_url")
 	}
 
 	return nil
