@@ -8,17 +8,19 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
 	"log/slog"
+
+	"github.com/go-redis/redis"
 )
 
 type SubjectService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewSubjectService(storage *st.Storage, rdb *redis.Client) *SubjectService {
-	return &SubjectService{storage: *storage, rdb: rdb}
+func NewSubjectService(storage *st.Storage, rdb *redis.Client, push *PushService) *SubjectService {
+	return &SubjectService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *SubjectService) getVersion() string {
@@ -40,6 +42,13 @@ func (s *SubjectService) Create(ctx context.Context, req *m.SubjectCreateReq) (*
 	if s.rdb != nil {
 		_ = s.rdb.Incr("subject:version").Err()
 	}
+
+	subjectTitleJSON := `{"uz": "Yangi fan qo'shildi", "ru": "Добавлен новый предмет", "en": "New subject added"}`
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventSubjectAdded,
+		TitleJSON:   subjectTitleJSON,
+		MessageJSON: req.Name,
+	})
 
 	return res, nil
 }
@@ -95,6 +104,13 @@ func (s *SubjectService) Update(ctx context.Context, req *m.SubjectUpdateReq) (*
 	if s.rdb != nil {
 		_ = s.rdb.Incr("subject:version").Err()
 	}
+
+	subjectTitleJSON := `{"uz": "Yangi fan qo'shildi", "ru": "Добавлен новый предмет", "en": "New subject added"}`
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventSubjectAdded,
+		TitleJSON:   subjectTitleJSON,
+		MessageJSON: req.Name,
+	})
 
 	return res, nil
 }

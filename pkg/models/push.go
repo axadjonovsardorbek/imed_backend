@@ -45,7 +45,9 @@ const (
 	EventLessonUpdated = "lesson_updated"
 	EventSourceUpdated = "source_updated"
 	EventBannerAdded   = "banner_added"
+	EventSubjectAdded  = "subject_added"
 )
+
 
 
 type PushEvent struct {
@@ -234,6 +236,16 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+	case EventSubjectAdded:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "subject_added",
+			},
+		}
+
+
 
 	default:
 		return PushMessage{
@@ -390,6 +402,16 @@ func BuildRuPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+	case EventSubjectAdded:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "subject_added",
+			},
+		}
+
+
 
 	default:
 		return PushMessage{
@@ -545,6 +567,16 @@ func BuildEnPushMessage(e PushEvent) PushMessage {
 				"type": "banner_added",
 			},
 		}
+
+	case EventSubjectAdded:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "subject_added",
+			},
+		}
+
 
 
 	default:

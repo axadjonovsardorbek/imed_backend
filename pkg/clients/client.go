@@ -43,7 +43,7 @@ func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, p
 		Lesson:       service.NewLessonService(conn, rdb, pushSvc),
 		Module:       service.NewModuleService(conn, rdb, pushSvc),
 		Source:       service.NewSourceService(conn, rdb, pushSvc, s3Svc),
-		Subject:      service.NewSubjectService(conn, rdb),
+		Subject:      service.NewSubjectService(conn, rdb, pushSvc),
 		Teacher:      service.NewTeacherService(conn, rdb),
 		Notification: service.NewNotificationService(conn, rdb, pushSvc),
 		AppRoute:     service.NewAppRouteService(conn, rdb),

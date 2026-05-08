@@ -85,10 +85,11 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 				lang = "en"
 			}
 
-			if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded) && event.TitleJSON != "" {
+			if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded || event.Type == m.EventSubjectAdded) && event.TitleJSON != "" {
 				event.Title, _ = helper.PickFromJSONStr(event.TitleJSON, lang)
 				event.Body, _ = helper.PickFromJSONStr(event.MessageJSON, lang)
 			}
+
 
 
 			if lang == "ru" {
@@ -117,7 +118,7 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 		return nil
 	}
 
-	if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded) && event.TitleJSON != "" {
+	if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded || event.Type == m.EventSubjectAdded) && event.TitleJSON != "" {
 		event.Title, _ = helper.PickFromJSONStr(event.TitleJSON, "uz")
 		event.Body, _ = helper.PickFromJSONStr(event.MessageJSON, "uz")
 	}
