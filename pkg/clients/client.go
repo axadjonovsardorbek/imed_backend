@@ -36,7 +36,7 @@ func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, p
 	return &Clients{
 		Admin:        service.NewAdminService(conn),
 		About:        service.NewAboutService(conn, rdb),
-		Banner:       service.NewBannerService(conn, rdb),
+		Banner:       service.NewBannerService(conn, rdb, pushSvc),
 		Contact:      service.NewContactService(conn, rdb),
 		Course:       service.NewCourseService(conn, pushSvc, rdb),
 		Faq:          service.NewFaqService(conn, rdb),

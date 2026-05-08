@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+
 	"time"
 
 	"github.com/go-redis/redis"
@@ -44,26 +44,28 @@ func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCre
 		_ = s.rdb.Incr("notification:version").Err()
 	}
 
-	titleUz, _ := helper.PickFromJSONStr(req.Title, "uz")
-	messageUz, _ := helper.PickFromJSONStr(req.Message, "uz")
 
 	push_target := m.PushTarget{Type: m.TargetAllUsers}
 	push_event := m.PushEvent{
-		Type:       m.EventAdminNotification,
-		CourseID:   titleUz,
-		CourseName: messageUz,
+		Type:        m.EventAdminNotification,
+		TitleJSON:   req.Title,
+		MessageJSON: req.Message,
 	}
 
 	if req.Type == "selected" && req.CourseId != "" {
-		course, _ := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
-
-		push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: req.CourseId}
-		push_event = m.PushEvent{
-			Type:       m.EventNewCourse,
-			CourseID:   req.CourseId,
-			CourseName: course.Name["uz"],
+		course, err := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
+		if err == nil {
+			push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: req.CourseId}
+			push_event = m.PushEvent{
+				Type:        m.EventAdminNotification,
+				CourseID:    req.CourseId,
+				CourseName:  course.Name["uz"],
+				TitleJSON:   req.Title,
+				MessageJSON: req.Message,
+			}
 		}
 	}
+
 
 	_ = s.push.SendPush(ctx, push_target, push_event)
 

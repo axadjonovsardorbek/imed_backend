@@ -14,10 +14,11 @@ import (
 type BannerService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewBannerService(storage *st.Storage, rdb *redis.Client) *BannerService {
-	return &BannerService{storage: *storage, rdb: rdb}
+func NewBannerService(storage *st.Storage, rdb *redis.Client, push *PushService) *BannerService {
+	return &BannerService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *BannerService) getVersion() string {
@@ -38,6 +39,13 @@ func (s *BannerService) Create(ctx context.Context, req *m.BannerCreateReq) (*m.
 	if s.rdb != nil {
 		_ = s.rdb.Incr("banner:version").Err()
 	}
+
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventBannerAdded,
+		TitleJSON:   req.Title,
+		MessageJSON: req.Description,
+	})
+
 	return res, nil
 }
 
@@ -49,6 +57,13 @@ func (s *BannerService) Update(ctx context.Context, req *m.BannerUpdateReq) (*m.
 	if s.rdb != nil {
 		_ = s.rdb.Incr("banner:version").Err()
 	}
+
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventBannerAdded,
+		TitleJSON:   req.Title,
+		MessageJSON: req.Description,
+	})
+
 	return res, nil
 }
 

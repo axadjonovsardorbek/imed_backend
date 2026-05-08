@@ -44,7 +44,9 @@ const (
 	EventModuleUpdated = "module_updated"
 	EventLessonUpdated = "lesson_updated"
 	EventSourceUpdated = "source_updated"
+	EventBannerAdded   = "banner_added"
 )
+
 
 type PushEvent struct {
 	Type PushEventType
@@ -53,6 +55,14 @@ type PushEvent struct {
 	CourseID   string
 	CourseName string // UZ nom (name->>'uz')
 
+	// admin notification uchun (JSON string)
+	TitleJSON   string
+	MessageJSON string
+
+	// Direct overrides (used for localized admin notifications)
+	Title string
+	Body  string
+
 	// lesson uchun
 	LessonID   string
 	LessonName string
@@ -60,6 +70,9 @@ type PushEvent struct {
 	// module uchun
 	ModuleID   string
 	ModuleName string
+
+
+
 
 	// payment uchun
 	OrderID    string
@@ -202,6 +215,26 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+	case EventAdminNotification:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "admin_notification",
+				"info": e.Body,
+			},
+		}
+
+	case EventBannerAdded:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "banner_added",
+			},
+		}
+
+
 	default:
 		return PushMessage{
 			Title: "Bildirishnoma",
@@ -338,6 +371,26 @@ func BuildRuPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+	case EventAdminNotification:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "admin_notification",
+				"info": e.Body,
+			},
+		}
+
+	case EventBannerAdded:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "banner_added",
+			},
+		}
+
+
 	default:
 		return PushMessage{
 			Title: "Уведомление",
@@ -473,6 +526,26 @@ func BuildEnPushMessage(e PushEvent) PushMessage {
 				"amount":    e.Amount,
 			},
 		}
+
+	case EventAdminNotification:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "admin_notification",
+				"info": e.Body,
+			},
+		}
+
+	case EventBannerAdded:
+		return PushMessage{
+			Title: e.Title,
+			Body:  e.Body,
+			Data: map[string]string{
+				"type": "banner_added",
+			},
+		}
+
 
 	default:
 		return PushMessage{

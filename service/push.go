@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
+	"imed/internal/helper"
 	"imed/internal/push"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+
 )
 
 type PushService struct {
@@ -76,9 +78,22 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 
 		for _, topic := range topics {
 			var msg m.PushMessage
+			lang := "uz"
 			if topic == "news_ru" {
-				msg = m.BuildRuPushMessage(event)
+				lang = "ru"
 			} else if topic == "news_en" {
+				lang = "en"
+			}
+
+			if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded) && event.TitleJSON != "" {
+				event.Title, _ = helper.PickFromJSONStr(event.TitleJSON, lang)
+				event.Body, _ = helper.PickFromJSONStr(event.MessageJSON, lang)
+			}
+
+
+			if lang == "ru" {
+				msg = m.BuildRuPushMessage(event)
+			} else if lang == "en" {
 				msg = m.BuildEnPushMessage(event)
 			} else {
 				msg = m.BuildUzPushMessage(event)
@@ -102,7 +117,13 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 		return nil
 	}
 
+	if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded) && event.TitleJSON != "" {
+		event.Title, _ = helper.PickFromJSONStr(event.TitleJSON, "uz")
+		event.Body, _ = helper.PickFromJSONStr(event.MessageJSON, "uz")
+	}
+
 	msg := m.BuildUzPushMessage(event)
+
 
 	for _, part := range chunkStrings(tokens, 500) {
 		res, err := s.push.SendToManyTokens(ctx, part, msg.Title, msg.Body, msg.Data)
