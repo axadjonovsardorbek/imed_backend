@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"log/slog"
 )
 
 type SubjectService struct {
@@ -63,10 +64,13 @@ func (s *SubjectService) GetAll(ctx context.Context, req *m.SubjectGetListReq) (
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit", "service", "subject", "key", key)
 				return &cached, nil, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss", "service", "subject", "key", key)
 
 	res, list, err := s.storage.SubjectS.GetAll(req)
 	if err != nil {
@@ -127,10 +131,13 @@ func (s *SubjectService) GetAllMobile(ctx context.Context, req *m.SubjectGetList
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit (Mobile)", "service", "subject", "key", key)
 				return &cached, nil, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss (Mobile)", "service", "subject", "key", key)
 
 	res, list, err := s.storage.SubjectS.GetAllMobile(req)
 	if err != nil {

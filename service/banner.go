@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"log/slog"
 )
+
 
 type BannerService struct {
 	storage st.Storage
@@ -100,10 +102,13 @@ func (s *BannerService) GetAll(ctx context.Context, req *m.BannerGetListReq) (*m
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit", "service", "banner", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss", "service", "banner", "key", key)
 
 	res, _, err := s.storage.BannerS.GetAll(req)
 	if err != nil {
@@ -128,10 +133,13 @@ func (s *BannerService) GetAllMobile(ctx context.Context, req *m.BannerGetListMo
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit (Mobile)", "service", "banner", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss (Mobile)", "service", "banner", "key", key)
 
 	res, _, err := s.storage.BannerS.GetAllMobile(req)
 	if err != nil {

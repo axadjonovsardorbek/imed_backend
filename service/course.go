@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"log/slog"
 )
 
 type CourseService struct {
@@ -106,10 +107,13 @@ func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit", "service", "course", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss", "service", "course", "key", key)
 
 	res, _, err := s.storage.CourseS.GetAll(req)
 	if err != nil {
@@ -279,10 +283,13 @@ func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMo
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit (Mobile)", "service", "course", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss (Mobile)", "service", "course", "key", key)
 
 	res, _, err := s.storage.CourseS.GetAllMobile(req)
 	if err != nil {
