@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
+	"imed/internal/helper"
 	"imed/internal/push"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+
 )
 
 type PushService struct {
@@ -34,7 +36,12 @@ func chunkStrings(in []string, size int) [][]string {
 func (s *PushService) ResolveTokens(ctx context.Context, t m.PushTarget) ([]string, error) {
 	switch t.Type {
 	case m.TargetAllUsers:
-		return s.storage.UserS.GetTokens(ctx, m.TokenFilter{})
+		// Endilikda TargetAllUsers topic orqali ishlaydi, shuning uchun token qaytarmaymiz
+		return []string{}, nil
+
+	case m.TargetTopic:
+		// Topic uchun token kerak emas, to‘g‘ridan-to‘g‘ri topic’ga yuboramiz
+		return []string{}, nil
 
 	case m.TargetCourseUsers:
 		if t.CourseID == "" {
@@ -50,7 +57,7 @@ func (s *PushService) ResolveTokens(ctx context.Context, t m.PushTarget) ([]stri
 		if err != nil {
 			return nil, err
 		}
-		if *token == "" {
+		if token == nil || *token == "" {
 			return []string{}, nil
 		}
 		return []string{*token}, nil
@@ -61,35 +68,74 @@ func (s *PushService) ResolveTokens(ctx context.Context, t m.PushTarget) ([]stri
 }
 
 func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m.PushEvent) error {
+	if target.Type == m.TargetTopic || target.Type == m.TargetAllUsers {
+		topics := []string{}
+		if target.Type == m.TargetTopic && target.Topic != "" {
+			topics = append(topics, target.Topic)
+		} else {
+			topics = []string{"news_uz", "news_ru", "news_en"}
+		}
+
+		for _, topic := range topics {
+			var msg m.PushMessage
+			lang := "uz"
+			if topic == "news_ru" {
+				lang = "ru"
+			} else if topic == "news_en" {
+				lang = "en"
+			}
+
+			if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded || event.Type == m.EventSubjectAdded || event.Type == m.EventSubjectUpdated) && event.TitleJSON != "" {
+				event.Title, _ = helper.PickFromJSONStr(event.TitleJSON, lang)
+				event.Body, _ = helper.PickFromJSONStr(event.MessageJSON, lang)
+			}
+
+
+
+
+			if lang == "ru" {
+				msg = m.BuildRuPushMessage(event)
+			} else if lang == "en" {
+				msg = m.BuildEnPushMessage(event)
+			} else {
+				msg = m.BuildUzPushMessage(event)
+			}
+
+			err := s.push.SendToTopic(ctx, topic, msg.Title, msg.Body, msg.Data)
+			if err != nil {
+				fmt.Printf("Failed to send push to topic %s: %v\n", topic, err)
+			}
+		}
+		return nil
+	}
+
 	tokens, err := s.ResolveTokens(ctx, target)
 	if err != nil {
 		fmt.Println("Failed to resolve tokens:", err)
 		return err
 	}
 
-	fmt.Println("Resolved tokens for target:", target, "tokens count:", len(tokens))
-
 	if len(tokens) == 0 {
-		fmt.Println("No tokens found for target:", target)
 		return nil
+	}
+
+	if (event.Type == m.EventAdminNotification || event.Type == m.EventBannerAdded || event.Type == m.EventSubjectAdded || event.Type == m.EventSubjectUpdated) && event.TitleJSON != "" {
+		event.Title, _ = helper.PickFromJSONStr(event.TitleJSON, "uz")
+		event.Body, _ = helper.PickFromJSONStr(event.MessageJSON, "uz")
 	}
 
 	msg := m.BuildUzPushMessage(event)
 
+
 	for _, part := range chunkStrings(tokens, 500) {
 		res, err := s.push.SendToManyTokens(ctx, part, msg.Title, msg.Body, msg.Data)
-		if res.InvalidTokens != nil && len(res.InvalidTokens) > 0 {
-			_, err = s.storage.UserS.DeleteToken(res.InvalidTokens)
-			if err != nil {
-				fmt.Println("Failed to delete invalid tokens:", err)
-			} else {
-				fmt.Println("Invalid tokens found, consider cleaning up:", res.InvalidTokens)
-			}
+		if len(res.InvalidTokens) > 0 {
+			_, _ = s.storage.UserS.DeleteToken(res.InvalidTokens)
 		}
 		if err != nil {
-			fmt.Println("Failed to send push to tokens:", err)
 			return err
 		}
 	}
 	return nil
 }
+

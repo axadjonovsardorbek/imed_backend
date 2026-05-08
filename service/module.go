@@ -44,10 +44,11 @@ func (s *ModuleService) Create(ctx context.Context, req *m.ModuleCreateReq) (*m.
 
 	info, err := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
 	if err == nil {
-
-		push_target := m.PushTarget{
-			Type:     m.TargetCourseUsers,
-			CourseID: info.Id,
+		var push_target m.PushTarget
+		if info.IsPublic != nil && *info.IsPublic {
+			push_target = m.PushTarget{Type: m.TargetAllUsers}
+		} else {
+			push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.Id}
 		}
 
 		nameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
@@ -57,6 +58,7 @@ func (s *ModuleService) Create(ctx context.Context, req *m.ModuleCreateReq) (*m.
 			CourseID:   info.Id,
 			CourseName: info.Name["uz"],
 			ModuleName: nameUz,
+			ModuleID:   res.Id,
 		}
 
 		_ = s.push.SendPush(ctx, push_target, push_event)
@@ -64,10 +66,15 @@ func (s *ModuleService) Create(ctx context.Context, req *m.ModuleCreateReq) (*m.
 		msg := m.BuildUzPushMessage(push_event)
 		title, body := helper.StringToJSON(msg.Title, msg.Body)
 
+		ntfType := "selected"
+		if info.IsPublic != nil && *info.IsPublic {
+			ntfType = "all"
+		}
+
 		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
 			Title:    title,
 			Message:  body,
-			Type:     "selected",
+			Type:     ntfType,
 			CourseId: info.Id,
 		})
 	}
@@ -125,8 +132,49 @@ func (s *ModuleService) Update(ctx context.Context, req *m.ModuleUpdateReq) (*m.
 		_ = s.rdb.Incr("module:version").Err()
 	}
 
+	module, err := s.storage.ModuleS.GetById(&m.ById{Id: req.Id})
+	if err == nil && module.CourseId != nil {
+		info, err := s.storage.CourseS.GetById(&m.ById{Id: *module.CourseId})
+		if err == nil {
+			var push_target m.PushTarget
+			if info.IsPublic != nil && *info.IsPublic {
+				push_target = m.PushTarget{Type: m.TargetAllUsers}
+			} else {
+				push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.Id}
+			}
+
+			nameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
+
+			push_event := m.PushEvent{
+				Type:       m.EventModuleUpdated,
+				CourseID:   info.Id,
+				CourseName: info.Name["uz"],
+				ModuleName: nameUz,
+				ModuleID:   module.Id,
+			}
+
+			_ = s.push.SendPush(ctx, push_target, push_event)
+
+			msg := m.BuildUzPushMessage(push_event)
+			title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+			ntfType := "selected"
+			if info.IsPublic != nil && *info.IsPublic {
+				ntfType = "all"
+			}
+
+			_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
+				Title:    title,
+				Message:  body,
+				Type:     ntfType,
+				CourseId: info.Id,
+			})
+		}
+	}
+
 	return res, nil
 }
+
 
 func (s *ModuleService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	res, err := s.storage.ModuleS.Delete(req)

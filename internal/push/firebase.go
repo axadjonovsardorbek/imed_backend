@@ -127,3 +127,27 @@ func (c *Client) SendToManyTokens(ctx context.Context, tokens []string, title, b
 
 	return res, nil
 }
+
+// SendToTopic: topic’ga a’zo bo‘lgan barcha userlarga push
+func (c *Client) SendToTopic(ctx context.Context, topic, title, body string, data map[string]string) error {
+	if c == nil || c.msg == nil {
+		return fmt.Errorf("push client not initialized")
+	}
+	if topic == "" {
+		return fmt.Errorf("empty fcm topic")
+	}
+
+	_, err := c.msg.Send(ctx, &messaging.Message{
+		Topic: topic,
+		Data:  data,
+		Notification: &messaging.Notification{
+			Title: title,
+			Body:  body,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("fcm send to topic: %w", err)
+	}
+	return nil
+}
+

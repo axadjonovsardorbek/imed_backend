@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"log/slog"
 )
 
 type CourseService struct {
@@ -64,10 +65,15 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 
 	title, body := helper.StringToJSON(msg.Title, msg.Body)
 
+	ntfType := "selected"
+	if req.IsPublic {
+		ntfType = "all"
+	}
+
 	ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
 		Title:   title,
 		Message: body,
-		Type:    "all",
+		Type:    ntfType,
 	})
 
 	if err != nil {
@@ -101,10 +107,13 @@ func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit", "service", "course", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss", "service", "course", "key", key)
 
 	res, _, err := s.storage.CourseS.GetAll(req)
 	if err != nil {
@@ -128,8 +137,46 @@ func (s *CourseService) Update(ctx context.Context, req *m.CourseUpdateReq) (*m.
 	if s.rdb != nil {
 		_ = s.rdb.Incr("course:version").Err()
 	}
+
+	info, err := s.storage.CourseS.GetById(&m.ById{Id: req.Id})
+	if err == nil {
+		var push_target m.PushTarget
+		if info.IsPublic != nil && *info.IsPublic {
+			push_target = m.PushTarget{Type: m.TargetAllUsers}
+		} else {
+			push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.Id}
+		}
+
+
+		courseNameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
+
+		push_event := m.PushEvent{
+			Type:       m.EventCourseUpdated,
+			CourseID:   info.Id,
+			CourseName: courseNameUz,
+		}
+
+		_ = s.push.SendPush(ctx, push_target, push_event)
+
+		msg := m.BuildUzPushMessage(push_event)
+		title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+		ntfType := "selected"
+		if info.IsPublic != nil && *info.IsPublic {
+			ntfType = "all"
+		}
+
+		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
+			Title:    title,
+			Message:  body,
+			Type:     ntfType,
+			CourseId: info.Id,
+		})
+	}
+
 	return res, nil
 }
+
 
 func (s *CourseService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	res, err := s.storage.CourseS.Delete(req)
@@ -236,10 +283,13 @@ func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMo
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit (Mobile)", "service", "course", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss (Mobile)", "service", "course", "key", key)
 
 	res, _, err := s.storage.CourseS.GetAllMobile(req)
 	if err != nil {

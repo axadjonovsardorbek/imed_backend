@@ -9,15 +9,18 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"log/slog"
 )
+
 
 type BannerService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewBannerService(storage *st.Storage, rdb *redis.Client) *BannerService {
-	return &BannerService{storage: *storage, rdb: rdb}
+func NewBannerService(storage *st.Storage, rdb *redis.Client, push *PushService) *BannerService {
+	return &BannerService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *BannerService) getVersion() string {
@@ -38,6 +41,14 @@ func (s *BannerService) Create(ctx context.Context, req *m.BannerCreateReq) (*m.
 	if s.rdb != nil {
 		_ = s.rdb.Incr("banner:version").Err()
 	}
+
+	bannerTitleJSON := `{"uz": "Yangi banner qo'shildi 🔥", "ru": "Добавлен новый баннер 🔥", "en": "New banner added 🔥"}`
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventBannerAdded,
+		TitleJSON:   bannerTitleJSON,
+		MessageJSON: req.Title,
+	})
+
 	return res, nil
 }
 
@@ -49,6 +60,15 @@ func (s *BannerService) Update(ctx context.Context, req *m.BannerUpdateReq) (*m.
 	if s.rdb != nil {
 		_ = s.rdb.Incr("banner:version").Err()
 	}
+
+	bannerTitleJSON := `{"uz": "Banner yangilandi 🔄", "ru": "Баннер обновлен 🔄", "en": "Banner updated 🔄"}`
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventBannerAdded,
+		TitleJSON:   bannerTitleJSON,
+		MessageJSON: req.Title,
+	})
+
+
 	return res, nil
 }
 
@@ -85,10 +105,13 @@ func (s *BannerService) GetAll(ctx context.Context, req *m.BannerGetListReq) (*m
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit", "service", "banner", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss", "service", "banner", "key", key)
 
 	res, _, err := s.storage.BannerS.GetAll(req)
 	if err != nil {
@@ -113,10 +136,13 @@ func (s *BannerService) GetAllMobile(ctx context.Context, req *m.BannerGetListMo
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit (Mobile)", "service", "banner", "key", key)
 				return &cached, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss (Mobile)", "service", "banner", "key", key)
 
 	res, _, err := s.storage.BannerS.GetAllMobile(req)
 	if err != nil {

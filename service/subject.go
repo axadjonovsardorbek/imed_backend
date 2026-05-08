@@ -8,16 +8,19 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
+	"log/slog"
+
 	"github.com/go-redis/redis"
 )
 
 type SubjectService struct {
 	storage st.Storage
 	rdb     *redis.Client
+	push    *PushService
 }
 
-func NewSubjectService(storage *st.Storage, rdb *redis.Client) *SubjectService {
-	return &SubjectService{storage: *storage, rdb: rdb}
+func NewSubjectService(storage *st.Storage, rdb *redis.Client, push *PushService) *SubjectService {
+	return &SubjectService{storage: *storage, rdb: rdb, push: push}
 }
 
 func (s *SubjectService) getVersion() string {
@@ -39,6 +42,13 @@ func (s *SubjectService) Create(ctx context.Context, req *m.SubjectCreateReq) (*
 	if s.rdb != nil {
 		_ = s.rdb.Incr("subject:version").Err()
 	}
+
+	subjectTitleJSON := `{"uz": "Yangi fan qo'shildi 📖", "ru": "Добавлен новый предмет 📖", "en": "New subject added 📖"}`
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventSubjectAdded,
+		TitleJSON:   subjectTitleJSON,
+		MessageJSON: req.Name,
+	})
 
 	return res, nil
 }
@@ -63,10 +73,13 @@ func (s *SubjectService) GetAll(ctx context.Context, req *m.SubjectGetListReq) (
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit", "service", "subject", "key", key)
 				return &cached, nil, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss", "service", "subject", "key", key)
 
 	res, list, err := s.storage.SubjectS.GetAll(req)
 	if err != nil {
@@ -91,6 +104,13 @@ func (s *SubjectService) Update(ctx context.Context, req *m.SubjectUpdateReq) (*
 	if s.rdb != nil {
 		_ = s.rdb.Incr("subject:version").Err()
 	}
+
+	subjectTitleJSON := `{"uz": "Fan yangilandi 🔄", "ru": "Предмет обновлен 🔄", "en": "Subject updated 🔄"}`
+	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
+		Type:        m.EventSubjectUpdated,
+		TitleJSON:   subjectTitleJSON,
+		MessageJSON: req.Name,
+	})
 
 	return res, nil
 }
@@ -127,10 +147,13 @@ func (s *SubjectService) GetAllMobile(ctx context.Context, req *m.SubjectGetList
 		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
+				slog.Info("Cache Hit (Mobile)", "service", "subject", "key", key)
 				return &cached, nil, nil
 			}
 		}
 	}
+
+	slog.Info("Cache Miss (Mobile)", "service", "subject", "key", key)
 
 	res, list, err := s.storage.SubjectS.GetAllMobile(req)
 	if err != nil {

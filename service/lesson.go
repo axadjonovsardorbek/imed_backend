@@ -44,26 +44,40 @@ func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.
 
 	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: res.Id})
 	if err == nil {
-		push_target := m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.CourseId}
-		push_event := m.PushEvent{
-			Type:       m.EventLessonAdded,
-			CourseID:   info.CourseId,
-			CourseName: info.CourseName,
-			LessonID:   info.LessonId,
-			LessonName: info.LessonName,
+		course, err := s.storage.CourseS.GetById(&m.ById{Id: info.CourseId})
+		if err == nil {
+			var push_target m.PushTarget
+			if course.IsPublic != nil && *course.IsPublic {
+				push_target = m.PushTarget{Type: m.TargetAllUsers}
+			} else {
+				push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: course.Id}
+			}
+
+			push_event := m.PushEvent{
+				Type:       m.EventLessonAdded,
+				CourseID:   info.CourseId,
+				CourseName: info.CourseName,
+				LessonID:   info.LessonId,
+				LessonName: info.LessonName,
+			}
+
+			_ = s.push.SendPush(ctx, push_target, push_event)
+
+			msg := m.BuildUzPushMessage(push_event)
+			title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+			ntfType := "selected"
+			if course.IsPublic != nil && *course.IsPublic {
+				ntfType = "all"
+			}
+
+			_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
+				Title:    title,
+				Message:  body,
+				Type:     ntfType,
+				CourseId: info.CourseId,
+			})
 		}
-
-		_ = s.push.SendPush(ctx, push_target, push_event)
-
-		msg := m.BuildUzPushMessage(push_event)
-		title, body := helper.StringToJSON(msg.Title, msg.Body)
-
-		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
-			Title:    title,
-			Message:  body,
-			Type:     "selected",
-			CourseId: info.CourseId,
-		})
 	}
 
 	return res, nil
@@ -117,8 +131,48 @@ func (s *LessonService) Update(ctx context.Context, req *m.LessonUpdateReq) (*m.
 	if s.rdb != nil {
 		_ = s.rdb.Incr("lesson:version").Err()
 	}
+
+	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: req.Id})
+	if err == nil {
+		course, err := s.storage.CourseS.GetById(&m.ById{Id: info.CourseId})
+		if err == nil {
+			var push_target m.PushTarget
+			if course.IsPublic != nil && *course.IsPublic {
+				push_target = m.PushTarget{Type: m.TargetAllUsers}
+			} else {
+				push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: course.Id}
+			}
+
+			push_event := m.PushEvent{
+				Type:       m.EventLessonUpdated,
+				CourseID:   info.CourseId,
+				CourseName: info.CourseName,
+				LessonID:   info.LessonId,
+				LessonName: info.LessonName,
+			}
+
+			_ = s.push.SendPush(ctx, push_target, push_event)
+
+			msg := m.BuildUzPushMessage(push_event)
+			title, body := helper.StringToJSON(msg.Title, msg.Body)
+
+			ntfType := "selected"
+			if course.IsPublic != nil && *course.IsPublic {
+				ntfType = "all"
+			}
+
+			_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
+				Title:    title,
+				Message:  body,
+				Type:     ntfType,
+				CourseId: info.CourseId,
+			})
+		}
+	}
+
 	return res, nil
 }
+
 
 func (s *LessonService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	res, err := s.storage.LessonS.Delete(req)
