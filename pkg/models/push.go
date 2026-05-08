@@ -46,7 +46,9 @@ const (
 	EventSourceUpdated = "source_updated"
 	EventBannerAdded   = "banner_added"
 	EventSubjectAdded  = "subject_added"
+	EventSubjectUpdated = "subject_updated"
 )
+
 
 
 
@@ -96,17 +98,18 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 	case EventNewCourse:
 		return PushMessage{
 			Title: "Yangi kurs! 🔥",
-			Body:  fmt.Sprintf("Yangi kurs qo‘shildi: %s", e.CourseName),
+			Body:  fmt.Sprintf("Yangi kurs qo‘shildi: %s 🔥", e.CourseName),
 			Data: map[string]string{
 				"type":      "new_course",
 				"course_id": e.CourseID,
 			},
 		}
 
+
 	case EventLessonAdded:
 		return PushMessage{
 			Title: "Yangi dars qo‘shildi 📚",
-			Body:  fmt.Sprintf("%s kursiga yangi dars: %s", e.CourseName, e.LessonName),
+			Body:  fmt.Sprintf("%s kursiga yangi dars: %s 📚", e.CourseName, e.LessonName),
 			Data: map[string]string{
 				"type":      "lesson_added",
 				"course_id": e.CourseID,
@@ -114,20 +117,22 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+
 	case EventCourseUpdated:
 		return PushMessage{
 			Title: "Kurs yangilandi! 🔄",
-			Body:  fmt.Sprintf("%s kursi yangilandi", e.CourseName),
+			Body:  fmt.Sprintf("%s kursi yangilandi 🔄", e.CourseName),
 			Data: map[string]string{
 				"type":      "course_updated",
 				"course_id": e.CourseID,
 			},
 		}
 
+
 	case EventModuleAdded:
 		return PushMessage{
 			Title: "Yangi modul qo‘shildi 📚",
-			Body:  fmt.Sprintf("%s kursiga yangi %s nomli modul qo‘shildi", e.CourseName, e.ModuleName),
+			Body:  fmt.Sprintf("%s kursiga yangi %s nomli modul qo‘shildi 📚", e.CourseName, e.ModuleName),
 			Data: map[string]string{
 				"type":      "module_added",
 				"course_id": e.CourseID,
@@ -135,10 +140,11 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+
 	case EventModuleUpdated:
 		return PushMessage{
 			Title: "Modul yangilandi 🔄",
-			Body:  fmt.Sprintf("%s kursidagi %s moduli yangilandi", e.CourseName, e.ModuleName),
+			Body:  fmt.Sprintf("%s kursidagi %s moduli yangilandi 🔄", e.CourseName, e.ModuleName),
 			Data: map[string]string{
 				"type":      "module_updated",
 				"course_id": e.CourseID,
@@ -146,10 +152,11 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+
 	case EventLessonUpdated:
 		return PushMessage{
 			Title: "Dars yangilandi 🔄",
-			Body:  fmt.Sprintf("%s kursidagi %s darsi yangilandi", e.CourseName, e.LessonName),
+			Body:  fmt.Sprintf("%s kursidagi %s darsi yangilandi 🔄", e.CourseName, e.LessonName),
 			Data: map[string]string{
 				"type":      "lesson_updated",
 				"course_id": e.CourseID,
@@ -157,10 +164,11 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+
 	case EventSourceAdded:
 		return PushMessage{
 			Title: "Yangi material qo‘shildi 📚",
-			Body:  fmt.Sprintf("%s kursining %s darsiga yangi material qo‘shildi", e.CourseName, e.LessonName),
+			Body:  fmt.Sprintf("%s kursining %s darsiga yangi material qo‘shildi 📚", e.CourseName, e.LessonName),
 			Data: map[string]string{
 				"type":      "source_added",
 				"course_id": e.CourseID,
@@ -168,10 +176,11 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+
 	case EventSourceUpdated:
 		return PushMessage{
 			Title: "Material yangilandi 🔄",
-			Body:  fmt.Sprintf("%s kursining %s darsidagi material yangilandi", e.CourseName, e.LessonName),
+			Body:  fmt.Sprintf("%s kursining %s darsidagi material yangilandi 🔄", e.CourseName, e.LessonName),
 			Data: map[string]string{
 				"type":      "source_updated",
 				"course_id": e.CourseID,
@@ -179,15 +188,17 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+
 	case EventCourseAssigned:
 		return PushMessage{
 			Title: "Kurs biriktirildi ✅",
-			Body:  fmt.Sprintf("Sizga kurs biriktirildi: %s", e.CourseName),
+			Body:  fmt.Sprintf("Sizga kurs biriktirildi: %s ✅", e.CourseName),
 			Data: map[string]string{
 				"type":      "course_assigned",
 				"course_id": e.CourseID,
 			},
 		}
+
 
 	case EventPaymentSuccess:
 		return PushMessage{
@@ -239,11 +250,23 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 	case EventSubjectAdded:
 		return PushMessage{
 			Title: e.Title,
-			Body:  e.Body,
+			Body:  fmt.Sprintf("Yangi fan qo‘shildi: %s 📖", e.Body),
 			Data: map[string]string{
 				"type": "subject_added",
 			},
 		}
+
+
+	case EventSubjectUpdated:
+		return PushMessage{
+			Title: e.Title,
+			Body:  fmt.Sprintf("Fan yangilandi: %s 🔄", e.Body),
+			Data: map[string]string{
+				"type": "subject_updated",
+			},
+		}
+
+
 
 
 
@@ -262,17 +285,18 @@ func BuildRuPushMessage(e PushEvent) PushMessage {
 	case EventNewCourse:
 		return PushMessage{
 			Title: "Новый курс! 🔥",
-			Body:  fmt.Sprintf("Добавлен новый курс: %s", e.CourseName),
+			Body:  fmt.Sprintf("Добавлен новый курс: %s 🔥", e.CourseName),
 			Data: map[string]string{
 				"type":      "new_course",
 				"course_id": e.CourseID,
 			},
 		}
 
+
 	case EventLessonAdded:
 		return PushMessage{
 			Title: "Добавлен новый урок 📚",
-			Body:  fmt.Sprintf("В курсе %s новый урок: %s", e.CourseName, e.LessonName),
+			Body:  fmt.Sprintf("В курсе %s новый урок: %s 📚", e.CourseName, e.LessonName),
 			Data: map[string]string{
 				"type":      "lesson_added",
 				"course_id": e.CourseID,
@@ -280,15 +304,17 @@ func BuildRuPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+
 	case EventCourseUpdated:
 		return PushMessage{
 			Title: "Курс обновлен! 🔄",
-			Body:  fmt.Sprintf("Курс %s обновлен", e.CourseName),
+			Body:  fmt.Sprintf("Курс %s обновлен 🔄", e.CourseName),
 			Data: map[string]string{
 				"type":      "course_updated",
 				"course_id": e.CourseID,
 			},
 		}
+
 
 	case EventModuleAdded:
 		return PushMessage{
@@ -348,12 +374,13 @@ func BuildRuPushMessage(e PushEvent) PushMessage {
 	case EventCourseAssigned:
 		return PushMessage{
 			Title: "Курс назначен ✅",
-			Body:  fmt.Sprintf("Вам назначен курс: %s", e.CourseName),
+			Body:  fmt.Sprintf("Вам назначен курс: %s ✅", e.CourseName),
 			Data: map[string]string{
 				"type":      "course_assigned",
 				"course_id": e.CourseID,
 			},
 		}
+
 
 	case EventPaymentSuccess:
 		return PushMessage{
@@ -405,11 +432,23 @@ func BuildRuPushMessage(e PushEvent) PushMessage {
 	case EventSubjectAdded:
 		return PushMessage{
 			Title: e.Title,
-			Body:  e.Body,
+			Body:  fmt.Sprintf("Добавлен новый предмет: %s 📖", e.Body),
 			Data: map[string]string{
 				"type": "subject_added",
 			},
 		}
+
+
+	case EventSubjectUpdated:
+		return PushMessage{
+			Title: e.Title,
+			Body:  fmt.Sprintf("Предмет обновлен: %s 🔄", e.Body),
+			Data: map[string]string{
+				"type": "subject_updated",
+			},
+		}
+
+
 
 
 
@@ -428,23 +467,25 @@ func BuildEnPushMessage(e PushEvent) PushMessage {
 	case EventNewCourse:
 		return PushMessage{
 			Title: "New Course! 🔥",
-			Body:  fmt.Sprintf("New course added: %s", e.CourseName),
+			Body:  fmt.Sprintf("New course added: %s 🔥", e.CourseName),
 			Data: map[string]string{
 				"type":      "new_course",
 				"course_id": e.CourseID,
 			},
 		}
 
+
 	case EventLessonAdded:
 		return PushMessage{
 			Title: "New lesson added 📚",
-			Body:  fmt.Sprintf("New lesson in %s course: %s", e.CourseName, e.LessonName),
+			Body:  fmt.Sprintf("New lesson in %s course: %s 📚", e.CourseName, e.LessonName),
 			Data: map[string]string{
 				"type":      "lesson_added",
 				"course_id": e.CourseID,
 				"lesson_id": e.LessonID,
 			},
 		}
+
 
 	case EventCourseUpdated:
 		return PushMessage{
@@ -514,12 +555,13 @@ func BuildEnPushMessage(e PushEvent) PushMessage {
 	case EventCourseAssigned:
 		return PushMessage{
 			Title: "Course assigned ✅",
-			Body:  fmt.Sprintf("You have been assigned to course: %s", e.CourseName),
+			Body:  fmt.Sprintf("You have been assigned to course: %s ✅", e.CourseName),
 			Data: map[string]string{
 				"type":      "course_assigned",
 				"course_id": e.CourseID,
 			},
 		}
+
 
 	case EventPaymentSuccess:
 		return PushMessage{
@@ -571,11 +613,22 @@ func BuildEnPushMessage(e PushEvent) PushMessage {
 	case EventSubjectAdded:
 		return PushMessage{
 			Title: e.Title,
-			Body:  e.Body,
+			Body:  fmt.Sprintf("New subject added: %s 📖", e.Body),
 			Data: map[string]string{
 				"type": "subject_added",
 			},
 		}
+
+	case EventSubjectUpdated:
+		return PushMessage{
+			Title: e.Title,
+			Body:  fmt.Sprintf("Subject updated: %s 🔄", e.Body),
+			Data: map[string]string{
+				"type": "subject_updated",
+			},
+		}
+
+
 
 
 

@@ -42,7 +42,7 @@ func (s *BannerService) Create(ctx context.Context, req *m.BannerCreateReq) (*m.
 		_ = s.rdb.Incr("banner:version").Err()
 	}
 
-	bannerTitleJSON := `{"uz": "Yangi banner qo'shildi", "ru": "Добавлен новый баннер", "en": "New banner added"}`
+	bannerTitleJSON := `{"uz": "Yangi banner qo'shildi 🔥", "ru": "Добавлен новый баннер 🔥", "en": "New banner added 🔥"}`
 	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
 		Type:        m.EventBannerAdded,
 		TitleJSON:   bannerTitleJSON,
@@ -61,7 +61,7 @@ func (s *BannerService) Update(ctx context.Context, req *m.BannerUpdateReq) (*m.
 		_ = s.rdb.Incr("banner:version").Err()
 	}
 
-	bannerTitleJSON := `{"uz": "Yangi banner qo'shildi", "ru": "Добавлен новый баннер", "en": "New banner added"}`
+	bannerTitleJSON := `{"uz": "Banner yangilandi 🔄", "ru": "Баннер обновлен 🔄", "en": "Banner updated 🔄"}`
 	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
 		Type:        m.EventBannerAdded,
 		TitleJSON:   bannerTitleJSON,

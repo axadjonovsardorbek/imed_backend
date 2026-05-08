@@ -43,7 +43,7 @@ func (s *SubjectService) Create(ctx context.Context, req *m.SubjectCreateReq) (*
 		_ = s.rdb.Incr("subject:version").Err()
 	}
 
-	subjectTitleJSON := `{"uz": "Yangi fan qo'shildi", "ru": "Добавлен новый предмет", "en": "New subject added"}`
+	subjectTitleJSON := `{"uz": "Yangi fan qo'shildi 📖", "ru": "Добавлен новый предмет 📖", "en": "New subject added 📖"}`
 	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
 		Type:        m.EventSubjectAdded,
 		TitleJSON:   subjectTitleJSON,
@@ -105,9 +105,9 @@ func (s *SubjectService) Update(ctx context.Context, req *m.SubjectUpdateReq) (*
 		_ = s.rdb.Incr("subject:version").Err()
 	}
 
-	subjectTitleJSON := `{"uz": "Yangi fan qo'shildi", "ru": "Добавлен новый предмет", "en": "New subject added"}`
+	subjectTitleJSON := `{"uz": "Fan yangilandi 🔄", "ru": "Предмет обновлен 🔄", "en": "Subject updated 🔄"}`
 	_ = s.push.SendPush(ctx, m.PushTarget{Type: m.TargetAllUsers}, m.PushEvent{
-		Type:        m.EventSubjectAdded,
+		Type:        m.EventSubjectUpdated,
 		TitleJSON:   subjectTitleJSON,
 		MessageJSON: req.Name,
 	})
