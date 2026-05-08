@@ -121,9 +121,6 @@ definitions:
     type: object
   models.AppRouteCreateReq:
     properties:
-      apk_url:
-        example: https://example.com/app.apk
-        type: string
       app_links:
         type: object
       app_version:
@@ -155,9 +152,6 @@ definitions:
     type: object
   models.AppRouteRes:
     properties:
-      apk_url:
-        example: https://example.com/app.apk
-        type: string
       app_links:
         type: object
       app_version:
@@ -189,9 +183,6 @@ definitions:
     type: object
   models.AppRouteUpdateBody:
     properties:
-      apk_url:
-        example: https://example.com/app.apk
-        type: string
       app_links:
         type: object
       app_version:
