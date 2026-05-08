@@ -7023,6 +7023,10 @@
         "models.AppRouteCreateReq": {
             "type": "object",
             "properties": {
+                "apk_url": {
+                    "type": "string",
+                    "example": "https://example.com/app.apk"
+                },
                 "app_links": {
                     "type": "object"
                 },
@@ -7068,6 +7072,10 @@
         "models.AppRouteRes": {
             "type": "object",
             "properties": {
+                "apk_url": {
+                    "type": "string",
+                    "example": "https://example.com/app.apk"
+                },
                 "app_links": {
                     "type": "object"
                 },
@@ -7111,6 +7119,10 @@
         "models.AppRouteUpdateBody": {
             "type": "object",
             "properties": {
+                "apk_url": {
+                    "type": "string",
+                    "example": "https://example.com/app.apk"
+                },
                 "app_links": {
                     "type": "object"
                 },
