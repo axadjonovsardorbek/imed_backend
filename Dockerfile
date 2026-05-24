@@ -20,8 +20,8 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/api/casbin/model.conf ./api/casbin/
 COPY --from=builder /app/api/casbin/policy.csv ./api/casbin/
 
-# YouTube uchun yt-dlp EJS («n-param» chaplashni) Deno ishga tushirib hal qiladi (+ ffmpeg mux).
-RUN apk add --no-cache ffmpeg ca-certificates curl unzip wget bash nodejs \
+# YouTube uchun: yt-dlp asosan Python uchraydi (#!/usr/bin/env python3), EJS uchun deno/nodejs.
+RUN apk add --no-cache ffmpeg ca-certificates curl unzip wget bash nodejs python3 \
 	&& ARCH="$(uname -m)" \
 	&& case "$ARCH" in \
 	x86_64) DENO_ARCH=x86_64-unknown-linux-gnu ;; \
