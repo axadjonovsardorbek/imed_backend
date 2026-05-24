@@ -153,11 +153,42 @@ func resolveYtDlpCookiePaths() []string {
 	if p := strings.TrimSpace(os.Getenv("YT_DLP_COOKIES_FILE")); p != "" {
 		return []string{p}
 	}
+
 	wd, _ := os.Getwd()
-	return []string{
-		"internal/secrets/cookies.txt",
-		filepath.Join(wd, "internal/secrets/cookies.txt"),
+
+	var paths []string
+	appendIfUnique := func(slice *[]string, p string) {
+		p = filepath.Clean(p)
+		for _, existing := range *slice {
+			if existing == p {
+				return
+			}
+		}
+		*slice = append(*slice, p)
 	}
+
+	// ikki nuqta nisbatan: ba'zan process WORKDIR /app emas bo'lishi mumkin
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		appendIfUnique(&paths, filepath.Join(exeDir, "internal", "secrets", "cookies.txt"))
+	}
+
+	appendIfUnique(&paths, filepath.Join(wd, "internal", "secrets", "cookies.txt"))
+	appendIfUnique(&paths, "/app/internal/secrets/cookies.txt") // Dockerfile WORKDIR uchun aniq yo'l
+	appendIfUnique(&paths, filepath.FromSlash("internal/secrets/cookies.txt"))
+
+	return paths
+}
+
+func cookieFileDiag(path string) string {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return fmt.Sprintf("(stat error: %v)", err)
+	}
+	if fi.Size() < 80 {
+		return fmt.Sprintf("(size=%d too small, likely empty)", fi.Size())
+	}
+	return fmt.Sprintf("size=%d", fi.Size())
 }
 
 func firstExistingCookiesPath() string {
@@ -165,13 +196,19 @@ func firstExistingCookiesPath() string {
 		if p == "" {
 			continue
 		}
-		if _, err := os.Stat(p); err == nil {
-			absPath, absErr := filepath.Abs(p)
-			if absErr == nil {
-				return absPath
-			}
-			return p
+		fi, err := os.Stat(p)
+		if err != nil {
+			continue
 		}
+		if fi.Size() < 80 {
+			slog.Warn("yt-dlp cookies path exists but file too small, skipping", "path", p, "bytes", fi.Size())
+			continue
+		}
+		absPath, absErr := filepath.Abs(p)
+		if absErr == nil {
+			return absPath
+		}
+		return p
 	}
 	return ""
 }
@@ -198,9 +235,10 @@ func normalizeJSRuntimes() string {
 		return r
 	}
 	if np := strings.TrimSpace(os.Getenv("YT_DLP_NODE_PATH")); np != "" {
-		return "deno,node:" + np
+		return "node:" + np + ",deno"
 	}
-	return "deno,node"
+	// ishlayotgan Python skripti Node’ga tayangan; Cookie bilan Deno boshlang‘ichi ba’zan boshqacha
+	return "node,deno"
 }
 
 func normalizeRemoteComponents() string {
@@ -355,16 +393,16 @@ func downloadYouTube(youtubePageURL, videoID string) (absPath string, cleanup fu
 		_ = os.RemoveAll(tmpDir)
 	}
 
-	// player_client kombinatsiyalari (+ cookie+sessiyasiz takrorlash: ba’zi clientlar cookie bilan bloklanadi)
+	// Avval sodda yo'l: youtube_to_s3.py kabi (--extractor-args va maxsus UA yo'q), keyin player_client lar.
 	attemptDefs := []struct {
 		extractor string
 		useHints  bool
 	}{
-		{`youtube:player_client=tv_embedded`, true},
-		{`youtube:player_client=web`, true},
-		{`youtube:player_client=mweb`, true},
-		{`youtube:player_client=android`, false},
 		{"", false},
+		{`youtube:player_client=web`, false},
+		{`youtube:player_client=mweb`, false},
+		{`youtube:player_client=tv_embedded`, true},
+		{`youtube:player_client=android`, false},
 	}
 
 	cookiesPath := firstExistingCookiesPath()
@@ -381,7 +419,7 @@ func downloadYouTube(youtubePageURL, videoID string) (absPath string, cleanup fu
 			tag  string
 			path string
 		}{"omit_cookie_file", ""})
-		slog.Info("yt-dlp cookies", "path", cookiesPath)
+		slog.Info("yt-dlp cookies file", "path", cookiesPath, "diag", cookieFileDiag(cookiesPath))
 	} else {
 		slog.Warn("yt-dlp: cookie fayl yo‘q; qiyin videolar uchun YT_DLP_COOKIES_FILE yoki internal/secrets/cookies.txt qo‘shing")
 		cookiePasses = append(cookiePasses, struct {
