@@ -65,15 +65,10 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 
 	title, body := helper.StringToJSON(msg.Title, msg.Body)
 
-	ntfType := "selected"
-	if req.IsPublic {
-		ntfType = "all"
-	}
-
 	ntf, err := s.storage.NotificationS.Create(&m.NotificationCreateReq{
 		Title:   title,
 		Message: body,
-		Type:    ntfType,
+		Type:    "all",
 	})
 
 	if err != nil {
@@ -140,13 +135,7 @@ func (s *CourseService) Update(ctx context.Context, req *m.CourseUpdateReq) (*m.
 
 	info, err := s.storage.CourseS.GetById(&m.ById{Id: req.Id})
 	if err == nil {
-		var push_target m.PushTarget
-		if info.IsPublic != nil && *info.IsPublic {
-			push_target = m.PushTarget{Type: m.TargetAllUsers}
-		} else {
-			push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.Id}
-		}
-
+		push_target := m.PushTarget{Type: m.TargetAllUsers}
 
 		courseNameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
 
@@ -161,16 +150,10 @@ func (s *CourseService) Update(ctx context.Context, req *m.CourseUpdateReq) (*m.
 		msg := m.BuildUzPushMessage(push_event)
 		title, body := helper.StringToJSON(msg.Title, msg.Body)
 
-		ntfType := "selected"
-		if info.IsPublic != nil && *info.IsPublic {
-			ntfType = "all"
-		}
-
 		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
-			Title:    title,
-			Message:  body,
-			Type:     ntfType,
-			CourseId: info.Id,
+			Title:   title,
+			Message: body,
+			Type:    "all",
 		})
 	}
 
