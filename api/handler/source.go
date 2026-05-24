@@ -192,6 +192,17 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 		return
 	}
 
+	if body.VideoUrl != nil {
+		videoURLJSON, mErr := json.Marshal(body.VideoUrl)
+		if mErr != nil {
+			c.JSON(409, gin.H{"message": "failed to serialize video_url"})
+			slog.Error("Error serializing video_url", "error", mErr.Error())
+			smssender(c, mErr, http.StatusConflict)
+			return
+		}
+		req.VideoUrl = string(videoURLJSON)
+	}
+
 	req.Id = id
 	req.Name = string(nameJSON)
 	req.LessonId = body.LessonId
@@ -199,7 +210,7 @@ func (h *Handler) UpdateSource(c *gin.Context) {
 	req.OrderNum = body.OrderNum
 	req.Url = string(urlJSON)
 
-	slog.Info("Update Source", req)
+	slog.Info("Update Source", slog.String("id", req.Id))
 	_, err = h.Clients.Source.Update(context.Background(), &req)
 
 	if err != nil {

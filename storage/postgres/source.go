@@ -225,8 +225,13 @@ func (r *SourceRepo) Update(req *m.SourceUpdateReq) (*m.Void, error) {
 	conditions = append(conditions, " url = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.Url)
 
-	conditions = append(conditions, " video_url = $"+strconv.Itoa(len(args)+1))
-	args = append(args, req.VideoUrl)
+	if v := strings.TrimSpace(req.VideoUrl); v != "" {
+		if v == "\"\"" {
+			v = "{}"
+		}
+		conditions = append(conditions, " video_url = $"+strconv.Itoa(len(args)+1))
+		args = append(args, v)
+	}
 
 	conditions = append(conditions, " type = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.Type)

@@ -47,10 +47,12 @@ func (s *SourceService) Create(ctx context.Context, req *m.SourceCreateReq) (*m.
 		_ = s.rdb.Incr("source:version").Err()
 	}
 
-	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: res.Id})
-	if err == nil {
+	// GetLessonCourseInfo lessons.id kutadi — source id emas!
+	info, infoErr := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: req.LessonId})
+	if infoErr != nil {
+		slog.Warn("source Create: skipped push/notifications — GetLessonCourseInfo failed", "lesson_id", req.LessonId, "source_id", res.Id, "err", infoErr)
+	} else if s.push != nil {
 		push_target := m.PushTarget{Type: m.TargetAllUsers}
-
 		push_event := m.PushEvent{
 			Type:       m.EventSourceAdded,
 			CourseID:   info.CourseId,
@@ -59,21 +61,30 @@ func (s *SourceService) Create(ctx context.Context, req *m.SourceCreateReq) (*m.
 			LessonName: info.LessonName,
 			SourceType: req.Type,
 		}
-
-		_ = s.push.SendPush(ctx, push_target, push_event)
-
+		if err := s.push.SendPush(ctx, push_target, push_event); err != nil {
+			slog.Error("source Create: SendPush failed", "err", err, "lesson_id", req.LessonId)
+		}
 		msg := m.BuildUzPushMessage(push_event)
 		title, body := helper.StringToJSON(msg.Title, msg.Body)
-
-		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		if _, nerr := s.storage.NotificationS.Create(&m.NotificationCreateReq{
 			Title:   title,
 			Message: body,
 			Type:    "all",
-		})
+		}); nerr != nil {
+			slog.Error("source Create: notification write failed", "err", nerr)
+		}
 	}
 
 	if req.Type == "video" && s.s3 != nil {
-		go s.ProcessYouTubeVideo(res.Id, req.Url)
+		id, urlJSON := res.Id, req.Url
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					slog.Error("ProcessYouTubeVideo panic", "sourceID", id, "recover", r)
+				}
+			}()
+			s.ProcessYouTubeVideo(id, urlJSON)
+		}()
 	}
 
 	return res, nil
@@ -130,10 +141,11 @@ func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.
 		_ = s.rdb.Incr("source:version").Err()
 	}
 
-	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: req.Id})
-	if err == nil {
+	info, infoErr := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: req.LessonId})
+	if infoErr != nil {
+		slog.Warn("source Update: skipped push/notifications — GetLessonCourseInfo failed", "lesson_id", req.LessonId, "source_id", req.Id, "err", infoErr)
+	} else if s.push != nil {
 		push_target := m.PushTarget{Type: m.TargetAllUsers}
-
 		push_event := m.PushEvent{
 			Type:       m.EventSourceUpdated,
 			CourseID:   info.CourseId,
@@ -142,21 +154,30 @@ func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.
 			LessonName: info.LessonName,
 			SourceType: req.Type,
 		}
-
-		_ = s.push.SendPush(ctx, push_target, push_event)
-
+		if err := s.push.SendPush(ctx, push_target, push_event); err != nil {
+			slog.Error("source Update: SendPush failed", "err", err, "lesson_id", req.LessonId)
+		}
 		msg := m.BuildUzPushMessage(push_event)
 		title, body := helper.StringToJSON(msg.Title, msg.Body)
-
-		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
+		if _, nerr := s.storage.NotificationS.Create(&m.NotificationCreateReq{
 			Title:   title,
 			Message: body,
 			Type:    "all",
-		})
+		}); nerr != nil {
+			slog.Error("source Update: notification write failed", "err", nerr)
+		}
 	}
 
 	if req.Type == "video" && s.s3 != nil {
-		go s.ProcessYouTubeVideo(req.Id, req.Url)
+		id, urlJSON := req.Id, req.Url
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					slog.Error("ProcessYouTubeVideo panic", "sourceID", id, "recover", r)
+				}
+			}()
+			s.ProcessYouTubeVideo(id, urlJSON)
+		}()
 	}
 
 	return res, nil
@@ -178,15 +199,23 @@ func (s *SourceService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 
 func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON string) {
 	var urls map[string]string
-	err := json.Unmarshal([]byte(urlJSON), &urls)
+	raw := strings.TrimSpace(urlJSON)
+	err := json.Unmarshal([]byte(raw), &urls)
 	if err != nil {
-		slog.Error("Failed to unmarshal youtube urls", "err", err)
+		// Ba’zan frontend to‘g‘ridan‑to‘g‘ri tekst URL jo‘natadi
+		if strings.HasPrefix(strings.ToLower(raw), "http") && (strings.Contains(raw, "youtube.com") || strings.Contains(raw, "youtu.be")) {
+			urls = map[string]string{"direct": strings.Trim(raw, "\"")}
+			err = nil
+		}
+	}
+	if err != nil {
+		slog.Error("Failed to unmarshal youtube urls", "sourceID", sourceID, "err", err)
 		return
 	}
 
-	// Birinchi mavjud linkni olamiz (uz, ru yoki en)
 	var youtubeURL string
 	for _, u := range urls {
+		u = strings.TrimSpace(u)
 		if u != "" && (strings.Contains(u, "youtube.com") || strings.Contains(u, "youtu.be")) {
 			youtubeURL = u
 			break
@@ -194,6 +223,7 @@ func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON string) {
 	}
 
 	if youtubeURL == "" {
+		slog.Warn("no youtube url in source url field", "sourceID", sourceID)
 		return
 	}
 
