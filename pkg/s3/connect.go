@@ -230,6 +230,24 @@ func ytDlpFormatSelectorLoose() string {
 	return `bv*+ba/bestvideo+bestaudio/b`
 }
 
+// appendYtDlpJSRuntimeFlags — yt-dlp har bir runtime uchun alohida --js-runtimes kerak;
+// bitta "node,deno" string noto'g'ri: "unsupported runtime(s): node,deno".
+func appendYtDlpJSRuntimeFlags(args []string, spec string) []string {
+	added := 0
+	for _, tok := range strings.Split(strings.TrimSpace(spec), ",") {
+		tok = strings.TrimSpace(tok)
+		if tok == "" {
+			continue
+		}
+		args = append(args, "--js-runtimes", tok)
+		added++
+	}
+	if added == 0 {
+		args = append(args, "--js-runtimes", "deno")
+	}
+	return args
+}
+
 func normalizeJSRuntimes() string {
 	if r := strings.TrimSpace(os.Getenv("YT_DLP_JS_RUNTIMES")); r != "" {
 		return r
@@ -237,7 +255,6 @@ func normalizeJSRuntimes() string {
 	if np := strings.TrimSpace(os.Getenv("YT_DLP_NODE_PATH")); np != "" {
 		return "node:" + np + ",deno"
 	}
-	// ishlayotgan Python skripti Node’ga tayangan; Cookie bilan Deno boshlang‘ichi ba’zan boshqacha
 	return "node,deno"
 }
 
@@ -264,8 +281,9 @@ func ytDlpBaseArgs(withLooseFormats bool, tmpDir, videoID, youtubePageURL, extra
 		args = append(args, "--remote-components", rc)
 	}
 
+	args = appendYtDlpJSRuntimeFlags(args, normalizeJSRuntimes())
+
 	args = append(args,
-		"--js-runtimes", normalizeJSRuntimes(),
 		"-f", f,
 		"-o", outTemplate,
 		"--merge-output-format", "mp4",
