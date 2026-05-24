@@ -185,28 +185,61 @@ func summarizeCmdOutput(output []byte) string {
 	return "… " + out[len(out)-max:]
 }
 
-func ytDlpFormatSelector() string {
-	// FFmpeg merge yoqiladi; muxlap mp4 uchun audio/video juftligi bo‘lsa yetarli
-	return `bv*[ext=mp4]+ba/bv*+ba/bestvideo[ext=mp4]+bestaudio/bestvideo+bestaudio/b`
+func ytDlpFormatSelectorStrict() string {
+	return `bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best`
 }
 
-func buildYtDlpArgs(tmpDir string, youtubePageURL string, extractorArgs string, useBrowserHints bool, cookiesPath string) []string {
-	outTemplate := filepath.Join(tmpDir, "merged.%(ext)s")
+func ytDlpFormatSelectorLoose() string {
+	return `bv*+ba/bestvideo+bestaudio/b`
+}
 
-	args := []string{
-		"-f", ytDlpFormatSelector(),
+func normalizeJSRuntimes() string {
+	if r := strings.TrimSpace(os.Getenv("YT_DLP_JS_RUNTIMES")); r != "" {
+		return r
+	}
+	if np := strings.TrimSpace(os.Getenv("YT_DLP_NODE_PATH")); np != "" {
+		return "deno,node:" + np
+	}
+	return "deno,node"
+}
+
+func normalizeRemoteComponents() string {
+	if v := strings.TrimSpace(os.Getenv("YT_DLP_REMOTE_COMPONENTS")); v != "" {
+		if strings.EqualFold(v, "none") || v == "-" {
+			return ""
+		}
+		return v
+	}
+	return "ejs:github"
+}
+
+func ytDlpBaseArgs(withLooseFormats bool, tmpDir, videoID, youtubePageURL, extractorArgs string, useBrowserHints bool, cookiesPath string) []string {
+	outTemplate := filepath.Join(tmpDir, videoID+".%(ext)s")
+	f := ytDlpFormatSelectorStrict()
+	if withLooseFormats {
+		f = ytDlpFormatSelectorLoose()
+	}
+
+	args := []string{}
+
+	if rc := normalizeRemoteComponents(); rc != "" {
+		args = append(args, "--remote-components", rc)
+	}
+
+	args = append(args,
+		"--js-runtimes", normalizeJSRuntimes(),
+		"-f", f,
 		"-o", outTemplate,
 		"--merge-output-format", "mp4",
-		"--remux-video", "mp4",
 		"--no-playlist",
 		"--retries", "5",
 		"--fragment-retries", "10",
 		"--socket-timeout", "45",
 		"--no-check-certificates",
-	}
+	)
 
 	if strings.TrimSpace(extractorArgs) != "" {
-		args = append(args, "--extractor-args", extractorArgs)
+		args = append(args, "--extractor-args", strings.TrimSpace(extractorArgs))
 	}
 
 	if useBrowserHints {
@@ -224,13 +257,35 @@ func buildYtDlpArgs(tmpDir string, youtubePageURL string, extractorArgs string, 
 	return args
 }
 
-func pickMergedOutput(tmpDir string) (string, error) {
-	matches, err := filepath.Glob(filepath.Join(tmpDir, "merged.*"))
+// buildYtDlpArgs — youtube_to_s3.py dagi mantiqga yaqin (cookies, ejs:github, node/deno).
+func buildYtDlpArgs(tmpDir string, videoID string, youtubePageURL string, extractorArgs string, useBrowserHints bool, cookiesPath string, looseFormats bool) []string {
+	ex := mergeYouTubeExtractorArgs(extractorArgs, os.Getenv("YT_DLP_YOUTUBE_EXTRACTOR_ARGS"))
+	return ytDlpBaseArgs(looseFormats, tmpDir, videoID, youtubePageURL, ex, useBrowserHints, cookiesPath)
+}
+
+func mergeYouTubeExtractorArgs(primary, fromEnv string) string {
+	p := strings.TrimSpace(primary)
+	e := strings.TrimSpace(fromEnv)
+	if e == "" {
+		if p != "" {
+			return p
+		}
+		return ""
+	}
+	if p == "" {
+		return e
+	}
+	return p + " " + e
+}
+
+func pickYtOutputFile(tmpDir, videoID string) (string, error) {
+	base := filepath.Join(tmpDir, videoID+".")
+	matches, err := filepath.Glob(base + "*")
 	if err != nil {
 		return "", err
 	}
 	if len(matches) == 0 {
-		return "", fmt.Errorf("merged.* fayli topilmadi (%s ichida)", tmpDir)
+		return "", fmt.Errorf("chiqish fayli topilmadi: %s*", base)
 	}
 	prefer := func(path string) int {
 		switch strings.ToLower(filepath.Ext(path)) {
@@ -244,29 +299,33 @@ func pickMergedOutput(tmpDir string) (string, error) {
 			return 99
 		}
 	}
-
 	best := matches[0]
 	bestRank := prefer(best)
 	for _, m := range matches[1:] {
-		r := prefer(m)
-		if r < bestRank {
+		if r := prefer(m); r < bestRank {
 			bestRank = r
 			best = m
 		}
 	}
-
 	fi, statErr := os.Stat(best)
 	if statErr != nil {
-		return "", fmt.Errorf("merged fayl stat yo‘q: %s (%w)", best, statErr)
+		return "", fmt.Errorf("fayl stat: %s (%w)", best, statErr)
 	}
 	if fi.Size() < 2048 {
-		return "", fmt.Errorf("merged fayl juda kichik: %s (size=%d)", best, fi.Size())
+		return "", fmt.Errorf("fayl juda kichik: %s (size=%d)", best, fi.Size())
 	}
 	return best, nil
 }
 
-func wipeYtDlpTempArtifacts(dir string) {
-	patterns := []string{"merged.*", "*.part", "*.frag", "*.ytdl", "*.temp"}
+func wipeYtDlpTempArtifacts(dir, videoID string) {
+	patterns := []string{
+		videoID + ".*",
+		"merged.*",
+		"*.part",
+		"*.frag",
+		"*.ytdl",
+		"*.temp",
+	}
 	for _, pattern := range patterns {
 		matches, err := filepath.Glob(filepath.Join(dir, pattern))
 		if err != nil {
@@ -281,7 +340,7 @@ func wipeYtDlpTempArtifacts(dir string) {
 	}
 }
 
-// downloadYouTube merges output to merged.* temporary file and returns absolute path plus cleanup dir.
+// downloadYouTube — youtube_to_s3.py bilan yaqin yt-dlp parametrlari (ejs:github, format, -o {id}.%(ext)s).
 func downloadYouTube(youtubePageURL, videoID string) (absPath string, cleanup func(), err error) {
 	tmpDir, err := os.MkdirTemp("", "imed-yt-*")
 	if err != nil {
@@ -296,52 +355,88 @@ func downloadYouTube(youtubePageURL, videoID string) (absPath string, cleanup fu
 		_ = os.RemoveAll(tmpDir)
 	}
 
-	// extractor urinishlari: YouTube CDN o‘zgarganda turli player_client lar boshqacha ishlaydi
-	attempts := []struct {
+	// player_client kombinatsiyalari (+ cookie+sessiyasiz takrorlash: ba’zi clientlar cookie bilan bloklanadi)
+	attemptDefs := []struct {
 		extractor string
 		useHints  bool
 	}{
 		{`youtube:player_client=tv_embedded`, true},
-		{`youtube:player_client=android_creator,android`, true},
+		{`youtube:player_client=web`, true},
 		{`youtube:player_client=mweb`, true},
-		{`youtube:player_client=ios,tv_android`, false},
-		{`youtube:player_client=web`, false},
+		{`youtube:player_client=android`, false},
 		{"", false},
 	}
 
 	cookiesPath := firstExistingCookiesPath()
+	var cookiePasses []struct {
+		tag  string
+		path string
+	}
 	if cookiesPath != "" {
+		cookiePasses = append(cookiePasses, struct {
+			tag  string
+			path string
+		}{"with_cookie_file", cookiesPath})
+		cookiePasses = append(cookiePasses, struct {
+			tag  string
+			path string
+		}{"omit_cookie_file", ""})
 		slog.Info("yt-dlp cookies", "path", cookiesPath)
 	} else {
 		slog.Warn("yt-dlp: cookie fayl yo‘q; qiyin videolar uchun YT_DLP_COOKIES_FILE yoki internal/secrets/cookies.txt qo‘shing")
+		cookiePasses = append(cookiePasses, struct {
+			tag  string
+			path string
+		}{"no_cookie_file", ""})
 	}
 
-	wipeYtDlpTempArtifacts(tmpDir)
+	wipeYtDlpTempArtifacts(tmpDir, videoID)
 
+	attemptIdx := 0
 	var lastErr error
-	for i, att := range attempts {
-		wipeYtDlpTempArtifacts(tmpDir)
-		args := buildYtDlpArgs(tmpDir, youtubePageURL, att.extractor, att.useHints, cookiesPath)
-		cmd := exec.Command("yt-dlp", args...)
-		cmd.Dir = tmpDir
 
-		slog.Info("running yt-dlp", "attempt", i+1, "videoID", videoID, "extractorArgs", att.extractor, "useHints", att.useHints)
-		output, execErr := cmd.CombinedOutput()
-		if execErr != nil {
-			lastErr = fmt.Errorf("attempt %d: %w (%s)", i+1, execErr, summarizeCmdOutput(output))
-			slog.Warn("yt-dlp attempt failed", "attempt", i+1, "err", execErr, "output_tail", summarizeCmdOutput(output))
-			continue
+	for _, loose := range []bool{false, true} {
+		for _, pass := range cookiePasses {
+			for _, att := range attemptDefs {
+				attemptIdx++
+				wipeYtDlpTempArtifacts(tmpDir, videoID)
+				args := buildYtDlpArgs(tmpDir, videoID, youtubePageURL, att.extractor, att.useHints, pass.path, loose)
+				cmd := exec.Command("yt-dlp", args...)
+				cmd.Dir = tmpDir
+
+				slog.Info("running yt-dlp",
+					"attempt", attemptIdx,
+					"videoID", videoID,
+					"cookieMode", pass.tag,
+					"looseFormats", loose,
+					"extractorArgs", att.extractor,
+					"useHints", att.useHints,
+				)
+				output, execErr := cmd.CombinedOutput()
+				if execErr != nil {
+					lastErr = fmt.Errorf("attempt %d: %w (%s)", attemptIdx, execErr, summarizeCmdOutput(output))
+					slog.Warn("yt-dlp attempt failed",
+						"attempt", attemptIdx,
+						"err", execErr,
+						"output_tail", summarizeCmdOutput(output),
+					)
+					continue
+				}
+
+				p, ferr := pickYtOutputFile(tmpDir, videoID)
+				if ferr != nil {
+					lastErr = ferr
+					slog.Warn("yt-dlp output missing after success exit",
+						"attempt", attemptIdx,
+						"detail", ferr,
+					)
+					continue
+				}
+
+				slog.Info("yt-dlp succeeded", "attempt", attemptIdx, "file", p)
+				return filepath.Clean(p), cleanupFn, nil
+			}
 		}
-
-		p, ferr := pickMergedOutput(tmpDir)
-		if ferr != nil {
-			lastErr = ferr
-			slog.Warn("yt-dlp output missing after success exit", "attempt", i+1, "detail", ferr)
-			continue
-		}
-
-		slog.Info("yt-dlp succeeded", "attempt", i+1, "file", p)
-		return filepath.Clean(p), cleanupFn, nil
 	}
 
 	cleanupFn()
