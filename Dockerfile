@@ -11,7 +11,7 @@ COPY . .
 
 RUN go build -o main ./cmd/main.go
 
-FROM alpine:3.16
+FROM alpine:3.20
 
 WORKDIR /app
 
@@ -20,9 +20,21 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/api/casbin/model.conf ./api/casbin/
 COPY --from=builder /app/api/casbin/policy.csv ./api/casbin/
 
-
-RUN apk add --no-cache python3 ffmpeg wget nodejs
-RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && chmod a+rx /usr/local/bin/yt-dlp
+# YouTube uchun yt-dlp EJS («n-param» chaplashni) Deno ishga tushirib hal qiladi (+ ffmpeg mux).
+RUN apk add --no-cache ffmpeg ca-certificates curl unzip wget bash nodejs \
+	&& ARCH="$(uname -m)" \
+	&& case "$ARCH" in \
+	x86_64) DENO_ARCH=x86_64-unknown-linux-gnu ;; \
+	aarch64) DENO_ARCH=aarch64-unknown-linux-gnu ;; \
+	arm64) DENO_ARCH=aarch64-unknown-linux-gnu ;; \
+	*) echo "unsupported arch=$ARCH"; DENO_ARCH=x86_64-unknown-linux-gnu ;; \
+	esac \
+	&& curl -fsSL "https://github.com/denoland/deno/releases/latest/download/deno-${DENO_ARCH}.zip" -o /tmp/deno.zip \
+	&& unzip -q -o /tmp/deno.zip deno -d /usr/local/bin \
+	&& chmod +x /usr/local/bin/deno \
+	&& rm /tmp/deno.zip \
+	&& wget -qO /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
+	&& chmod a+rx /usr/local/bin/yt-dlp
 
 COPY .env .
 COPY internal/secrets ./internal/secrets/
