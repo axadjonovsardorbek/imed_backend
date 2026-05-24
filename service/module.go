@@ -44,12 +44,7 @@ func (s *ModuleService) Create(ctx context.Context, req *m.ModuleCreateReq) (*m.
 
 	info, err := s.storage.CourseS.GetById(&m.ById{Id: req.CourseId})
 	if err == nil {
-		var push_target m.PushTarget
-		if info.IsPublic != nil && *info.IsPublic {
-			push_target = m.PushTarget{Type: m.TargetAllUsers}
-		} else {
-			push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.Id}
-		}
+		push_target := m.PushTarget{Type: m.TargetAllUsers}
 
 		nameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
 
@@ -66,16 +61,10 @@ func (s *ModuleService) Create(ctx context.Context, req *m.ModuleCreateReq) (*m.
 		msg := m.BuildUzPushMessage(push_event)
 		title, body := helper.StringToJSON(msg.Title, msg.Body)
 
-		ntfType := "selected"
-		if info.IsPublic != nil && *info.IsPublic {
-			ntfType = "all"
-		}
-
 		_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
-			Title:    title,
-			Message:  body,
-			Type:     ntfType,
-			CourseId: info.Id,
+			Title:   title,
+			Message: body,
+			Type:    "all",
 		})
 	}
 
@@ -136,12 +125,7 @@ func (s *ModuleService) Update(ctx context.Context, req *m.ModuleUpdateReq) (*m.
 	if err == nil && module.CourseId != nil {
 		info, err := s.storage.CourseS.GetById(&m.ById{Id: *module.CourseId})
 		if err == nil {
-			var push_target m.PushTarget
-			if info.IsPublic != nil && *info.IsPublic {
-				push_target = m.PushTarget{Type: m.TargetAllUsers}
-			} else {
-				push_target = m.PushTarget{Type: m.TargetCourseUsers, CourseID: info.Id}
-			}
+			push_target := m.PushTarget{Type: m.TargetAllUsers}
 
 			nameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
 
@@ -158,23 +142,16 @@ func (s *ModuleService) Update(ctx context.Context, req *m.ModuleUpdateReq) (*m.
 			msg := m.BuildUzPushMessage(push_event)
 			title, body := helper.StringToJSON(msg.Title, msg.Body)
 
-			ntfType := "selected"
-			if info.IsPublic != nil && *info.IsPublic {
-				ntfType = "all"
-			}
-
 			_, _ = s.storage.NotificationS.Create(&m.NotificationCreateReq{
-				Title:    title,
-				Message:  body,
-				Type:     ntfType,
-				CourseId: info.Id,
+				Title:   title,
+				Message: body,
+				Type:    "all",
 			})
 		}
 	}
 
 	return res, nil
 }
-
 
 func (s *ModuleService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	res, err := s.storage.ModuleS.Delete(req)
