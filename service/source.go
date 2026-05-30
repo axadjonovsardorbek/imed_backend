@@ -76,18 +76,24 @@ func (s *SourceService) Create(ctx context.Context, req *m.SourceCreateReq) (*m.
 	}
 
 	if req.Type == "video" && s.s3 != nil {
-		id, urlJSON := res.Id, req.Url
-		go func() {
-			defer func() {
-				if r := recover(); r != nil {
-					slog.Error("ProcessYouTubeVideo panic", "sourceID", id, "recover", r)
-				}
-			}()
-			s.ProcessYouTubeVideo(id, urlJSON)
-		}()
+		s.maybeProcessYouTubeVideo(res.Id, req.Url, req.VideoUrl)
 	}
 
 	return res, nil
+}
+
+func (s *SourceService) maybeProcessYouTubeVideo(sourceID, urlJSON, videoURLJSON string) {
+	if findYouTubeURL(urlJSON, videoURLJSON) == "" {
+		return
+	}
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				slog.Error("ProcessYouTubeVideo panic", "sourceID", sourceID, "recover", r)
+			}
+		}()
+		s.ProcessYouTubeVideo(sourceID, urlJSON, videoURLJSON)
+	}()
 }
 
 func (s *SourceService) GetById(ctx context.Context, req *m.ById) (*m.SourceRes, error) {
@@ -132,6 +138,13 @@ func (s *SourceService) GetAll(ctx context.Context, req *m.SourceGetListReq) (*m
 }
 
 func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.Void, error) {
+	var prevYouTube string
+	if existing, err := s.storage.SourceS.GetById(&m.ById{Id: req.Id}); err == nil {
+		prevURLJSON, _ := json.Marshal(existing.Url)
+		prevVideoURLJSON, _ := json.Marshal(existing.VideoUrl)
+		prevYouTube = findYouTubeURL(string(prevURLJSON), string(prevVideoURLJSON))
+	}
+
 	res, err := s.storage.SourceS.Update(req)
 	if err != nil {
 		return nil, err
@@ -169,15 +182,10 @@ func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.
 	}
 
 	if req.Type == "video" && s.s3 != nil {
-		id, urlJSON := req.Id, req.Url
-		go func() {
-			defer func() {
-				if r := recover(); r != nil {
-					slog.Error("ProcessYouTubeVideo panic", "sourceID", id, "recover", r)
-				}
-			}()
-			s.ProcessYouTubeVideo(id, urlJSON)
-		}()
+		newYouTube := findYouTubeURL(req.Url, req.VideoUrl)
+		if newYouTube != "" && newYouTube != prevYouTube {
+			s.maybeProcessYouTubeVideo(req.Id, req.Url, req.VideoUrl)
+		}
 	}
 
 	return res, nil
@@ -197,33 +205,38 @@ func (s *SourceService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 	return res, nil
 }
 
-func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON string) {
+func parseSourceURLMap(raw string) map[string]string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil
+	}
+
 	var urls map[string]string
-	raw := strings.TrimSpace(urlJSON)
-	err := json.Unmarshal([]byte(raw), &urls)
-	if err != nil {
-		// Ba’zan frontend to‘g‘ridan‑to‘g‘ri tekst URL jo‘natadi
-		if strings.HasPrefix(strings.ToLower(raw), "http") && (strings.Contains(raw, "youtube.com") || strings.Contains(raw, "youtu.be")) {
-			urls = map[string]string{"direct": strings.Trim(raw, "\"")}
-			err = nil
+	if err := json.Unmarshal([]byte(raw), &urls); err != nil {
+		if strings.HasPrefix(strings.ToLower(raw), "http") {
+			return map[string]string{"direct": strings.Trim(raw, "\"")}
+		}
+		return nil
+	}
+	return urls
+}
+
+func findYouTubeURL(urlSources ...string) string {
+	for _, src := range urlSources {
+		for _, u := range parseSourceURLMap(src) {
+			u = strings.TrimSpace(u)
+			if u != "" && (strings.Contains(u, "youtube.com") || strings.Contains(u, "youtu.be")) {
+				return u
+			}
 		}
 	}
-	if err != nil {
-		slog.Error("Failed to unmarshal youtube urls", "sourceID", sourceID, "err", err)
-		return
-	}
+	return ""
+}
 
-	var youtubeURL string
-	for _, u := range urls {
-		u = strings.TrimSpace(u)
-		if u != "" && (strings.Contains(u, "youtube.com") || strings.Contains(u, "youtu.be")) {
-			youtubeURL = u
-			break
-		}
-	}
-
+func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON, videoURLJSON string) {
+	youtubeURL := findYouTubeURL(urlJSON, videoURLJSON)
 	if youtubeURL == "" {
-		slog.Warn("no youtube url in source url field", "sourceID", sourceID)
+		slog.Warn("no youtube url in source url/video_url fields", "sourceID", sourceID)
 		return
 	}
 
