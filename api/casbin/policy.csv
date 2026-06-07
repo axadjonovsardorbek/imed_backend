@@ -18,6 +18,7 @@ p, admin, /web/auth/password/refresh, PUT
 p, admin, /web/user, GET
 p, admin, /web/user/:id, GET
 p, admin, /web/user/:id/delete, DELETE
+p, admin, /web/user/rating, GET
 p, admin, /web/user/get/profile, GET
 p, admin, /web/user/update/profile, PUT
 p, admin, /web/user/delete/profile, DELETE

@@ -6739,6 +6739,67 @@
                 }
             }
         },
+        "/web/user/rating": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reytingni qaytaradi: day|week|month|year|total. Default: total. 0 activity bo'lgan userlar avtomatik oxirida turadi. Response ichida TOP list va \"Me\" (mening o'rnim) qaytadi.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Reyting (leaderboard) olish",
+                "parameters": [
+                    {
+                        "enum": [
+                            "day",
+                            "week",
+                            "month",
+                            "year",
+                            "total"
+                        ],
+                        "type": "string",
+                        "description": "Filter type: day|week|month|year|total (default: total)",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Top list limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rating response",
+                        "schema": {
+                            "$ref": "#/definitions/models.RatingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request params",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/web/user/{id}": {
             "get": {
                 "security": [

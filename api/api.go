@@ -73,6 +73,7 @@ func NewApi(h *handler.Handler, rdb *redis.Client) *gin.Engine {
 		user := web.Group("/user").Use(mid.NewAuth(enforcer, rdb))
 		{
 			user.GET("", h.GetAllUsers)
+			user.GET("/rating", h.GetRating)
 			user.GET("/:id", h.GetByIdUser)
 			user.DELETE("/:id/delete", h.DeleteUser)
 		}
