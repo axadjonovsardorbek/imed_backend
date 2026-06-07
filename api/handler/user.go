@@ -715,6 +715,7 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 // @Failure 400 {object} string "Invalid request params"
 // @Failure 500 {object} string "Server error"
 // @Router /mobile/user/rating [get]
+// @Router /web/user/rating [get]
 func (h *Handler) GetRating(c *gin.Context) {
 	limit := c.Query("limit")
 	typ := c.Query("type")
