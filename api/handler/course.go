@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	m "imed/pkg/models"
 
@@ -280,6 +281,19 @@ func (h *Handler) BuyCourse(c *gin.Context) {
 		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error binding request body: ", err)
 		smssender(c, err, http.StatusBadRequest)
+		return
+	}
+
+	if req.Amount <= 0 {
+		c.JSON(400, gin.H{"message": "amount must be greater than 0"})
+		return
+	}
+	if strings.TrimSpace(req.Comment) == "" {
+		c.JSON(400, gin.H{"message": "comment is required"})
+		return
+	}
+	if strings.TrimSpace(req.CheckUrl) == "" {
+		c.JSON(400, gin.H{"message": "check_url is required"})
 		return
 	}
 

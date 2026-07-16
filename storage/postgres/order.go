@@ -460,6 +460,8 @@ func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 		o.course_amount,
 		o.payment_type,
 		o.status,
+		o.comment,
+		o.check_url,
 		o.created_at,
 		o.paid_at
 	FROM orders o
@@ -490,6 +492,8 @@ func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 		&order.CourseAmount,
 		&order.PaymentType,
 		&order.Status,
+		&order.Comment,
+		&order.CheckUrl,
 		&order.CreatedAt,
 		&order.PaidAt,
 	)
@@ -525,6 +529,8 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 		o.course_amount,
 		o.payment_type,
 		o.status,
+		o.comment,
+		o.check_url,
 		o.created_at,
 		o.paid_at
 	FROM orders o
@@ -705,6 +711,8 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 			&order.CourseAmount,
 			&order.PaymentType,
 			&order.Status,
+			&order.Comment,
+			&order.CheckUrl,
 			&order.CreatedAt,
 			&order.PaidAt,
 		)
