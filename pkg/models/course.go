@@ -97,11 +97,14 @@ type CourseUpdateReq struct {
 }
 
 type UserCourseCreateReq struct {
-	UserId    string `json:"user_id"`
-	CourseId  string `json:"course_id"`
-	TariffId  string `json:"tariff_id"`
-	StartedAt string `json:"started_at"`
-	EndedAt   string `json:"ended_at"`
+	UserId    string  `json:"user_id"`
+	CourseId  string  `json:"course_id"`
+	TariffId  string  `json:"tariff_id"`
+	StartedAt string  `json:"started_at"`
+	EndedAt   string  `json:"ended_at"`
+	Amount    float64 `json:"amount"`    // admin belgilagan to'lov summasi
+	Comment   string  `json:"comment"`   // admin izohi
+	CheckUrl  string  `json:"check_url"` // chek/rasm URL (S3)
 }
 
 type UserCourseRes struct {

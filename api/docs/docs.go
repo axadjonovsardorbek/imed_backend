@@ -8310,6 +8310,12 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
+                "check_url": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
                 "course_amount": {
                     "type": "number"
                 },
@@ -9163,6 +9169,18 @@ const docTemplate = `{
         "models.UserCourseCreateReq": {
             "type": "object",
             "properties": {
+                "amount": {
+                    "description": "admin belgilagan to'lov summasi",
+                    "type": "number"
+                },
+                "check_url": {
+                    "description": "chek/rasm URL (S3)",
+                    "type": "string"
+                },
+                "comment": {
+                    "description": "admin izohi",
+                    "type": "string"
+                },
                 "course_id": {
                     "type": "string"
                 },

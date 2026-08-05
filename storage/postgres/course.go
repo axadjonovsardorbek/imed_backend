@@ -377,6 +377,19 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		return nil, err
 	}
 
+	paidAmount := req.Amount
+	if paidAmount <= 0 {
+		return nil, fmt.Errorf("amount must be greater than 0")
+	}
+	comment := strings.TrimSpace(req.Comment)
+	checkURL := strings.TrimSpace(req.CheckUrl)
+	if comment == "" {
+		return nil, fmt.Errorf("comment is required")
+	}
+	if checkURL == "" {
+		return nil, fmt.Errorf("check_url is required")
+	}
+
 	order_query := `
 	INSERT INTO orders (
 		id,
@@ -388,8 +401,10 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		duration,
 		course_amount,
 		payment_type,
+		comment,
+		check_url,
 		paid_at
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, now())
 	`
 
 	order_id := uuid.NewString()
@@ -398,11 +413,13 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		req.UserId,
 		req.CourseId,
 		req.TariffId,
-		price,
+		paidAmount,
 		"PAID",
 		duration,
 		price,
 		"admin",
+		comment,
+		checkURL,
 	)
 
 	if err != nil {

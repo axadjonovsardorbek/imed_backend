@@ -924,6 +924,10 @@ definitions:
     properties:
       amount:
         type: number
+      check_url:
+        type: string
+      comment:
+        type: string
       course_amount:
         type: number
       course_id:
@@ -1483,6 +1487,15 @@ definitions:
     type: object
   models.UserCourseCreateReq:
     properties:
+      amount:
+        description: admin belgilagan to'lov summasi
+        type: number
+      check_url:
+        description: chek/rasm URL (S3)
+        type: string
+      comment:
+        description: admin izohi
+        type: string
       course_id:
         type: string
       ended_at:

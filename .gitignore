@@ -1,3 +1,5 @@
 .env
 .prod.env
+k6/.env.prod
+k6/results/
 internal/secrets
