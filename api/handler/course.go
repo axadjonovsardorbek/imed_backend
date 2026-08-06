@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	m "imed/pkg/models"
 
@@ -147,7 +146,7 @@ func (h *Handler) GetAllCourses(c *gin.Context) {
 	}
 
 	slog.Info("Get all course with filtes", req)
-	data,  err := h.Clients.Course.GetAll(context.Background(), req)
+	data, err := h.Clients.Course.GetAll(context.Background(), req)
 	slog.Info("All course", data)
 
 	if err != nil {
@@ -284,18 +283,18 @@ func (h *Handler) BuyCourse(c *gin.Context) {
 		return
 	}
 
-	if req.Amount <= 0 {
-		c.JSON(400, gin.H{"message": "amount must be greater than 0"})
-		return
-	}
-	if strings.TrimSpace(req.Comment) == "" {
-		c.JSON(400, gin.H{"message": "comment is required"})
-		return
-	}
-	if strings.TrimSpace(req.CheckUrl) == "" {
-		c.JSON(400, gin.H{"message": "check_url is required"})
-		return
-	}
+	// if req.Amount <= 0 {
+	// 	c.JSON(400, gin.H{"message": "amount must be greater than 0"})
+	// 	return
+	// }
+	// if strings.TrimSpace(req.Comment) == "" {
+	// 	c.JSON(400, gin.H{"message": "comment is required"})
+	// 	return
+	// }
+	// if strings.TrimSpace(req.CheckUrl) == "" {
+	// 	c.JSON(400, gin.H{"message": "check_url is required"})
+	// 	return
+	// }
 
 	slog.Info("Buy course", "Course", req)
 	res, err := h.Clients.Course.BuyCourse(context.Background(), &req)
@@ -539,7 +538,7 @@ func (h *Handler) GetAllMobileCourses(c *gin.Context) {
 	}
 
 	slog.Info("Get all course with filtes", req)
-	data,  err := h.Clients.Course.GetAllMobile(context.Background(), req)
+	data, err := h.Clients.Course.GetAllMobile(context.Background(), req)
 	slog.Info("All course", data)
 
 	if err != nil {

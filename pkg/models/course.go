@@ -103,6 +103,7 @@ type UserCourseCreateReq struct {
 	StartedAt string  `json:"started_at"`
 	EndedAt   string  `json:"ended_at"`
 	Amount    float64 `json:"amount"`    // admin belgilagan to'lov summasi
+	IsFree    bool    `json:"is_free"`   // true bo'lsa kurs bepul beriladi (summa 0)
 	Comment   string  `json:"comment"`   // admin izohi
 	CheckUrl  string  `json:"check_url"` // chek/rasm URL (S3)
 }
