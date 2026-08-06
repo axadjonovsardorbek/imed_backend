@@ -377,18 +377,21 @@ func (r *CourseRepo) BuyCourse(req *m.UserCourseCreateReq) (*m.Void, error) {
 		return nil, err
 	}
 
-	paidAmount := req.Amount
-	if paidAmount <= 0 {
-		return nil, fmt.Errorf("amount must be greater than 0")
+	// is_free = true  -> summa 0
+	// is_free = false va amount <= 0 -> kursning haqiqiy narxi
+	// is_free = false va amount > 0  -> admin kiritgan summa
+	var paidAmount float64
+	switch {
+	case req.IsFree:
+		paidAmount = 0
+	case req.Amount > 0:
+		paidAmount = req.Amount
+	default:
+		paidAmount = float64(price)
 	}
+
 	comment := strings.TrimSpace(req.Comment)
 	checkURL := strings.TrimSpace(req.CheckUrl)
-	if comment == "" {
-		return nil, fmt.Errorf("comment is required")
-	}
-	if checkURL == "" {
-		return nil, fmt.Errorf("check_url is required")
-	}
 
 	order_query := `
 	INSERT INTO orders (
