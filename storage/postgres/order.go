@@ -166,14 +166,14 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 		if p.pType == "selected" {
 			var exists bool
 
-			err = r.db.QueryRow(`
+			err = tz.QueryRow(`
 			SELECT EXISTS (
 				SELECT 1
 				FROM promocode_courses
-				WHERE promocode_id = $1
-				  AND course_id = $2
+				WHERE promocode_id = $1::uuid
+				  AND course_id = $2::uuid
 			)
-			`, promoID, req.CourseId).Scan(&exists)
+			`, p.ID, req.CourseId).Scan(&exists)
 
 			if err != nil {
 				return nil, fmt.Errorf(ErrUnExpected)
