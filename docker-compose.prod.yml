@@ -43,12 +43,32 @@ services:
         condition: service_healthy
       redis-imed-prod:
         condition: service_healthy
+      bgutil-provider-prod:
+        condition: service_started
     ports:
       - "8005:8005"
+    environment:
+      # PO token provider: YouTube bot tekshiruvini cookies'siz o'tadi, muddati tugamaydi.
+      YT_DLP_POT_BASE_URL: http://bgutil-provider-prod:4416
+      # yt-dlp o'zini boot'da va har 24 soatda yangilaydi (buzilishlarning katta qismi shu bilan tuzaladi).
+      YT_DLP_AUTO_UPDATE: "true"
+      YT_DLP_UPDATE_INTERVAL: "86400"
+      # Cookies rotatsiyasi shu volume'da saqlanadi.
+      YT_DLP_COOKIES_STATE_DIR: /data/ytdlp
     networks:
       - imed-prod
     volumes:
       - ./internal/secrets/firebase-admin.json:/run/secrets/firebase-admin.json:ro
+      - imed_ytdlp_state_prod:/data/ytdlp
+    restart: unless-stopped
+
+  # bgutil PO token provider — yt-dlp uchun sidecar.
+  bgutil-provider-prod:
+    container_name: bgutil-provider-prod
+    image: brainicism/bgutil-ytdlp-pot-provider:latest
+    # ports: []  # faqat ichki tarmoq uchun, tashqariga ochish shart emas
+    networks:
+      - imed-prod
     restart: unless-stopped
 
   redis-imed-prod:
@@ -87,3 +107,4 @@ networks:
 volumes:
   imed_postgres_data_prod:
   imed_minio_data_prod:
+  imed_ytdlp_state_prod:

@@ -43,10 +43,25 @@ services:
     depends_on:
       - postgres-imed
       - redis-imed
+      - bgutil-provider
+    environment:
+      YT_DLP_POT_BASE_URL: http://bgutil-provider:4416
+      YT_DLP_AUTO_UPDATE: "true"
+      YT_DLP_UPDATE_INTERVAL: "86400"
+      YT_DLP_COOKIES_STATE_DIR: /data/ytdlp
     networks:
       - imed
     volumes:
       - ./internal/secrets/firebase-admin.json:/run/secrets/firebase-admin.json:ro
+      - imed_ytdlp_state:/data/ytdlp
+
+  # bgutil PO token provider — yt-dlp uchun sidecar.
+  bgutil-provider:
+    container_name: bgutil-provider
+    image: brainicism/bgutil-ytdlp-pot-provider:latest
+    networks:
+      - imed
+    restart: unless-stopped
 
   redis-imed:
     image: redis:latest
@@ -76,5 +91,6 @@ networks:
     driver: bridge
 
 volumes:
-  imed_postgres_data: 
-  imed_minio_data: 
+  imed_postgres_data:
+  imed_minio_data:
+  imed_ytdlp_state: 

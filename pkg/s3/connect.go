@@ -149,6 +149,83 @@ func (s *S3Service) UploadFromYouTube(youtubeURL string) (string, string, error)
 	return url, fullID, nil
 }
 
+// ytDlpPotBaseURL — bgutil PO token provider sidecar manzili.
+// PO token YouTube'ning "Sign in to confirm you're not a bot" tekshiruvini
+// cookies'siz o'tishga imkon beradi va muddati tugamaydi (har request'da yangi token).
+// Bo'sh yoki "none"/"off" bo'lsa provider ishlatilmaydi.
+func ytDlpPotBaseURL() string {
+	v := strings.TrimSpace(os.Getenv("YT_DLP_POT_BASE_URL"))
+	if v == "" {
+		v = "http://bgutil-provider:4416"
+	}
+	if strings.EqualFold(v, "none") || strings.EqualFold(v, "off") || v == "-" {
+		return ""
+	}
+	return strings.TrimRight(v, "/")
+}
+
+// ytDlpCookiesStateDir — yt-dlp cookie faylni har run'da qayta yozadi (session rotatsiyasi).
+// Image ichidagi read-only nusxa bu yangilanishni saqlay olmaydi, shuning uchun cookies
+// yoziladigan (volume'ga mount qilingan) katalogga ko'chiriladi.
+func ytDlpCookiesStateDir() string {
+	if v := strings.TrimSpace(os.Getenv("YT_DLP_COOKIES_STATE_DIR")); v != "" {
+		return v
+	}
+	return "/data/ytdlp"
+}
+
+func isWritableFile(path string) bool {
+	f, err := os.OpenFile(path, os.O_WRONLY, 0)
+	if err != nil {
+		return false
+	}
+	_ = f.Close()
+	return true
+}
+
+// ensureWritableCookiesPath — seed cookie faylni yoziladigan state katalogiga ko'chiradi
+// va o'sha nusxaning yo'lini qaytaradi. State nusxa allaqachon bo'lsa, u ishlatiladi
+// (unda yt-dlp yangilagan, yangiroq session bor). Ko'chirib bo'lmasa seed qaytariladi.
+func ensureWritableCookiesPath(seed string) string {
+	if strings.TrimSpace(seed) == "" {
+		return ""
+	}
+
+	// Seed allaqachon yoziladigan joyda bo'lsa — ko'chirish shart emas.
+	if isWritableFile(seed) {
+		return seed
+	}
+
+	stateDir := ytDlpCookiesStateDir()
+	statePath := filepath.Join(stateDir, "cookies.txt")
+
+	// State nusxa yaroqli bo'lsa — o'shani ishlat (seed'dan yangiroq).
+	if fi, err := os.Stat(statePath); err == nil && fi.Size() >= 80 {
+		return statePath
+	}
+
+	if err := os.MkdirAll(stateDir, 0o700); err != nil {
+		slog.Warn("yt-dlp cookies state dir yaratilmadi, read-only seed ishlatiladi",
+			"dir", stateDir, "err", err)
+		return seed
+	}
+
+	data, err := os.ReadFile(seed)
+	if err != nil {
+		slog.Warn("yt-dlp seed cookies o'qilmadi", "path", seed, "err", err)
+		return seed
+	}
+	if err := os.WriteFile(statePath, data, 0o600); err != nil {
+		slog.Warn("yt-dlp cookies state fayl yozilmadi, read-only seed ishlatiladi",
+			"path", statePath, "err", err)
+		return seed
+	}
+
+	slog.Info("yt-dlp cookies yoziladigan nusxaga ko'chirildi (rotatsiya saqlanadi)",
+		"seed", seed, "state", statePath)
+	return statePath
+}
+
 func resolveYtDlpCookiePaths() []string {
 	if p := strings.TrimSpace(os.Getenv("YT_DLP_COOKIES_FILE")); p != "" {
 		return []string{p}
@@ -166,6 +243,9 @@ func resolveYtDlpCookiePaths() []string {
 		}
 		*slice = append(*slice, p)
 	}
+
+	// Eng avval yoziladigan state nusxa: unda yt-dlp rotatsiya qilgan yangi session bor.
+	appendIfUnique(&paths, filepath.Join(ytDlpCookiesStateDir(), "cookies.txt"))
 
 	// ikki nuqta nisbatan: ba'zan process WORKDIR /app emas bo'lishi mumkin
 	if exe, err := os.Executable(); err == nil {
@@ -220,6 +300,34 @@ func summarizeCmdOutput(output []byte) string {
 		return out
 	}
 	return "… " + out[len(out)-max:]
+}
+
+// classifyYtDlpFailure — yt-dlp chiqishidan sabab turini ajratadi, alert o'qiladigan bo'lsin.
+// Bo'sh string = tanish naqsh topilmadi.
+func classifyYtDlpFailure(output string) string {
+	o := strings.ToLower(output)
+	switch {
+	case strings.Contains(o, "sign in to confirm you're not a bot"),
+		strings.Contains(o, "sign in to confirm youre not a bot"),
+		strings.Contains(o, "confirm you're not a bot"):
+		return "BOT_CHECK: YouTube bot tekshiruvi. PO token provider ishlayotganini tekshiring (docker ps | grep bgutil) yoki cookies yangilang."
+	case strings.Contains(o, "http error 429"), strings.Contains(o, "too many requests"):
+		return "RATE_LIMIT: server IP vaqtincha cheklangan. Yuklash tezligini kamaytiring yoki proxy qo'shing."
+	case strings.Contains(o, "video unavailable"), strings.Contains(o, "private video"),
+		strings.Contains(o, "removed by the uploader"):
+		return "VIDEO_UNAVAILABLE: video o'chirilgan yoki yopiq. Kod muammosi emas."
+	case strings.Contains(o, "members-only"), strings.Contains(o, "join this channel"):
+		return "MEMBERS_ONLY: video obuna talab qiladi."
+	case strings.Contains(o, "age"), strings.Contains(o, "age-restricted"):
+		return "AGE_RESTRICTED: yosh cheklovi; cookies bilan login kerak."
+	case strings.Contains(o, "unable to extract"), strings.Contains(o, "nsig extraction failed"),
+		strings.Contains(o, "player response"), strings.Contains(o, "failed to extract any player response"):
+		return "EXTRACTOR_STALE: yt-dlp eskirgan yoki YouTube o'zgargan. Konteynerni qayta ishga tushiring (auto-update yangi versiya tortadi)."
+	case strings.Contains(o, "connection refused"), strings.Contains(o, "getpot"),
+		strings.Contains(o, "pot provider"):
+		return "POT_PROVIDER_DOWN: bgutil-provider konteyneri javob bermayapti. docker compose up -d bgutil-provider."
+	}
+	return ""
 }
 
 func ytDlpFormatSelectorStrict() string {
@@ -296,6 +404,11 @@ func ytDlpBaseArgs(withLooseFormats bool, tmpDir, videoID, youtubePageURL, extra
 
 	if strings.TrimSpace(extractorArgs) != "" {
 		args = append(args, "--extractor-args", strings.TrimSpace(extractorArgs))
+	}
+
+	// PO token provider — alohida extractor kaliti, shuning uchun mustaqil flag.
+	if pot := ytDlpPotBaseURL(); pot != "" {
+		args = append(args, "--extractor-args", "youtubepot-bgutilhttp:base_url="+pot)
 	}
 
 	if useBrowserHints {
@@ -411,45 +524,63 @@ func downloadYouTube(youtubePageURL, videoID string) (absPath string, cleanup fu
 		_ = os.RemoveAll(tmpDir)
 	}
 
-	// Avval sodda yo'l: youtube_to_s3.py kabi (--extractor-args va maxsus UA yo'q), keyin player_client lar.
+	// Avval sodda yo'l: yt-dlp o'z defaultini tanlaydi, keyin aniq player_client lar.
+	// Tartib joriy YouTube holatiga qarab: tv/web_safari eng barqaror, android amalda o'lgan.
 	attemptDefs := []struct {
 		extractor string
 		useHints  bool
 	}{
 		{"", false},
-		{`youtube:player_client=web`, false},
+		{`youtube:player_client=tv`, false},
+		{`youtube:player_client=web_safari`, true},
 		{`youtube:player_client=mweb`, false},
 		{`youtube:player_client=tv_embedded`, true},
-		{`youtube:player_client=android`, false},
+		{`youtube:player_client=web`, false},
 	}
 
-	cookiesPath := firstExistingCookiesPath()
-	var cookiePasses []struct {
+	potURL := ytDlpPotBaseURL()
+	if potURL != "" {
+		slog.Info("yt-dlp PO token provider yoqilgan", "base_url", potURL)
+	} else {
+		slog.Warn("yt-dlp PO token provider o'chirilgan; faqat cookies'ga tayanadi")
+	}
+
+	cookiesPath := ensureWritableCookiesPath(firstExistingCookiesPath())
+	type cookiePass struct {
 		tag  string
 		path string
 	}
-	if cookiesPath != "" {
-		cookiePasses = append(cookiePasses, struct {
-			tag  string
-			path string
-		}{"with_cookie_file", cookiesPath})
-		cookiePasses = append(cookiePasses, struct {
-			tag  string
-			path string
-		}{"omit_cookie_file", ""})
+	var cookiePasses []cookiePass
+
+	switch {
+	case cookiesPath == "":
+		if potURL == "" {
+			slog.Warn("yt-dlp: cookie fayl ham, PO provider ham yo'q; qiyin videolar yuklanmaydi")
+		}
+		cookiePasses = append(cookiePasses, cookiePass{"no_cookie_file", ""})
+
+	case potURL != "":
+		// PO token bor: avval cookies'siz sinaymiz. Datacenter IP dan cookies bilan
+		// ko'p so'rov yuborish akkauntni bloklashga olib keladi, shuning uchun cookies zaxira.
+		cookiePasses = append(cookiePasses,
+			cookiePass{"omit_cookie_file", ""},
+			cookiePass{"with_cookie_file", cookiesPath},
+		)
+		slog.Info("yt-dlp cookies file (zaxira sifatida)", "path", cookiesPath, "diag", cookieFileDiag(cookiesPath))
+
+	default:
+		cookiePasses = append(cookiePasses,
+			cookiePass{"with_cookie_file", cookiesPath},
+			cookiePass{"omit_cookie_file", ""},
+		)
 		slog.Info("yt-dlp cookies file", "path", cookiesPath, "diag", cookieFileDiag(cookiesPath))
-	} else {
-		slog.Warn("yt-dlp: cookie fayl yo‘q; qiyin videolar uchun YT_DLP_COOKIES_FILE yoki internal/secrets/cookies.txt qo‘shing")
-		cookiePasses = append(cookiePasses, struct {
-			tag  string
-			path string
-		}{"no_cookie_file", ""})
 	}
 
 	wipeYtDlpTempArtifacts(tmpDir, videoID)
 
 	attemptIdx := 0
 	var lastErr error
+	var lastOutput string
 
 	for _, loose := range []bool{false, true} {
 		for _, pass := range cookiePasses {
@@ -470,6 +601,7 @@ func downloadYouTube(youtubePageURL, videoID string) (absPath string, cleanup fu
 				)
 				output, execErr := cmd.CombinedOutput()
 				if execErr != nil {
+					lastOutput = string(output)
 					lastErr = fmt.Errorf("attempt %d: %w (%s)", attemptIdx, execErr, summarizeCmdOutput(output))
 					slog.Warn("yt-dlp attempt failed",
 						"attempt", attemptIdx,
@@ -496,6 +628,10 @@ func downloadYouTube(youtubePageURL, videoID string) (absPath string, cleanup fu
 	}
 
 	cleanupFn()
+	if reason := classifyYtDlpFailure(lastOutput); reason != "" {
+		slog.Error("yt-dlp barcha urinishlar muvaffaqiyatsiz", "videoID", videoID, "reason", reason)
+		return "", nil, fmt.Errorf("yt-dlp: barcha urinishlar muvaffaqiyatsiz [%s]: %w", reason, lastErr)
+	}
 	return "", nil, fmt.Errorf("yt-dlp: barcha urinishlar muvaffaqiyatsiz: %w", lastErr)
 }
 
