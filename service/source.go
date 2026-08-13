@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"imed/internal/helper"
 	m "imed/pkg/models"
 	"imed/pkg/s3"
@@ -233,6 +234,17 @@ func findYouTubeURL(urlSources ...string) string {
 	return ""
 }
 
+// truncateForTelegram — xato matnini Telegram xabariga sig'adigan qilib qisqartiradi
+// va HTML parse mode buzilmasligi uchun maxsus belgilarni ekranlaydi.
+// yt-dlp chiqishi ancha uzun bo'lishi mumkin; eng muhim qismi boshida (sabab tegi) turadi.
+func truncateForTelegram(s string, max int) string {
+	s = strings.TrimSpace(s)
+	if len(s) > max {
+		s = s[:max] + " …"
+	}
+	return html.EscapeString(s)
+}
+
 func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON, videoURLJSON string) {
 	youtubeURL := findYouTubeURL(urlJSON, videoURLJSON)
 	if youtubeURL == "" {
@@ -249,7 +261,7 @@ func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON, videoURLJSON stri
 	videoURL, _, err := s.s3.UploadFromYouTube(youtubeURL)
 	if err != nil {
 		slog.Error("Failed to process YouTube video in background", "err", err, "sourceID", sourceID)
-		errorMsg := fmt.Sprintf("❌ <b>YouTube yuklashda xatolik!</b>\n\n🆔 <b>Source ID:</b> %s\n⚠️ <b>Xato:</b> %v", sourceID, err)
+		errorMsg := fmt.Sprintf("❌ <b>YouTube yuklashda xatolik!</b>\n\n🆔 <b>Source ID:</b> %s\n🔗 <b>Link:</b> %s\n⚠️ <b>Xato:</b> %v", sourceID, youtubeURL, truncateForTelegram(err.Error(), 900))
 		_ = helper.SendMessage(errorMsg)
 		return
 	}

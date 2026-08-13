@@ -21,7 +21,7 @@ COPY --from=builder /app/api/casbin/model.conf ./api/casbin/
 COPY --from=builder /app/api/casbin/policy.csv ./api/casbin/
 
 # YouTube uchun: yt-dlp asosan Python uchraydi (#!/usr/bin/env python3), EJS uchun deno/nodejs.
-RUN apk add --no-cache ffmpeg ca-certificates curl unzip wget bash nodejs python3 \
+RUN apk add --no-cache ffmpeg ca-certificates curl unzip wget bash nodejs python3 py3-pip \
 	&& ARCH="$(uname -m)" \
 	&& case "$ARCH" in \
 	x86_64) DENO_ARCH=x86_64-unknown-linux-gnu ;; \
@@ -32,13 +32,24 @@ RUN apk add --no-cache ffmpeg ca-certificates curl unzip wget bash nodejs python
 	&& curl -fsSL "https://github.com/denoland/deno/releases/latest/download/deno-${DENO_ARCH}.zip" -o /tmp/deno.zip \
 	&& unzip -q -o /tmp/deno.zip deno -d /usr/local/bin \
 	&& chmod +x /usr/local/bin/deno \
-	&& rm /tmp/deno.zip \
-	&& wget -qO /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
-	&& chmod a+rx /usr/local/bin/yt-dlp
+	&& rm /tmp/deno.zip
+
+# yt-dlp standalone binary o'rniga venv: PO token plugin faqat shu holda ko'rinadi
+# (standalone build o'z Python'ini olib yuradi, pip paketlarini ko'rmaydi).
+# Venv yana `pip install -U` orqali runtime'da yangilanish imkonini beradi.
+RUN python3 -m venv /opt/ytdlp \
+	&& /opt/ytdlp/bin/pip install --no-cache-dir --disable-pip-version-check -U \
+	pip yt-dlp bgutil-ytdlp-pot-provider \
+	&& ln -sf /opt/ytdlp/bin/yt-dlp /usr/local/bin/yt-dlp \
+	&& yt-dlp --version
 
 COPY .env .
 COPY internal/secrets ./internal/secrets/
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN chmod +x ./main
+# Cookies rotatsiyasi shu katalogda saqlanadi; compose'da volume mount qilinadi.
+RUN mkdir -p /data/ytdlp \
+	&& chmod +x ./main /usr/local/bin/entrypoint.sh
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["./main"]
