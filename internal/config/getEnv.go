@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	AUTH_PORT string
+	GIN_MODE  string
 
 	POSTGRES_HOST     string
 	POSTGRES_PORT     int
@@ -67,6 +68,7 @@ func Load() Config {
 	config := Config{}
 
 	config.AUTH_PORT = cast.ToString(coalesce("AUTH_PORT", ":1001"))
+	config.GIN_MODE = cast.ToString(coalesce("GIN_MODE", "release"))
 
 	config.POSTGRES_HOST = cast.ToString(coalesce("POSTGRES_HOST", "postgres"))
 	config.POSTGRES_PORT = cast.ToInt(coalesce("POSTGRES_PORT", 5432))

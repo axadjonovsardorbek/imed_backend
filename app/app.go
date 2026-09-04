@@ -74,7 +74,7 @@ func Run(cf *config.Config) {
 
 	go bot.BotAuth(cf)
 
-	router := api.NewApi(handlers, rdb)
+	router := api.NewApi(handlers, rdb, cf)
 	log.Println("Server is running on port ", cf)
 	if err := router.Run(cf.AUTH_PORT); err != nil {
 		slog.Error("Error:", "err", err)

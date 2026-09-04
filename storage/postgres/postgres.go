@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"imed/internal/config"
 	"imed/storage"
@@ -45,6 +46,11 @@ func NewPostgresStorage(cf config.Config, rdb *redis.Client) (*Storage, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// pool limitlari: k6 load test bilan tune qilinadi
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
 	admin := NewAdminRepo(db, rdb)
 	about := NewAboutRepo(db)

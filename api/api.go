@@ -7,6 +7,7 @@ import (
 
 	"imed/api/handler"
 	mid "imed/api/middleware"
+	"imed/internal/config"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/go-redis/redis"
@@ -26,7 +27,8 @@ import (
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-func NewApi(h *handler.Handler, rdb *redis.Client) *gin.Engine {
+func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engine {
+	gin.SetMode(cf.GIN_MODE)
 	router := gin.Default()
 
 	enforcer, err := casbin.NewEnforcer("./api/casbin/model.conf", "./api/casbin/policy.csv")
