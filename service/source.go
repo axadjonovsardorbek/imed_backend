@@ -140,10 +140,14 @@ func (s *SourceService) GetAll(ctx context.Context, req *m.SourceGetListReq) (*m
 
 func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.Void, error) {
 	var prevYouTube string
+	var prevVideoUploaded bool
 	if existing, err := s.storage.SourceS.GetById(&m.ById{Id: req.Id}); err == nil {
 		prevURLJSON, _ := json.Marshal(existing.Url)
 		prevVideoURLJSON, _ := json.Marshal(existing.VideoUrl)
 		prevYouTube = findYouTubeURL(string(prevURLJSON), string(prevVideoURLJSON))
+		prevVideoUploaded = hasUploadedVideoURL(string(prevVideoURLJSON))
+	} else {
+		slog.Warn("source Update: GetById failed — YouTube dedup ishlamaydi", "source_id", req.Id, "err", err)
 	}
 
 	res, err := s.storage.SourceS.Update(req)
@@ -184,7 +188,18 @@ func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.
 
 	if req.Type == "video" && s.s3 != nil {
 		newYouTube := findYouTubeURL(req.Url, req.VideoUrl)
-		if newYouTube != "" && newYouTube != prevYouTube {
+
+		// SourceRepo.Update video_url ni faqat req.VideoUrl bo'sh bo'lmaganda yozadi,
+		// aks holda bazadagi eski qiymat qoladi — yakuniy holatni shunga qarab aniqlaymiz.
+		videoUploaded := prevVideoUploaded
+		if strings.TrimSpace(req.VideoUrl) != "" {
+			videoUploaded = hasUploadedVideoURL(req.VideoUrl)
+		}
+
+		// Link o'zgargan bo'lsa — qayta yuklaymiz.
+		// Link o'sha-o'sha bo'lsayu video_url bo'sh bo'lsa (oldingi yuklash yiqilgan
+		// yoki umuman bo'lmagan) — baribir yuklaymiz.
+		if newYouTube != "" && (newYouTube != prevYouTube || !videoUploaded) {
 			s.maybeProcessYouTubeVideo(req.Id, req.Url, req.VideoUrl)
 		}
 	}
@@ -232,6 +247,25 @@ func findYouTubeURL(urlSources ...string) string {
 		}
 	}
 	return ""
+}
+
+// hasUploadedVideoURL — video_url maydonida S3'ga yuklab bo'lingan link bor-yo'qligini aniqlaydi.
+// YouTube linkning o'zi "yuklangan" hisoblanmaydi: u hali S3'ga ko'chirilmagan manba link,
+// shuning uchun bunday holatda ham yuklashni qaytadan boshlash kerak.
+func hasUploadedVideoURL(raw string) bool {
+	for _, u := range parseSourceURLMap(raw) {
+		u = strings.TrimSpace(u)
+		if u == "" {
+			continue
+		}
+		if strings.Contains(u, "youtube.com") || strings.Contains(u, "youtu.be") {
+			continue
+		}
+		if strings.HasPrefix(strings.ToLower(u), "http") {
+			return true
+		}
+	}
+	return false
 }
 
 // truncateForTelegram — xato matnini Telegram xabariga sig'adigan qilib qisqartiradi
