@@ -432,7 +432,9 @@ func (r *UserRepo) GetById(req *m.ById) (*m.UserRes, error) {
 		image_url,
 		language,
 		created_at,
-		updated_at
+		updated_at,
+		first_login_at,
+		last_seen_at
 	FROM
 		users
 	WHERE
@@ -454,6 +456,8 @@ func (r *UserRepo) GetById(req *m.ById) (*m.UserRes, error) {
 		&user.Language,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.FirstLoginAt,
+		&user.LastSeenAt,
 	)
 
 	if err == sql.ErrNoRows {
@@ -479,7 +483,9 @@ func (r *UserRepo) GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.User
 		image_url,
 		language,
 		created_at,
-		updated_at
+		updated_at,
+		first_login_at,
+		last_seen_at
 	FROM
 		users
 	WHERE
@@ -529,6 +535,8 @@ func (r *UserRepo) GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.User
 			&user.Language,
 			&user.CreatedAt,
 			&user.UpdatedAt,
+			&user.FirstLoginAt,
+			&user.LastSeenAt,
 		)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning user row: %w", err)
@@ -1221,4 +1229,64 @@ func calcRange(t m.RatingType, loc *time.Location) (time.Time, time.Time) {
 		start := time.Date(1970, 1, 1, 0, 0, 0, 0, loc)
 		return start, today
 	}
+}
+
+func (r *UserRepo) TouchLastSeen(ctx context.Context, userID string) error {
+	_, err := r.db.ExecContext(ctx, `
+	UPDATE users
+	SET
+		last_seen_at = now(),
+		first_login_at = COALESCE(first_login_at, now())
+	WHERE
+		id = $1
+	AND
+		deleted_at = 0
+	`, userID)
+	if err != nil {
+		return fmt.Errorf("error while updating last_seen_at: %w", err)
+	}
+	return nil
+}
+
+func (r *UserRepo) GetInactiveUsers(ctx context.Context, before time.Time, limit int) ([]m.InactiveUser, error) {
+	rows, err := r.db.QueryContext(ctx, `
+	SELECT
+		id,
+		fcm_token,
+		COALESCE(language, 'uz')
+	FROM
+		users
+	WHERE
+		deleted_at = 0
+	AND
+		last_seen_at < $1
+	AND
+		(inactive_push_sent_at IS NULL OR inactive_push_sent_at < last_seen_at)
+	AND
+		fcm_token IS NOT NULL AND fcm_token <> ''
+	ORDER BY last_seen_at
+	LIMIT $2
+	`, before, limit)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting inactive users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []m.InactiveUser
+	for rows.Next() {
+		var u m.InactiveUser
+		if err := rows.Scan(&u.Id, &u.FCMToken, &u.Language); err != nil {
+			return nil, fmt.Errorf("error while scanning inactive user: %w", err)
+		}
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
+func (r *UserRepo) MarkInactivePushed(ctx context.Context, ids []string) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE users SET inactive_push_sent_at = now() WHERE id = ANY($1)`, pq.Array(ids))
+	if err != nil {
+		return fmt.Errorf("error while marking inactive push: %w", err)
+	}
+	return nil
 }

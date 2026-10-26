@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	m "imed/pkg/models"
+	"time"
 )
 
 type AdminI interface {
@@ -116,6 +117,9 @@ type UserI interface {
 	GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error)
 	GetMe(req *m.RatingRequest) (*m.RatingUserItem, error)
 	DeleteToken(req []string) (*m.Void, error)
+	TouchLastSeen(ctx context.Context, userID string) error
+	GetInactiveUsers(ctx context.Context, before time.Time, limit int) ([]m.InactiveUser, error)
+	MarkInactivePushed(ctx context.Context, ids []string) error
 }
 
 type NotificationI interface {

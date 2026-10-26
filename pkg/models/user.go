@@ -37,8 +37,17 @@ type UserRes struct {
 	FCMToken    *string `json:"fcm_token"`
 	ImageUrl    *string `json:"image_url"`
 	Language    *string `json:"language"`
-	CreatedAt   *string `json:"created_at"`
-	UpdatedAt   *string `json:"updated_at"`
+	CreatedAt    *string `json:"created_at"`
+	UpdatedAt    *string `json:"updated_at"`
+	FirstLoginAt *string `json:"first_login_at"`
+	LastSeenAt   *string `json:"last_seen_at"`
+}
+
+// InactiveUser 24 soatdan beri kirmagan va eslatma olmagan foydalanuvchi (T-05).
+type InactiveUser struct {
+	Id       string
+	FCMToken string
+	Language string
 }
 
 type UserUpdateReq struct {

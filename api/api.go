@@ -239,14 +239,15 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 		web.POST("/file-upload-s3", h.UploadFileToS3).Use(mid.NewAuth(enforcer, rdb))
 	}
 
+	lastSeen := mid.LastSeen(rdb, h.Clients.User.TouchLastSeen)
 	mobile := router.Group("/mobile")
 	{
-		auth := mobile.Group("/auth").Use(mid.NewAuth(enforcer, rdb))
+		auth := mobile.Group("/auth").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			auth.PUT("/password/change", h.ChangePasswordMobile)
 		}
 
-		user := mobile.Group("/user").Use(mid.NewAuth(enforcer, rdb))
+		user := mobile.Group("/user").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			user.GET("/get/profile", h.GetProfileUser)
 			user.PUT("/update/profile", h.UpdateProfileUser)
@@ -256,25 +257,25 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 			user.GET("/rating", h.GetRating)
 		}
 
-		banner := mobile.Group("/banner").Use(mid.NewAuth(enforcer, rdb))
+		banner := mobile.Group("/banner").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			banner.GET("", h.GetAllMobileBanners)
 			banner.GET("/:id", h.GetByIdMobileBanner)
 		}
 
-		about := mobile.Group("/about").Use(mid.NewAuth(enforcer, rdb))
+		about := mobile.Group("/about").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			about.GET("", h.GetAllMobileAbouts)
 			about.GET("/:id", h.GetByIdMobileAbout)
 		}
 
-		faq := mobile.Group("/faq").Use(mid.NewAuth(enforcer, rdb))
+		faq := mobile.Group("/faq").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			faq.GET("", h.GetAllMobileFaqs)
 			faq.GET("/:id", h.GetByIdMobileFaq)
 		}
 
-		course := mobile.Group("/course").Use(mid.NewAuth(enforcer, rdb))
+		course := mobile.Group("/course").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			course.GET("", h.GetAllMobileCourses)
 			course.GET("/:id", h.GetByIdMobileCourse)
@@ -283,55 +284,55 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 			course.GET("/permission", h.UserMobileCourses)
 		}
 
-		contact := mobile.Group("/contact").Use(mid.NewAuth(enforcer, rdb))
+		contact := mobile.Group("/contact").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			contact.GET("", h.GetAllContacts)
 			contact.GET("/:id", h.GetByIdContact)
 		}
 
-		lesson := mobile.Group("/lesson").Use(mid.NewAuth(enforcer, rdb))
+		lesson := mobile.Group("/lesson").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			// lesson.GET("", h.GetAllLessons)
 			lesson.GET("/:id", h.GetByIdMobileLesson)
 			lesson.PUT("/:id/end", h.EndLesson)
 		}
 
-		// module := mobile.Group("/module").Use(mid.NewAuth(enforcer, rdb))
+		// module := mobile.Group("/module").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		// {
 		// 	module.GET("", h.GetAllModules)
 		// 	module.GET("/:id", h.GetByIdModule)
 		// }
 
-		// source := mobile.Group("/source").Use(mid.NewAuth(enforcer, rdb))
+		// source := mobile.Group("/source").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		// {
 		// 	source.GET("", h.GetAllSources)
 		// 	source.GET("/:id", h.GetByIdSource)
 		// }
 
-		subject := mobile.Group("/subject").Use(mid.NewAuth(enforcer, rdb))
+		subject := mobile.Group("/subject").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			subject.GET("", h.GetAllMobileSubjects)
 			subject.GET("/:id", h.GetByIdMobileSubject)
 		}
 
-		notification := mobile.Group("/notification").Use(mid.NewAuth(enforcer, rdb))
+		notification := mobile.Group("/notification").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			notification.PUT("/:id/read", h.ReadNotification)
 			notification.GET("/user", h.GetAllUserNotifications)
 		}
 
-		tariff := mobile.Group("/tariff").Use(mid.NewAuth(enforcer, rdb))
+		tariff := mobile.Group("/tariff").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			tariff.GET("", h.GetAllTariffs)
 			tariff.GET("/:id", h.GetByIdTariff)
 		}
 
-		order := mobile.Group("/order").Use(mid.NewAuth(enforcer, rdb))
+		order := mobile.Group("/order").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			order.POST("", h.CreateOrder)
 		}
 
-		promocode := mobile.Group("/promocode").Use(mid.NewAuth(enforcer, rdb))
+		promocode := mobile.Group("/promocode").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			promocode.POST("/check", h.CheckPromoCode)
 		}

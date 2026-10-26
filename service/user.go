@@ -285,3 +285,7 @@ func clampLimit(limit int) int {
 func topCacheKey(typ string, limit int) string {
 	return fmt.Sprintf("rating:top:%s:%d", typ, limit)
 }
+
+func (s *UserService) TouchLastSeen(ctx context.Context, userID string) error {
+	return s.storage.UserS.TouchLastSeen(ctx, userID)
+}
