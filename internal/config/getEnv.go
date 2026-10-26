@@ -35,6 +35,7 @@ type Config struct {
 	PAYMENT_BOT_TOKEN      string
 
 	FIREBASE_CREDENTIALS string
+	AUTO_CONTENT_PUSH    bool
 
 	MINIO_ENDPOINT    string
 	MINIO_PORT        string
@@ -69,6 +70,7 @@ func Load() Config {
 
 	config.AUTH_PORT = cast.ToString(coalesce("AUTH_PORT", ":1001"))
 	config.GIN_MODE = cast.ToString(coalesce("GIN_MODE", "release"))
+	config.AUTO_CONTENT_PUSH = cast.ToBool(coalesce("AUTO_CONTENT_PUSH", false))
 
 	config.POSTGRES_HOST = cast.ToString(coalesce("POSTGRES_HOST", "postgres"))
 	config.POSTGRES_PORT = cast.ToInt(coalesce("POSTGRES_PORT", 5432))

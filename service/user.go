@@ -65,7 +65,7 @@ func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfi
 		  <div style="padding:22px 24px 24px 24px;">
 	
 			<div style="display:flex;align-items:center;gap:12px;">
-			  <img src="%s" alt="iMedTeam" height="38" style="display:block;border:0;outline:none;text-decoration:none;" />
+			  <img src="%s" alt="TibMentor" height="38" style="display:block;border:0;outline:none;text-decoration:none;" />
 			  <div>
 				<div style="font-size:18px;font-weight:800;color:#111827;line-height:1.2;">iMedTeam.uz</div>
 				<div style="font-size:13px;color:#6b7280;margin-top:2px;">Kirish uchun tasdiqlash kodi</div>

@@ -11,13 +11,30 @@ import (
 )
 
 type PushService struct {
-	storage st.Storage
-	push    *push.Client
+	storage         st.Storage
+	push            *push.Client
+	autoContentPush bool
 }
 
-func NewPushService(storage *st.Storage, push *push.Client) *PushService {
-	return &PushService{storage: *storage, push: push}
+func NewPushService(storage *st.Storage, push *push.Client, autoContentPush bool) *PushService {
+	return &PushService{storage: *storage, push: push, autoContentPush: autoContentPush}
 }
+
+// contentEvents kontent qo'shilganda/o'zgarganda avtomatik ketadigan pushlar (T-17).
+var contentEvents = map[m.PushEventType]bool{
+	m.EventNewCourse:      true,
+	m.EventLessonAdded:    true,
+	m.EventModuleAdded:    true,
+	m.EventSourceAdded:    true,
+	m.EventCourseUpdated:  true,
+	m.EventModuleUpdated:  true,
+	m.EventLessonUpdated:  true,
+	m.EventSourceUpdated:  true,
+	m.EventBannerAdded:    true,
+	m.EventSubjectAdded:   true,
+	m.EventSubjectUpdated: true,
+}
+
 func chunkStrings(in []string, size int) [][]string {
 	if size <= 0 {
 		size = 500
@@ -68,6 +85,10 @@ func (s *PushService) ResolveTokens(ctx context.Context, t m.PushTarget) ([]stri
 }
 
 func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m.PushEvent) error {
+	if !s.autoContentPush && contentEvents[event.Type] {
+		slog.Debug("auto content push disabled, skipped", "event", event.Type)
+		return nil
+	}
 	if target.Type == m.TargetTopic || target.Type == m.TargetAllUsers {
 		topics := []string{}
 		if target.Type == m.TargetTopic && target.Topic != "" {
