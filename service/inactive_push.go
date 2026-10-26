@@ -4,18 +4,14 @@ import (
 	"context"
 	"log/slog"
 	"time"
+
+	m "imed/pkg/models"
 )
 
 const (
 	inactiveAfter     = 24 * time.Hour
 	inactiveBatchSize = 500
 )
-
-var inactivePushText = map[string][2]string{
-	"uz": {"TibMentor", "Bugun hali dars qilmadingiz. Davom etamizmi?"},
-	"ru": {"TibMentor", "Сегодня вы ещё не занимались. Продолжим?"},
-	"en": {"TibMentor", "You haven't studied today yet. Shall we continue?"},
-}
 
 // RunInactiveReminder 24 soat kirmagan foydalanuvchilarga eslatma yuboradi (T-05).
 // Har bir inaktivlik davrida bitta push ketadi: foydalanuvchi qaytib kirsa
@@ -36,6 +32,8 @@ func (s *PushService) RunInactiveReminder(ctx context.Context, interval time.Dur
 }
 
 func (s *PushService) sendInactiveReminders(ctx context.Context) {
+	event := m.PushEvent{Type: m.EventInactiveReminder}
+
 	for {
 		users, err := s.storage.UserS.GetInactiveUsers(ctx, time.Now().Add(-inactiveAfter), inactiveBatchSize)
 		if err != nil {
@@ -46,23 +44,13 @@ func (s *PushService) sendInactiveReminders(ctx context.Context) {
 			return
 		}
 
-		byLang := map[string][]string{}
 		ids := make([]string, 0, len(users))
 		for _, u := range users {
-			lang := u.Language
-			if _, ok := inactivePushText[lang]; !ok {
-				lang = "uz"
+			// To'lov pushlari kabi user_id orqali yuboriladi.
+			if err := s.SendPush(ctx, m.PushTarget{Type: m.TargetUser, UserID: u.Id}, event); err != nil {
+				slog.Error("inactive reminder: send failed", "user_id", u.Id, "err", err)
 			}
-			byLang[lang] = append(byLang[lang], u.FCMToken)
 			ids = append(ids, u.Id)
-		}
-
-		for lang, tokens := range byLang {
-			text := inactivePushText[lang]
-			data := map[string]string{"type": "inactive_reminder"}
-			if _, err := s.push.SendToManyTokens(ctx, tokens, text[0], text[1], data); err != nil {
-				slog.Error("inactive reminder: send failed", "lang", lang, "err", err)
-			}
 		}
 
 		// Yuborish xato bo'lsa ham belgilanadi, aks holda har tickda qayta urinib spam bo'ladi.

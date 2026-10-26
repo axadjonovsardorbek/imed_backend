@@ -48,6 +48,8 @@ const (
 	EventBannerAdded   = "banner_added"
 	EventSubjectAdded  = "subject_added"
 	EventSubjectUpdated = "subject_updated"
+
+	EventInactiveReminder PushEventType = "inactive_reminder"
 )
 
 
@@ -210,6 +212,15 @@ func BuildUzPushMessage(e PushEvent) PushMessage {
 				"order_id":  e.OrderID,
 				"course_id": e.CourseID,
 				"amount":    e.Amount,
+			},
+		}
+
+	case EventInactiveReminder:
+		return PushMessage{
+			Title: "TibMentor",
+			Body:  "Bugun hali dars qilmadingiz. Davom etamizmi?",
+			Data: map[string]string{
+				"type": "inactive_reminder",
 			},
 		}
 
@@ -395,6 +406,15 @@ func BuildRuPushMessage(e PushEvent) PushMessage {
 			},
 		}
 
+	case EventInactiveReminder:
+		return PushMessage{
+			Title: "TibMentor",
+			Body:  "Сегодня вы ещё не занимались. Продолжим?",
+			Data: map[string]string{
+				"type": "inactive_reminder",
+			},
+		}
+
 	case EventPaymentFailed:
 		body := fmt.Sprintf("Оплата не принята. Курс: %s", e.CourseName)
 		if e.FailReason != "" {
@@ -573,6 +593,15 @@ func BuildEnPushMessage(e PushEvent) PushMessage {
 				"order_id":  e.OrderID,
 				"course_id": e.CourseID,
 				"amount":    e.Amount,
+			},
+		}
+
+	case EventInactiveReminder:
+		return PushMessage{
+			Title: "TibMentor",
+			Body:  "You haven't studied today yet. Shall we continue?",
+			Data: map[string]string{
+				"type": "inactive_reminder",
 			},
 		}
 
