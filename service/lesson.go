@@ -160,5 +160,29 @@ func (s *LessonService) EndLesson(ctx context.Context, req *m.EndUserLessonReq) 
 	return s.storage.LessonS.EndLesson(req)
 }
 func (s *LessonService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.SourceLessonMobileRes, error) {
-	return s.storage.LessonS.GetByIdMobile(req)
+	res, err := s.storage.LessonS.GetByIdMobile(req)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Quizzes, err = s.storage.TestS.GetByLessonMobile(ctx, req.Id, req.UserId, req.Language)
+	if err != nil {
+		return nil, err
+	}
+
+	// T-06: mobil faqat shu ro'yxatdagi bo'limlarni ko'rsatadi, bo'sh bo'lim chiqmaydi.
+	res.ContentTypes = make([]string, 0, 4)
+	if len(res.Videos) > 0 {
+		res.ContentTypes = append(res.ContentTypes, m.SourceVideo)
+	}
+	if len(res.Audios) > 0 {
+		res.ContentTypes = append(res.ContentTypes, m.SourceAudio)
+	}
+	if len(res.Documents) > 0 {
+		res.ContentTypes = append(res.ContentTypes, m.SourceDocument)
+	}
+	if len(res.Quizzes) > 0 {
+		res.ContentTypes = append(res.ContentTypes, m.SourceTest)
+	}
+	return res, nil
 }

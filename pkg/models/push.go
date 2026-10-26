@@ -28,6 +28,7 @@ const (
 	SourceTest     = "test"
 	SourceDocument = "document"
 	SourceVideo    = "video"
+	SourceAudio    = "audio"
 )
 
 const (

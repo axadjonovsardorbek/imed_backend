@@ -111,7 +111,7 @@ func (h *Handler) GetByIdSource(c *gin.Context) {
 // @Produce  json
 // @Param name query string false "Name"
 // @Param lesson_id query string false "Lesson ID"
-// @Param type query string false "Type" Enums(video, document, test)
+// @Param type query string false "Type" Enums(video, audio, document, test)
 // @Param limit query int false "Limit"
 // @Param page query int false "Page"
 // @Success 200 {object} models.SourceList

@@ -108,9 +108,13 @@ type SourceLessonMobileRes struct {
 	Duration    *int           `json:"duration"`
 	OrderNum    *int           `json:"order_num"`
 	IsCompleted bool           `json:"is_completed"`
-	Tests       []SourceMobile `json:"tests"`
-	Documents   []SourceMobile `json:"documents"`
-	Videos      []SourceMobile `json:"videos"`
+	// Tests eski PDF testlar uchun edi; endi har doim bo'sh qaytadi (eski ilova versiyalari uchun qoldirilgan).
+	Tests        []SourceMobile    `json:"tests"`
+	Documents    []SourceMobile    `json:"documents"`
+	Videos       []SourceMobile    `json:"videos"`
+	Audios       []SourceMobile    `json:"audios"`
+	Quizzes      []TestShortMobile `json:"quizzes"`
+	ContentTypes []string          `json:"content_types"`
 }
 
 type SourceMobile struct {
