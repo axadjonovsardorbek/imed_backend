@@ -1292,6 +1292,80 @@ const docTemplate = `{
                 }
             }
         },
+        "/mobile/premium": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "premium"
+                ],
+                "summary": "Premium price and current user status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PremiumInfoRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/premium/order": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Paying again extends the active subscription",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "premium"
+                ],
+                "summary": "Buy monthly premium via Click",
+                "parameters": [
+                    {
+                        "description": "Optional promocode",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.PremiumOrderBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/mobile/promocode/check": {
             "post": {
                 "security": [
@@ -1549,6 +1623,190 @@ const docTemplate = `{
                 }
             }
         },
+        "/mobile/test/attempt/{id}/answer": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns immediately whether the answer is correct and the correct option. One answer per question.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Answer a question",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Attempt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Answer",
+                        "name": "answer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TestAnswerBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TestAnswerRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "attempt finished / time is up / invalid option",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/test/attempt/{id}/finish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns result in percent and next lesson id. Unanswered questions count as wrong.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Finish test attempt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Attempt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TestFinishRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/test/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Questions and options without correct answers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Get test for solving",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "uz | ru | en",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TestMobileRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/test/{id}/start": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Every call starts a new attempt (\"Testni qayta ishlash\" uses the same endpoint)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Start test attempt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TestStartRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/mobile/user/activity": {
             "get": {
                 "security": [
@@ -1778,6 +2036,16 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "activity",
+                            "test"
+                        ],
+                        "type": "string",
+                        "description": "Rating by: activity|test (default: activity). test = average best percent per test",
+                        "name": "by",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Top list limit (default: 10, max: 100)",
                         "name": "limit",
@@ -1801,6 +2069,50 @@ const docTemplate = `{
                         "description": "Server error",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/mobile/user/test-history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "User test results history",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "uz | ru | en",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PaginationResponse"
                         }
                     }
                 }
@@ -5214,6 +5526,79 @@ const docTemplate = `{
                 }
             }
         },
+        "/web/premium/settings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "premium"
+                ],
+                "summary": "Get premium settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PremiumSettings"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Price 0 disables buying premium",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "premium"
+                ],
+                "summary": "Update premium price and duration",
+                "parameters": [
+                    {
+                        "description": "Premium settings",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PremiumSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/web/promocode": {
             "get": {
                 "security": [
@@ -5651,6 +6036,7 @@ const docTemplate = `{
                     {
                         "enum": [
                             "video",
+                            "audio",
                             "document",
                             "test"
                         ],
@@ -6680,6 +7066,447 @@ const docTemplate = `{
                 }
             }
         },
+        "/web/test": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get tests, optionally filtered by lesson",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Get all tests",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lesson ID",
+                        "name": "lesson_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TestList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a test with questions and options. Each question needs at least 2 options and exactly 1 correct option.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Create a new test",
+                "parameters": [
+                    {
+                        "description": "Test Details",
+                        "name": "test",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TestCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/import-template": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Download Excel import template",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/question/{id}/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Delete test question",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/question/{id}/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Replaces question text and all options",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Update test question",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Question ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Question",
+                        "name": "question",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TestQuestionBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a test with questions and options (including correct answers)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Get test by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TestRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/{id}/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Delete test",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/{id}/import": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": ".xlsx: first row is header; columns: question | A | B | ... | correct letter. All rows are saved in one transaction.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Import questions from Excel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Excel file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TestImportRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/{id}/question": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Add question to test",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Question",
+                        "name": "question",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TestQuestionBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/test/{id}/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update test title, time limit and order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Update test",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Test update",
+                        "name": "test",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TestUpdateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/web/user": {
             "get": {
                 "security": [
@@ -6776,6 +7603,16 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter type: day|week|month|year|total (default: total)",
                         "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "activity",
+                            "test"
+                        ],
+                        "type": "string",
+                        "description": "Rating by: activity|test (default: activity). test = average best percent per test",
+                        "name": "by",
                         "in": "query"
                     },
                     {
@@ -6897,6 +7734,58 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/web/user/{id}/ustoz": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Ustoz gets permanent access to all courses",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Grant or revoke \"Ustoz\" title",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Ustoz flag",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UstozBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
@@ -8074,6 +8963,12 @@ const docTemplate = `{
         "models.MobileCourseLessonRes": {
             "type": "object",
             "properties": {
+                "content_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "id": {
                     "type": "string"
                 },
@@ -8337,6 +9232,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "order_type": {
+                    "type": "string"
+                },
                 "paid_at": {
                     "type": "string"
                 },
@@ -8366,6 +9264,69 @@ const docTemplate = `{
                 },
                 "user_phone": {
                     "type": "string"
+                }
+            }
+        },
+        "models.PaginationResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "has_next": {
+                    "type": "boolean"
+                },
+                "has_previous": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.PremiumInfoRes": {
+            "type": "object",
+            "properties": {
+                "duration_months": {
+                    "type": "integer"
+                },
+                "is_premium": {
+                    "type": "boolean"
+                },
+                "is_ustoz": {
+                    "type": "boolean"
+                },
+                "premium_until": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.PremiumOrderBody": {
+            "type": "object",
+            "properties": {
+                "promocode_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PremiumSettings": {
+            "type": "object",
+            "properties": {
+                "duration_months": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
                 }
             }
         },
@@ -8601,9 +9562,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.RatingBy": {
+            "type": "string",
+            "enum": [
+                "activity",
+                "test"
+            ],
+            "x-enum-varnames": [
+                "RatingByActivity",
+                "RatingByTest"
+            ]
+        },
         "models.RatingResponse": {
             "type": "object",
             "properties": {
+                "by": {
+                    "$ref": "#/definitions/models.RatingBy"
+                },
                 "items": {
                     "type": "array",
                     "items": {
@@ -8650,10 +9625,21 @@ const docTemplate = `{
                 "is_me": {
                     "type": "boolean"
                 },
+                "is_ustoz": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
                 "rank": {
+                    "type": "integer"
+                },
+                "score": {
+                    "description": "by=test: eng yaxshi natijalarning o'rtacha foizi",
+                    "type": "number"
+                },
+                "tests_count": {
+                    "description": "by=test: ishlangan testlar soni",
                     "type": "integer"
                 },
                 "user_id": {
@@ -8724,6 +9710,18 @@ const docTemplate = `{
         "models.SourceLessonMobileRes": {
             "type": "object",
             "properties": {
+                "audios": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SourceMobile"
+                    }
+                },
+                "content_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "documents": {
                     "type": "array",
                     "items": {
@@ -8745,7 +9743,14 @@ const docTemplate = `{
                 "order_num": {
                     "type": "integer"
                 },
+                "quizzes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestShortMobile"
+                    }
+                },
                 "tests": {
+                    "description": "Tests eski PDF testlar uchun edi; endi har doim bo'sh qaytadi (eski ilova versiyalari uchun qoldirilgan).",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.SourceMobile"
@@ -9125,6 +10130,316 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TestAnswerBody": {
+            "type": "object",
+            "properties": {
+                "option_id": {
+                    "type": "string"
+                },
+                "question_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestAnswerRes": {
+            "type": "object",
+            "properties": {
+                "correct_option_id": {
+                    "type": "string"
+                },
+                "is_correct": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.TestCreateBody": {
+            "type": "object",
+            "properties": {
+                "lesson_id": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestQuestionBody"
+                    }
+                },
+                "time_limit_sec": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.TestFinishRes": {
+            "type": "object",
+            "properties": {
+                "attempt_id": {
+                    "type": "string"
+                },
+                "correct_count": {
+                    "type": "integer"
+                },
+                "next_lesson_id": {
+                    "type": "string"
+                },
+                "percent": {
+                    "type": "number"
+                },
+                "test_id": {
+                    "type": "string"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TestImportRes": {
+            "type": "object",
+            "properties": {
+                "imported": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TestList": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "tests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestRes"
+                    }
+                }
+            }
+        },
+        "models.TestMobileRes": {
+            "type": "object",
+            "properties": {
+                "best_percent": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lesson_id": {
+                    "type": "string"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestQuestionMobile"
+                    }
+                },
+                "time_limit_sec": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestOptionBody": {
+            "type": "object",
+            "properties": {
+                "is_correct": {
+                    "type": "boolean"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestOptionMobile": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestOptionRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "is_correct": {
+                    "type": "boolean"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestQuestionBody": {
+            "type": "object",
+            "properties": {
+                "image_url": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestOptionBody"
+                    }
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestQuestionMobile": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestOptionMobile"
+                    }
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestQuestionRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestOptionRes"
+                    }
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestRes": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lesson_id": {
+                    "type": "string"
+                },
+                "order_num": {
+                    "type": "integer"
+                },
+                "question_count": {
+                    "type": "integer"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TestQuestionRes"
+                    }
+                },
+                "time_limit_sec": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestShortMobile": {
+            "type": "object",
+            "properties": {
+                "best_percent": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "question_count": {
+                    "type": "integer"
+                },
+                "time_limit_sec": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TestStartRes": {
+            "type": "object",
+            "properties": {
+                "attempt_id": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "time_limit_sec": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TestUpdateBody": {
+            "type": "object",
+            "properties": {
+                "order_num": {
+                    "type": "integer"
+                },
+                "time_limit_sec": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "models.TokenRes": {
             "type": "object",
             "properties": {
@@ -9186,6 +10501,10 @@ const docTemplate = `{
                 },
                 "ended_at": {
                     "type": "string"
+                },
+                "is_free": {
+                    "description": "true bo'lsa kurs bepul beriladi (summa 0)",
+                    "type": "boolean"
                 },
                 "started_at": {
                     "type": "string"
@@ -9426,13 +10745,25 @@ const docTemplate = `{
                 "fcm_token": {
                     "type": "string"
                 },
+                "first_login_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "image_url": {
                     "type": "string"
                 },
+                "is_premium": {
+                    "type": "boolean"
+                },
+                "is_ustoz": {
+                    "type": "boolean"
+                },
                 "language": {
+                    "type": "string"
+                },
+                "last_seen_at": {
                     "type": "string"
                 },
                 "name": {
@@ -9441,8 +10772,19 @@ const docTemplate = `{
                 "phone_number": {
                     "type": "string"
                 },
+                "premium_until": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UstozBody": {
+            "type": "object",
+            "properties": {
+                "is_ustoz": {
+                    "type": "boolean"
                 }
             }
         },

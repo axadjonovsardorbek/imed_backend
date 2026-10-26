@@ -233,13 +233,18 @@ func (s *UserService) GetActivities(ctx context.Context, req *m.UserActivityGetL
 func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.RatingResponse, error) {
 	req.Limit = clampLimit(req.Limit)
 
+	if req.By == "" {
+		req.By = m.RatingByActivity
+	}
+
 	res := &m.RatingResponse{
 		Type:  req.Type,
+		By:    req.By,
 		Limit: req.Limit,
 		Items: make([]m.RatingUserItem, 0, req.Limit),
 	}
 
-	key := topCacheKey(string(req.Type), req.Limit)
+	key := topCacheKey(string(req.By)+":"+string(req.Type), req.Limit)
 
 	if s.rdb != nil {
 		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
@@ -259,6 +264,11 @@ func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.R
 				_ = s.rdb.Set(context.Background(), key, b, 30*time.Second).Err()
 			}
 		}
+	}
+
+	// Kesh boshqa foydalanuvchi so'rovidan to'lgan bo'lishi mumkin: is_me qayta hisoblanadi.
+	for i := range res.Items {
+		res.Items[i].IsMe = res.Items[i].UserID == req.UserId
 	}
 
 	if req.UserId != "" {

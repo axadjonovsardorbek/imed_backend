@@ -770,6 +770,10 @@ definitions:
     type: object
   models.MobileCourseLessonRes:
     properties:
+      content_types:
+        items:
+          type: string
+        type: array
       id:
         type: string
       is_completed:
@@ -942,6 +946,8 @@ definitions:
         type: integer
       id:
         type: string
+      order_type:
+        type: string
       paid_at:
         type: string
       payment_type:
@@ -962,6 +968,47 @@ definitions:
         type: string
       user_phone:
         type: string
+    type: object
+  models.PaginationResponse:
+    properties:
+      data: {}
+      has_next:
+        type: boolean
+      has_previous:
+        type: boolean
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  models.PremiumInfoRes:
+    properties:
+      duration_months:
+        type: integer
+      is_premium:
+        type: boolean
+      is_ustoz:
+        type: boolean
+      premium_until:
+        type: string
+      price:
+        type: integer
+    type: object
+  models.PremiumOrderBody:
+    properties:
+      promocode_id:
+        type: string
+    type: object
+  models.PremiumSettings:
+    properties:
+      duration_months:
+        type: integer
+      price:
+        type: integer
     type: object
   models.PromoCodeCheckBody:
     properties:
@@ -1115,8 +1162,18 @@ definitions:
       user_phone:
         type: string
     type: object
+  models.RatingBy:
+    enum:
+    - activity
+    - test
+    type: string
+    x-enum-varnames:
+    - RatingByActivity
+    - RatingByTest
   models.RatingResponse:
     properties:
+      by:
+        $ref: '#/definitions/models.RatingBy'
       items:
         items:
           $ref: '#/definitions/models.RatingUserItem'
@@ -1150,9 +1207,17 @@ definitions:
         type: string
       is_me:
         type: boolean
+      is_ustoz:
+        type: boolean
       name:
         type: string
       rank:
+        type: integer
+      score:
+        description: 'by=test: eng yaxshi natijalarning o''rtacha foizi'
+        type: number
+      tests_count:
+        description: 'by=test: ishlangan testlar soni'
         type: integer
       user_id:
         type: string
@@ -1198,6 +1263,14 @@ definitions:
     type: object
   models.SourceLessonMobileRes:
     properties:
+      audios:
+        items:
+          $ref: '#/definitions/models.SourceMobile'
+        type: array
+      content_types:
+        items:
+          type: string
+        type: array
       documents:
         items:
           $ref: '#/definitions/models.SourceMobile'
@@ -1212,7 +1285,13 @@ definitions:
         type: string
       order_num:
         type: integer
+      quizzes:
+        items:
+          $ref: '#/definitions/models.TestShortMobile'
+        type: array
       tests:
+        description: Tests eski PDF testlar uchun edi; endi har doim bo'sh qaytadi
+          (eski ilova versiyalari uchun qoldirilgan).
         items:
           $ref: '#/definitions/models.SourceMobile'
         type: array
@@ -1459,6 +1538,207 @@ definitions:
       phone_number:
         type: string
     type: object
+  models.TestAnswerBody:
+    properties:
+      option_id:
+        type: string
+      question_id:
+        type: string
+    type: object
+  models.TestAnswerRes:
+    properties:
+      correct_option_id:
+        type: string
+      is_correct:
+        type: boolean
+    type: object
+  models.TestCreateBody:
+    properties:
+      lesson_id:
+        type: string
+      order_num:
+        type: integer
+      questions:
+        items:
+          $ref: '#/definitions/models.TestQuestionBody'
+        type: array
+      time_limit_sec:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.TestFinishRes:
+    properties:
+      attempt_id:
+        type: string
+      correct_count:
+        type: integer
+      next_lesson_id:
+        type: string
+      percent:
+        type: number
+      test_id:
+        type: string
+      total_count:
+        type: integer
+    type: object
+  models.TestImportRes:
+    properties:
+      imported:
+        type: integer
+    type: object
+  models.TestList:
+    properties:
+      count:
+        type: integer
+      tests:
+        items:
+          $ref: '#/definitions/models.TestRes'
+        type: array
+    type: object
+  models.TestMobileRes:
+    properties:
+      best_percent:
+        type: number
+      id:
+        type: string
+      lesson_id:
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/models.TestQuestionMobile'
+        type: array
+      time_limit_sec:
+        type: integer
+      title:
+        type: string
+    type: object
+  models.TestOptionBody:
+    properties:
+      is_correct:
+        type: boolean
+      text:
+        type: string
+    type: object
+  models.TestOptionMobile:
+    properties:
+      id:
+        type: string
+      text:
+        type: string
+    type: object
+  models.TestOptionRes:
+    properties:
+      id:
+        type: string
+      is_correct:
+        type: boolean
+      order_num:
+        type: integer
+      text:
+        type: string
+    type: object
+  models.TestQuestionBody:
+    properties:
+      image_url:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/models.TestOptionBody'
+        type: array
+      order_num:
+        type: integer
+      text:
+        type: string
+    type: object
+  models.TestQuestionMobile:
+    properties:
+      id:
+        type: string
+      image_url:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/models.TestOptionMobile'
+        type: array
+      text:
+        type: string
+    type: object
+  models.TestQuestionRes:
+    properties:
+      id:
+        type: string
+      image_url:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/models.TestOptionRes'
+        type: array
+      order_num:
+        type: integer
+      text:
+        type: string
+    type: object
+  models.TestRes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      lesson_id:
+        type: string
+      order_num:
+        type: integer
+      question_count:
+        type: integer
+      questions:
+        items:
+          $ref: '#/definitions/models.TestQuestionRes'
+        type: array
+      time_limit_sec:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+      updated_at:
+        type: string
+    type: object
+  models.TestShortMobile:
+    properties:
+      best_percent:
+        type: number
+      id:
+        type: string
+      question_count:
+        type: integer
+      time_limit_sec:
+        type: integer
+      title:
+        type: string
+    type: object
+  models.TestStartRes:
+    properties:
+      attempt_id:
+        type: string
+      started_at:
+        type: string
+      time_limit_sec:
+        type: integer
+    type: object
+  models.TestUpdateBody:
+    properties:
+      order_num:
+        type: integer
+      time_limit_sec:
+        type: integer
+      title:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
   models.TokenRes:
     properties:
       access_token:
@@ -1500,6 +1780,9 @@ definitions:
         type: string
       ended_at:
         type: string
+      is_free:
+        description: true bo'lsa kurs bepul beriladi (summa 0)
+        type: boolean
       started_at:
         type: string
       tariff_id:
@@ -1656,18 +1939,33 @@ definitions:
         type: string
       fcm_token:
         type: string
+      first_login_at:
+        type: string
       id:
         type: string
       image_url:
         type: string
+      is_premium:
+        type: boolean
+      is_ustoz:
+        type: boolean
       language:
+        type: string
+      last_seen_at:
         type: string
       name:
         type: string
       phone_number:
         type: string
+      premium_until:
+        type: string
       updated_at:
         type: string
+    type: object
+  models.UstozBody:
+    properties:
+      is_ustoz:
+        type: boolean
     type: object
   models.YouTubeReq:
     properties:
@@ -2488,6 +2786,51 @@ paths:
       summary: Create a new order
       tags:
       - order
+  /mobile/premium:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PremiumInfoRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Premium price and current user status
+      tags:
+      - premium
+  /mobile/premium/order:
+    post:
+      consumes:
+      - application/json
+      description: Paying again extends the active subscription
+      parameters:
+      - description: Optional promocode
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/models.PremiumOrderBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Buy monthly premium via Click
+      tags:
+      - premium
   /mobile/promocode/check:
     post:
       consumes:
@@ -2650,6 +2993,125 @@ paths:
       summary: Get tariff by ID
       tags:
       - tariff
+  /mobile/test/{id}:
+    get:
+      description: Questions and options without correct answers
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: uz | ru | en
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TestMobileRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get test for solving
+      tags:
+      - test
+  /mobile/test/{id}/start:
+    post:
+      description: Every call starts a new attempt ("Testni qayta ishlash" uses the
+        same endpoint)
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TestStartRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Start test attempt
+      tags:
+      - test
+  /mobile/test/attempt/{id}/answer:
+    post:
+      consumes:
+      - application/json
+      description: Returns immediately whether the answer is correct and the correct
+        option. One answer per question.
+      parameters:
+      - description: Attempt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Answer
+        in: body
+        name: answer
+        required: true
+        schema:
+          $ref: '#/definitions/models.TestAnswerBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TestAnswerRes'
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "409":
+          description: attempt finished / time is up / invalid option
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Answer a question
+      tags:
+      - test
+  /mobile/test/attempt/{id}/finish:
+    post:
+      description: Returns result in percent and next lesson id. Unanswered questions
+        count as wrong.
+      parameters:
+      - description: Attempt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TestFinishRes'
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Finish test attempt
+      tags:
+      - test
   /mobile/user/activity:
     get:
       consumes:
@@ -2793,6 +3255,14 @@ paths:
         in: query
         name: type
         type: string
+      - description: 'Rating by: activity|test (default: activity). test = average
+          best percent per test'
+        enum:
+        - activity
+        - test
+        in: query
+        name: by
+        type: string
       - description: 'Top list limit (default: 10, max: 100)'
         in: query
         name: limit
@@ -2817,6 +3287,33 @@ paths:
       summary: Reyting (leaderboard) olish
       tags:
       - profile
+  /mobile/user/test-history:
+    get:
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: uz | ru | en
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginationResponse'
+      security:
+      - BearerAuth: []
+      summary: User test results history
+      tags:
+      - test
   /mobile/user/update/profile:
     put:
       consumes:
@@ -4977,6 +5474,51 @@ paths:
       summary: Get order by ID
       tags:
       - order
+  /web/premium/settings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PremiumSettings'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get premium settings
+      tags:
+      - premium
+    put:
+      consumes:
+      - application/json
+      description: Price 0 disables buying premium
+      parameters:
+      - description: Premium settings
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.PremiumSettings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update premium price and duration
+      tags:
+      - premium
   /web/promocode:
     get:
       consumes:
@@ -5250,6 +5792,7 @@ paths:
       - description: Type
         enum:
         - video
+        - audio
         - document
         - test
         in: query
@@ -5905,6 +6448,284 @@ paths:
       summary: Update teacher
       tags:
       - teacher
+  /web/test:
+    get:
+      description: Get tests, optionally filtered by lesson
+      parameters:
+      - description: Lesson ID
+        in: query
+        name: lesson_id
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TestList'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get all tests
+      tags:
+      - test
+    post:
+      consumes:
+      - application/json
+      description: Create a test with questions and options. Each question needs at
+        least 2 options and exactly 1 correct option.
+      parameters:
+      - description: Test Details
+        in: body
+        name: test
+        required: true
+        schema:
+          $ref: '#/definitions/models.TestCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new test
+      tags:
+      - test
+  /web/test/{id}:
+    get:
+      description: Get a test with questions and options (including correct answers)
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TestRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get test by ID
+      tags:
+      - test
+  /web/test/{id}/delete:
+    delete:
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete test
+      tags:
+      - test
+  /web/test/{id}/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: '.xlsx: first row is header; columns: question | A | B | ... |
+        correct letter. All rows are saved in one transaction.'
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Excel file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TestImportRes'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Import questions from Excel
+      tags:
+      - test
+  /web/test/{id}/question:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Question
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/models.TestQuestionBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Add question to test
+      tags:
+      - test
+  /web/test/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Update test title, time limit and order
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Test update
+        in: body
+        name: test
+        required: true
+        schema:
+          $ref: '#/definitions/models.TestUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update test
+      tags:
+      - test
+  /web/test/import-template:
+    get:
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Download Excel import template
+      tags:
+      - test
+  /web/test/question/{id}/delete:
+    delete:
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete test question
+      tags:
+      - test
+  /web/test/question/{id}/update:
+    put:
+      consumes:
+      - application/json
+      description: Replaces question text and all options
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Question
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/models.TestQuestionBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Update test question
+      tags:
+      - test
   /web/user:
     get:
       consumes:
@@ -6008,6 +6829,39 @@ paths:
       summary: Delete user
       tags:
       - user
+  /web/user/{id}/ustoz:
+    put:
+      consumes:
+      - application/json
+      description: Ustoz gets permanent access to all courses
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Ustoz flag
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UstozBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Grant or revoke "Ustoz" title
+      tags:
+      - user
   /web/user/rating:
     get:
       consumes:
@@ -6025,6 +6879,14 @@ paths:
         - total
         in: query
         name: type
+        type: string
+      - description: 'Rating by: activity|test (default: activity). test = average
+          best percent per test'
+        enum:
+        - activity
+        - test
+        in: query
+        name: by
         type: string
       - description: 'Top list limit (default: 10, max: 100)'
         in: query

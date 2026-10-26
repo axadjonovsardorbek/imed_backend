@@ -1088,28 +1088,65 @@ func (r *UserRepo) GetRating(req *m.RatingRequest) (*m.RatingResponse, error) {
 	return res, nil
 }
 
-func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
-	qTopRating := `
-	WITH scores AS (
+// ratingRankedCTE reyting uchun "ranked" CTE ni qaytaradi.
+// $1, $2 — davr chegaralari. by=test: har test bo'yicha eng yaxshi foizning o'rtachasi (T-14).
+func ratingRankedCTE(by m.RatingBy) string {
+	scores := `
+	scores AS (
 	  SELECT
 	    u.id AS user_id,
 	    u.name AS name,
 	    u.image_url AS avatar,
-	    COALESCE(SUM(ua.activity), 0) AS activity
+	    u.is_ustoz AS is_ustoz,
+	    COALESCE(SUM(ua.activity), 0) AS activity,
+	    COALESCE(SUM(ua.activity), 0)::float8 AS score,
+	    0::bigint AS tests_count
 	  FROM users u
 	  LEFT JOIN user_activities ua
 	    ON ua.user_id = u.id
 	   AND ua.day >= $1::date
 	   AND ua.day <= $2::date
-	  GROUP BY u.id, u.name, u.image_url
+	  WHERE u.deleted_at = 0
+	  GROUP BY u.id, u.name, u.image_url, u.is_ustoz
+	)`
+	if by == m.RatingByTest {
+		scores = `
+	best AS (
+	  SELECT a.user_id, a.test_id, MAX(a.percent) AS percent
+	  FROM user_test_attempts a
+	  JOIN tests t ON t.id = a.test_id AND t.deleted_at = 0
+	  WHERE a.finished_at IS NOT NULL
+	    AND a.finished_at >= $1::date
+	    AND a.finished_at < $2::date + 1
+	  GROUP BY a.user_id, a.test_id
 	),
+	scores AS (
+	  SELECT
+	    u.id AS user_id,
+	    u.name AS name,
+	    u.image_url AS avatar,
+	    u.is_ustoz AS is_ustoz,
+	    0::bigint AS activity,
+	    COALESCE(ROUND(AVG(b.percent), 2), 0)::float8 AS score,
+	    COUNT(b.test_id) AS tests_count
+	  FROM users u
+	  LEFT JOIN best b ON b.user_id = u.id
+	  WHERE u.deleted_at = 0
+	  GROUP BY u.id, u.name, u.image_url, u.is_ustoz
+	)`
+	}
+	return `WITH` + scores + `,
 	ranked AS (
 	  SELECT
-	    user_id, name, avatar, activity,
-	    ROW_NUMBER() OVER (ORDER BY activity DESC, name ASC, user_id ASC) AS rank
+	    user_id, name, avatar, is_ustoz, activity, score, tests_count,
+	    ROW_NUMBER() OVER (ORDER BY score DESC, tests_count DESC, name ASC, user_id ASC) AS rank
 	  FROM scores
-	)
-	SELECT user_id, name, avatar, activity, rank, (user_id = $3) as is_me
+	)`
+}
+
+func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
+	qTopRating := ratingRankedCTE(req.By) + `
+	SELECT user_id, name, avatar, is_ustoz, activity, score, tests_count, rank, (user_id = $3) as is_me
 	FROM ranked
 	ORDER BY rank
 	LIMIT $4
@@ -1129,7 +1166,7 @@ func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
 	for rows.Next() {
 		var it m.RatingUserItem
 
-		if err := rows.Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.Activity, &it.Rank, &it.IsMe); err != nil {
+		if err := rows.Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.IsUstoz, &it.Activity, &it.Score, &it.TestsCount, &it.Rank, &it.IsMe); err != nil {
 			return nil, fmt.Errorf("top rating scan: %w", err)
 		}
 
@@ -1139,32 +1176,13 @@ func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
 		return nil, fmt.Errorf("top rating rows: %w", err)
 	}
 
-	slog.Debug("GetTop rating", "type", req.Type, "limit", req.Limit, "items_count", len(items))
+	slog.Debug("GetTop rating", "type", req.Type, "by", req.By, "limit", req.Limit, "items_count", len(items))
 	return items, nil
 }
 
 func (r *UserRepo) GetMe(req *m.RatingRequest) (*m.RatingUserItem, error) {
-	qMeRating := `
-	WITH scores AS (
-	  SELECT
-	    u.id AS user_id,
-	    u.name AS name,
-	    u.image_url AS avatar,
-	    COALESCE(SUM(ua.activity), 0) AS activity
-	  FROM users u
-	  LEFT JOIN user_activities ua
-	    ON ua.user_id = u.id
-	   AND ua.day >= $1::date
-	   AND ua.day <= $2::date
-	  GROUP BY u.id, u.name, u.image_url
-	),
-	ranked AS (
-	  SELECT
-	    user_id, name, avatar, activity,
-	    ROW_NUMBER() OVER (ORDER BY activity DESC, name ASC, user_id ASC) AS rank
-	  FROM scores
-	)
-	SELECT user_id, name, avatar, activity, rank
+	qMeRating := ratingRankedCTE(req.By) + `
+	SELECT user_id, name, avatar, is_ustoz, activity, score, tests_count, rank
 	FROM ranked
 	WHERE user_id = $3::uuid
 	`
@@ -1176,7 +1194,7 @@ func (r *UserRepo) GetMe(req *m.RatingRequest) (*m.RatingUserItem, error) {
 	start, end := calcRange(rt, loc)
 
 	err := r.db.QueryRow(qMeRating, start, end, req.UserId).
-		Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.Activity, &it.Rank)
+		Scan(&it.UserID, &it.Name, &it.ImageUrl, &it.IsUstoz, &it.Activity, &it.Score, &it.TestsCount, &it.Rank)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -1187,7 +1205,7 @@ func (r *UserRepo) GetMe(req *m.RatingRequest) (*m.RatingUserItem, error) {
 
 	it.IsMe = true
 
-	slog.Debug("GetMe rating", "type", req.Type, "user_id", req.UserId, "activity", it.Activity, "rank", it.Rank)
+	slog.Debug("GetMe rating", "type", req.Type, "by", req.By, "user_id", req.UserId, "score", it.Score, "rank", it.Rank)
 	return &it, nil
 }
 

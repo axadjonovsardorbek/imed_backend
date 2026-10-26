@@ -706,6 +706,7 @@ func (h *Handler) GetActivityStats(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param type query string false "Filter type: day|week|month|year|total (default: total)" Enums(day,week,month,year,total)
+// @Param by query string false "Rating by: activity|test (default: activity). test = average best percent per test" Enums(activity,test)
 // @Param limit query int false "Top list limit (default: 10, max: 100)"
 // @Success 200 {object} models.RatingResponse "Rating response"
 // @Failure 400 {object} string "Invalid request params"
@@ -725,6 +726,12 @@ func (h *Handler) GetRating(c *gin.Context) {
 		typ = "total"
 	}
 
+	by := c.DefaultQuery("by", string(m.RatingByActivity))
+	if by != string(m.RatingByActivity) && by != string(m.RatingByTest) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "by must be one of: activity|test"})
+		return
+	}
+
 	switch typ {
 	case "day", "week", "month", "year", "total":
 	default:
@@ -739,6 +746,7 @@ func (h *Handler) GetRating(c *gin.Context) {
 	req := m.RatingRequest{
 		UserId: userID,
 		Type:   m.RatingType(typ),
+		By:     m.RatingBy(by),
 		Limit:  int(pagination.Limit),
 	}
 
