@@ -124,137 +124,14 @@ func (r *OrderRepo) CreateWithPromoCode(req *m.OrderCreateReq) (*m.OrderCreateRe
 	)
 
 	if req.PromoCodeId != "" {
-		type promoRow struct {
-			ID            string
-			IsActive      bool
-			DiscountType  string
-			DiscountValue float64
-			MinAmount     float64
-			MaxDiscount   sql.NullFloat64
-			StartsAt      sql.NullTime
-			EndsAt        sql.NullTime
-			MaxUsesTotal  sql.NullInt64
-			MaxPerUser    int
-			pType         string
-		}
-
-		var p promoRow
-
-		err = tz.QueryRow(`
-				SELECT id, is_active, discount_type, discount_value,
-					   min_order_amount, max_discount,
-					   starts_at, ends_at,
-					   max_uses_total, max_uses_per_user, type
-				FROM promocodes
-				WHERE id = $1
-				  AND deleted_at = 0
-				FOR UPDATE
-			`, req.PromoCodeId).Scan(
-			&p.ID, &p.IsActive, &p.DiscountType, &p.DiscountValue,
-			&p.MinAmount, &p.MaxDiscount,
-			&p.StartsAt, &p.EndsAt,
-			&p.MaxUsesTotal, &p.MaxPerUser, &p.pType,
-		)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return nil, fmt.Errorf("promocode not found")
-			}
-			return nil, err
-		}
-
-		// 🔥 COURSE MATCH CHECK
-		if p.pType == "selected" {
-			var exists bool
-
-			err = tz.QueryRow(`
-			SELECT EXISTS (
-				SELECT 1
-				FROM promocode_courses
-				WHERE promocode_id = $1::uuid
-				  AND course_id = $2::uuid
-			)
-			`, p.ID, req.CourseId).Scan(&exists)
-
-			if err != nil {
-				return nil, fmt.Errorf(ErrUnExpected)
-			}
-
-			if !exists {
-				return nil, fmt.Errorf(ErrPromoNotApplicable)
-			}
-		}
-
-		now := time.Now()
-
-		if p.IsActive && p.EndsAt.Valid && now.After(p.EndsAt.Time) {
-			_, _ = tz.Exec(`
-					UPDATE promocodes
-					SET is_active = FALSE, updated_at = now()
-					WHERE id = $1::uuid AND is_active = TRUE AND deleted_at = 0
-				`, p.ID)
-			return nil, fmt.Errorf("promocode expired")
-		}
-
-		if !p.IsActive {
-			return nil, fmt.Errorf("promocode inactive")
-		}
-		if p.StartsAt.Valid && now.Before(p.StartsAt.Time) {
-			return nil, fmt.Errorf("promocode not started")
-		}
-
-		if float64(price) < p.MinAmount && p.MinAmount > 0 {
-			return nil, fmt.Errorf("order amount is too small for this promocode")
-		}
-
-		var usedByUser int
-		err = tz.QueryRow(`
-				SELECT COUNT(*)
-				FROM promo_redemptions
-				WHERE promo_id = $1::uuid
-				  AND user_id  = $2::uuid
-				  AND is_active = TRUE
-			`, p.ID, req.UserId).Scan(&usedByUser)
+		promoID, discountAmount, err = applyPromo(tz, req.PromoCodeId, req.UserId, req.CourseId, float64(price))
 		if err != nil {
 			return nil, err
 		}
-		if usedByUser >= p.MaxPerUser && p.MaxPerUser > 0 {
-			return nil, fmt.Errorf("promocode usage limit reached for user")
-		}
-
-		if p.MaxUsesTotal.Valid {
-			var usedTotal int
-			err = tz.QueryRow(`
-					SELECT COUNT(*)
-					FROM promo_redemptions
-					WHERE promo_id = $1::uuid
-					  AND is_active = TRUE
-				`, p.ID).Scan(&usedTotal)
-			if err != nil {
-				return nil, err
-			}
-
-			if usedTotal >= int(p.MaxUsesTotal.Int64) && p.MaxUsesTotal.Int64 > 0 {
-				_, _ = tz.Exec(`
-						UPDATE promocodes
-						SET is_active = FALSE, updated_at = now()
-						WHERE id = $1::uuid AND is_active = TRUE AND deleted_at = 0
-					`, p.ID)
-				return nil, fmt.Errorf("promocode usage limit reached")
-			}
-		}
-
-		var md *float64
-		if p.MaxDiscount.Valid {
-			v := p.MaxDiscount.Float64
-			md = &v
-		}
-		discountAmount = ComputeDiscount(float64(price), p.DiscountType, p.DiscountValue, md)
 		totalAmount = float64(price) - discountAmount
 		if totalAmount < 0 {
 			totalAmount = 0
 		}
-
-		promoID = &p.ID
 	}
 
 	var payAmount float64
@@ -459,6 +336,7 @@ func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 		o.discount_amount,
 		o.course_amount,
 		o.payment_type,
+		o.type,
 		o.status,
 		o.comment,
 		o.check_url,
@@ -466,8 +344,8 @@ func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 		o.paid_at
 	FROM orders o
 	JOIN users u ON u.id = o.user_id
-	JOIN courses c ON c.id = o.course_id
-	JOIN tariffs t ON t.id = o.tariff_id
+	LEFT JOIN courses c ON c.id = o.course_id
+	LEFT JOIN tariffs t ON t.id = o.tariff_id
 	LEFT JOIN promocodes p ON p.id = o.promo_id
 	WHERE o.id = $1
 	`
@@ -491,6 +369,7 @@ func (r *OrderRepo) GetById(req *m.ById) (*m.OrderStatisticRes, error) {
 		&order.DiscountAmount,
 		&order.CourseAmount,
 		&order.PaymentType,
+		&order.OrderType,
 		&order.Status,
 		&order.Comment,
 		&order.CheckUrl,
@@ -528,6 +407,7 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 		o.discount_amount,
 		o.course_amount,
 		o.payment_type,
+		o.type,
 		o.status,
 		o.comment,
 		o.check_url,
@@ -535,8 +415,8 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 		o.paid_at
 	FROM orders o
 	JOIN users u ON u.id = o.user_id
-	JOIN courses c ON c.id = o.course_id
-	JOIN tariffs t ON t.id = o.tariff_id
+	LEFT JOIN courses c ON c.id = o.course_id
+	LEFT JOIN tariffs t ON t.id = o.tariff_id
 	LEFT JOIN promocodes p ON p.id = o.promo_id
 	WHERE 1=1
 	`
@@ -710,6 +590,7 @@ func (r *OrderRepo) GetAll(req *m.OrderGetListReq) (*m.PaginationResponse, *m.Or
 			&order.DiscountAmount,
 			&order.CourseAmount,
 			&order.PaymentType,
+			&order.OrderType,
 			&order.Status,
 			&order.Comment,
 			&order.CheckUrl,
@@ -733,4 +614,139 @@ func (r *OrderRepo) GetPayURL(req *m.ById) (*m.PayURLRes, error) {
 	// lekin sen "repo qsmini" deding — amount/status ni olib qaytaramiz.
 	// Pay URL ni handlerda yasaymiz. Shu yerda minimal qilib beraman:
 	return nil, fmt.Errorf("implement in handler/service (need config: merchant_id, service_id, base_url)")
+}
+
+// applyPromo promokodni tekshiradi va chegirma miqdorini qaytaradi.
+// courseId bo'sh bo'lsa (premium buyurtma), faqat "selected" bo'lmagan promokodlar o'tadi.
+func applyPromo(tz *sql.Tx, promoCodeId, userId, courseId string, price float64) (*string, float64, error) {
+	var err error
+	type promoRow struct {
+		ID            string
+		IsActive      bool
+		DiscountType  string
+		DiscountValue float64
+		MinAmount     float64
+		MaxDiscount   sql.NullFloat64
+		StartsAt      sql.NullTime
+		EndsAt        sql.NullTime
+		MaxUsesTotal  sql.NullInt64
+		MaxPerUser    int
+		pType         string
+	}
+
+	var p promoRow
+
+	err = tz.QueryRow(`
+			SELECT id, is_active, discount_type, discount_value,
+				   min_order_amount, max_discount,
+				   starts_at, ends_at,
+				   max_uses_total, max_uses_per_user, type
+			FROM promocodes
+			WHERE id = $1
+			  AND deleted_at = 0
+			FOR UPDATE
+		`, promoCodeId).Scan(
+		&p.ID, &p.IsActive, &p.DiscountType, &p.DiscountValue,
+		&p.MinAmount, &p.MaxDiscount,
+		&p.StartsAt, &p.EndsAt,
+		&p.MaxUsesTotal, &p.MaxPerUser, &p.pType,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, fmt.Errorf("promocode not found")
+		}
+		return nil, 0, err
+	}
+
+	// 🔥 COURSE MATCH CHECK
+	if p.pType == "selected" {
+		// Premium buyurtmada kurs yo'q: faqat barcha kurslarga amal qiladigan promokod ishlaydi.
+		if courseId == "" {
+			return nil, 0, fmt.Errorf(ErrPromoNotApplicable)
+		}
+		var exists bool
+
+		err = tz.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM promocode_courses
+			WHERE promocode_id = $1::uuid
+			  AND course_id = $2::uuid
+		)
+		`, p.ID, courseId).Scan(&exists)
+
+		if err != nil {
+			return nil, 0, fmt.Errorf(ErrUnExpected)
+		}
+
+		if !exists {
+			return nil, 0, fmt.Errorf(ErrPromoNotApplicable)
+		}
+	}
+
+	now := time.Now()
+
+	if p.IsActive && p.EndsAt.Valid && now.After(p.EndsAt.Time) {
+		_, _ = tz.Exec(`
+				UPDATE promocodes
+				SET is_active = FALSE, updated_at = now()
+				WHERE id = $1::uuid AND is_active = TRUE AND deleted_at = 0
+			`, p.ID)
+		return nil, 0, fmt.Errorf("promocode expired")
+	}
+
+	if !p.IsActive {
+		return nil, 0, fmt.Errorf("promocode inactive")
+	}
+	if p.StartsAt.Valid && now.Before(p.StartsAt.Time) {
+		return nil, 0, fmt.Errorf("promocode not started")
+	}
+
+	if price < p.MinAmount && p.MinAmount > 0 {
+		return nil, 0, fmt.Errorf("order amount is too small for this promocode")
+	}
+
+	var usedByUser int
+	err = tz.QueryRow(`
+			SELECT COUNT(*)
+			FROM promo_redemptions
+			WHERE promo_id = $1::uuid
+			  AND user_id  = $2::uuid
+			  AND is_active = TRUE
+		`, p.ID, userId).Scan(&usedByUser)
+	if err != nil {
+		return nil, 0, err
+	}
+	if usedByUser >= p.MaxPerUser && p.MaxPerUser > 0 {
+		return nil, 0, fmt.Errorf("promocode usage limit reached for user")
+	}
+
+	if p.MaxUsesTotal.Valid {
+		var usedTotal int
+		err = tz.QueryRow(`
+				SELECT COUNT(*)
+				FROM promo_redemptions
+				WHERE promo_id = $1::uuid
+				  AND is_active = TRUE
+			`, p.ID).Scan(&usedTotal)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		if usedTotal >= int(p.MaxUsesTotal.Int64) && p.MaxUsesTotal.Int64 > 0 {
+			_, _ = tz.Exec(`
+					UPDATE promocodes
+					SET is_active = FALSE, updated_at = now()
+					WHERE id = $1::uuid AND is_active = TRUE AND deleted_at = 0
+				`, p.ID)
+			return nil, 0, fmt.Errorf("promocode usage limit reached")
+		}
+	}
+
+	var md *float64
+	if p.MaxDiscount.Valid {
+		v := p.MaxDiscount.Float64
+		md = &v
+	}
+	return &p.ID, ComputeDiscount(price, p.DiscountType, p.DiscountValue, md), nil
 }

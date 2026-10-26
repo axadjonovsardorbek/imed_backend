@@ -30,15 +30,27 @@ type UserLoginReq struct {
 }
 
 type UserRes struct {
-	Id          string  `json:"id"`
-	Name        *string `json:"name"`
-	PhoneNumber *string `json:"phone_number"`
-	Email       *string `json:"email"`
-	FCMToken    *string `json:"fcm_token"`
-	ImageUrl    *string `json:"image_url"`
-	Language    *string `json:"language"`
-	CreatedAt   *string `json:"created_at"`
-	UpdatedAt   *string `json:"updated_at"`
+	Id           string  `json:"id"`
+	Name         *string `json:"name"`
+	PhoneNumber  *string `json:"phone_number"`
+	Email        *string `json:"email"`
+	FCMToken     *string `json:"fcm_token"`
+	ImageUrl     *string `json:"image_url"`
+	Language     *string `json:"language"`
+	CreatedAt    *string `json:"created_at"`
+	UpdatedAt    *string `json:"updated_at"`
+	FirstLoginAt *string `json:"first_login_at"`
+	LastSeenAt   *string `json:"last_seen_at"`
+	IsUstoz      bool    `json:"is_ustoz"`
+	IsPremium    bool    `json:"is_premium"`
+	PremiumUntil *string `json:"premium_until"`
+}
+
+// InactiveUser 24 soatdan beri kirmagan va eslatma olmagan foydalanuvchi (T-05).
+type InactiveUser struct {
+	Id       string
+	FCMToken string
+	Language string
 }
 
 type UserUpdateReq struct {

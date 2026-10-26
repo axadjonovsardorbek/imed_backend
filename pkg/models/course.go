@@ -237,12 +237,13 @@ type MobileCourseModuleRes struct {
 }
 
 type MobileCourseLessonRes struct {
-	Id          string  `json:"id"`
-	Name        *string `json:"name"`
-	ModuleId    *string `json:"module_id"`
-	IsPublic    *bool   `json:"is_public"`
-	IsCompleted *bool   `json:"is_completed"`
-	OrderNum    *int    `json:"order_num"`
+	Id           string   `json:"id"`
+	Name         *string  `json:"name"`
+	ModuleId     *string  `json:"module_id"`
+	IsPublic     *bool    `json:"is_public"`
+	IsCompleted  *bool    `json:"is_completed"`
+	OrderNum     *int     `json:"order_num"`
+	ContentTypes []string `json:"content_types"`
 }
 
 type PriceField []CoursePriceOption

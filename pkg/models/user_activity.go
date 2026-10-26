@@ -39,17 +39,29 @@ const (
 	RatingYear  RatingType = "year"
 )
 
+// RatingBy reyting nima bo'yicha hisoblanishi (T-14).
+type RatingBy string
+
+const (
+	RatingByActivity RatingBy = "activity"
+	RatingByTest     RatingBy = "test"
+)
+
 type RatingUserItem struct {
-	UserID   string  `json:"user_id"`
-	Name     string  `json:"name"`
-	ImageUrl *string `json:"image_url"`
-	Activity int64   `json:"activity"`
-	Rank     int64   `json:"rank"`
-	IsMe     bool    `json:"is_me"`
+	UserID     string  `json:"user_id"`
+	Name       string  `json:"name"`
+	ImageUrl   *string `json:"image_url"`
+	Activity   int64   `json:"activity"`
+	Score      float64 `json:"score"`       // by=test: eng yaxshi natijalarning o'rtacha foizi
+	TestsCount int64   `json:"tests_count"` // by=test: ishlangan testlar soni
+	IsUstoz    bool    `json:"is_ustoz"`
+	Rank       int64   `json:"rank"`
+	IsMe       bool    `json:"is_me"`
 }
 
 type RatingResponse struct {
 	Type  RatingType       `json:"type"`
+	By    RatingBy         `json:"by"`
 	Limit int              `json:"limit"`
 	Items []RatingUserItem `json:"items"`
 	Me    *RatingUserItem  `json:"me,omitempty"`
@@ -57,6 +69,7 @@ type RatingResponse struct {
 
 type RatingRequest struct {
 	Type   RatingType `json:"type"`
+	By     RatingBy   `json:"by"`
 	Limit  int        `json:"limit"`
 	UserId string     `json:"user_id"`
 }

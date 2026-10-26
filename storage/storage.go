@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	m "imed/pkg/models"
+	"time"
 )
 
 type AdminI interface {
@@ -75,6 +76,7 @@ type LessonI interface {
 	EndLesson(req *m.EndUserLessonReq) (*m.Void, error)
 	GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes, error)
 	// GetAllMobile(req *m.LessonGetListMobileReq) (*m.PaginationResponse, *m.LessonMobileList, error)
+	CheckAccess(ctx context.Context, lessonId, userId string) error
 }
 
 type ContactI interface {
@@ -116,6 +118,9 @@ type UserI interface {
 	GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error)
 	GetMe(req *m.RatingRequest) (*m.RatingUserItem, error)
 	DeleteToken(req []string) (*m.Void, error)
+	TouchLastSeen(ctx context.Context, userID string) error
+	GetInactiveUsers(ctx context.Context, before time.Time, limit int) ([]m.InactiveUser, error)
+	MarkInactivePushed(ctx context.Context, ids []string) error
 }
 
 type NotificationI interface {
@@ -189,4 +194,30 @@ type PromoCodeI interface {
 
 type DashBoardI interface {
 	GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, error)
+}
+
+type TestI interface {
+	Create(ctx context.Context, req *m.TestCreateReq) (*m.ById, error)
+	GetById(ctx context.Context, req *m.ById) (*m.TestRes, error)
+	GetAll(ctx context.Context, req *m.TestGetListReq) (*m.PaginationResponse, error)
+	Update(ctx context.Context, req *m.TestUpdateReq) (*m.Void, error)
+	Delete(ctx context.Context, req *m.ById) (*m.Void, error)
+	AddQuestions(ctx context.Context, testId string, questions []m.TestQuestionBody) ([]string, error)
+	UpdateQuestion(ctx context.Context, req *m.TestQuestionReq) (*m.Void, error)
+	DeleteQuestion(ctx context.Context, req *m.ById) (*m.Void, error)
+	GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.TestMobileRes, error)
+	GetByLessonMobile(ctx context.Context, lessonId, userId, lang string) ([]m.TestShortMobile, error)
+	Start(ctx context.Context, req *m.ByIdMobile) (*m.TestStartRes, error)
+	Answer(ctx context.Context, req *m.TestAnswerReq) (*m.TestAnswerRes, error)
+	Finish(ctx context.Context, req *m.TestAttemptReq) (*m.TestFinishRes, error)
+	History(ctx context.Context, req *m.TestHistoryReq) (*m.PaginationResponse, error)
+	CheckAccess(ctx context.Context, testId, userId string) error
+}
+
+type PremiumI interface {
+	GetSettings(ctx context.Context) (*m.PremiumSettings, error)
+	UpdateSettings(ctx context.Context, req *m.PremiumSettings) (*m.Void, error)
+	GetStatus(ctx context.Context, userId string) (*m.AccessStatus, error)
+	CreateOrder(ctx context.Context, req *m.PremiumOrderReq) (*m.OrderCreateRes, error)
+	SetUstoz(ctx context.Context, req *m.UstozReq) (*m.Void, error)
 }

@@ -49,24 +49,23 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 		type
 	`
 
+	args := []interface{}{id, req.Title, req.Message, req.Type}
 	if req.Type == "selected" {
-		query += fmt.Sprintf(`
+		// course_id parametr orqali beriladi (SQL injection bo'lmasligi uchun);
+		// premium to'lov xabarida kurs yo'q, shuning uchun NULL bo'lishi mumkin.
+		query += `
 		,
 		course_id
-		) VALUES ($1, $2, $3, $4, '%s')
-	`, req.CourseId)
+		) VALUES ($1, $2, $3, $4, NULLIF($5, '')::uuid)
+	`
+		args = append(args, req.CourseId)
 	} else {
 		query += `
 		) VALUES ($1, $2, $3, $4)
 	`
 	}
 
-	_, err = tz.Exec(query,
-		id,
-		req.Title,
-		req.Message,
-		req.Type,
-	)
+	_, err = tz.Exec(query, args...)
 
 	if err != nil {
 		return nil, fmt.Errorf("error while creating notification: %w", err)
@@ -115,7 +114,7 @@ func (r *NotificationRepo) Create(req *m.NotificationCreateReq) (*m.ById, error)
 		}
 	}
 
-	for row.Next() {
+	for row != nil && row.Next() {
 		var user_id string
 		err := row.Scan(
 			&user_id,

@@ -734,19 +734,38 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 	  
 		  c.total_lessons      AS lessons,
 		  c.total_sources      AS total_sources,
-		  c.total_tests        AS tests,
+		  (
+			SELECT COUNT(*)
+			FROM tests t
+			JOIN lessons l ON l.id = t.lesson_id
+			JOIN modules md ON md.id = l.module_id
+			WHERE md.course_id = c.id
+			  AND t.deleted_at = 0 AND l.deleted_at = 0 AND md.deleted_at = 0
+			  AND EXISTS (SELECT 1 FROM test_questions q WHERE q.test_id = t.id AND q.deleted_at = 0)
+		  )                    AS tests,
 		  c.total_documents    AS documents,
 		  c.total_videos       AS videos,
 		  c.total_duration     AS duration,
 	  
-		  EXISTS (
-			SELECT 1
-			FROM user_courses uc
-			WHERE uc.user_id = $2
-			  AND uc.course_id = c.id
-			  AND uc.deleted_at = 0
-			  AND uc.started_at <= NOW()
-			  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+		  (
+			EXISTS (
+			  SELECT 1
+			  FROM user_courses uc
+			  WHERE uc.user_id = $2
+			    AND uc.course_id = c.id
+			    AND uc.deleted_at = 0
+			    AND uc.started_at <= NOW()
+			    AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+			)
+			-- T-12: faol premium barcha kurslarni ochadi
+			OR EXISTS (
+			  SELECT 1 FROM user_subscriptions us
+			  WHERE us.user_id = $2 AND us.started_at <= NOW() AND us.ended_at > NOW()
+			)
+			-- T-16: ustozga barcha kurslar doimiy ochiq
+			OR EXISTS (
+			  SELECT 1 FROM users u WHERE u.id = $2 AND u.is_ustoz
+			)
 		  ) AS has_access
 		FROM courses c
 		LEFT JOIN teachers t ON t.id = c.teacher_id
@@ -766,7 +785,8 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 							 WHEN cb.has_access THEN true
 							 ELSE COALESCE(l.is_public, false)
 						   END,
-			'is_completed', COALESCE(ul.is_completed, false)
+			'is_completed', COALESCE(ul.is_completed, false),
+			'content_types', lc.content_types
 			)
 			ORDER BY l.order_num
 		  ) AS lessons
@@ -776,9 +796,23 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		LEFT JOIN user_lessons ul
 		  ON ul.lesson_id = l.id
 	      AND ul.user_id = $2
+		-- T-06: faqat kontenti bor darslar; eski PDF testlar hisobga olinmaydi
+		CROSS JOIN LATERAL (
+		  SELECT to_jsonb(ARRAY_REMOVE(ARRAY[
+		    CASE WHEN EXISTS (SELECT 1 FROM sources s WHERE s.lesson_id = l.id AND s.deleted_at = 0 AND s.type = 'video') THEN 'video' END,
+		    CASE WHEN EXISTS (SELECT 1 FROM sources s WHERE s.lesson_id = l.id AND s.deleted_at = 0 AND s.type = 'audio') THEN 'audio' END,
+		    CASE WHEN EXISTS (SELECT 1 FROM sources s WHERE s.lesson_id = l.id AND s.deleted_at = 0 AND s.type = 'document') THEN 'document' END,
+		    CASE WHEN EXISTS (
+		      SELECT 1 FROM tests t
+		      WHERE t.lesson_id = l.id AND t.deleted_at = 0
+		        AND EXISTS (SELECT 1 FROM test_questions q WHERE q.test_id = t.id AND q.deleted_at = 0)
+		    ) THEN 'test' END
+		  ], NULL)) AS content_types
+		) lc
 		WHERE m.course_id = $3
 		  AND m.deleted_at = 0
 		  AND l.deleted_at = 0
+		  AND lc.content_types <> '[]'::jsonb
 		GROUP BY l.module_id
 	  ),
 	  modules_json AS (
@@ -795,7 +829,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 			ORDER BY m.order_num
 		  ) AS modules
 		FROM modules m
-		LEFT JOIN lessons_json lj ON lj.module_id = m.id
+		JOIN lessons_json lj ON lj.module_id = m.id
 		WHERE m.course_id = $3
 		  AND m.deleted_at = 0
 		GROUP BY m.course_id

@@ -389,8 +389,8 @@ func (r *LessonRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes,
 				ORDER BY order_num
 			)
 			FROM src
-			WHERE type = 'test'
-		), '[]'::jsonb) AS tests,
+			WHERE type = 'audio'
+		), '[]'::jsonb) AS audios,
 	
 		COALESCE((
 			SELECT jsonb_agg(
@@ -434,7 +434,7 @@ func (r *LessonRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes,
 	res := m.SourceLessonMobileRes{}
 
 	var (
-		testsRaw     []byte
+		audiosRaw    []byte
 		documentsRaw []byte
 		videosRaw    []byte
 	)
@@ -446,7 +446,7 @@ func (r *LessonRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes,
 		&res.Duration,
 		&res.OrderNum,
 		&res.IsCompleted,
-		&testsRaw,
+		&audiosRaw,
 		&documentsRaw,
 		&videosRaw,
 	); err != nil {
@@ -454,11 +454,12 @@ func (r *LessonRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes,
 	}
 
 	res.Tests = make([]m.SourceMobile, 0)
+	res.Audios = make([]m.SourceMobile, 0)
 	res.Documents = make([]m.SourceMobile, 0)
 	res.Videos = make([]m.SourceMobile, 0)
 
-	if len(testsRaw) > 0 {
-		_ = json.Unmarshal(testsRaw, &res.Tests)
+	if len(audiosRaw) > 0 {
+		_ = json.Unmarshal(audiosRaw, &res.Audios)
 	}
 	if len(documentsRaw) > 0 {
 		_ = json.Unmarshal(documentsRaw, &res.Documents)

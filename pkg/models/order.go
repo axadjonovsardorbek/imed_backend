@@ -16,6 +16,7 @@ type OrderStatisticRes struct {
 	DiscountAmount float64 `json:"discount_amount"`
 	CourseAmount   float64 `json:"course_amount"`
 	PaymentType    string  `json:"payment_type"`
+	OrderType      string  `json:"order_type"`
 	Status         string  `json:"status"`
 	Comment        *string `json:"comment,omitempty"`
 	CheckUrl       *string `json:"check_url,omitempty"`

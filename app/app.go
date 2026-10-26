@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"runtime/debug"
+	"time"
 
 	"imed/api"
 	"imed/api/handler"
@@ -83,6 +84,16 @@ func Run(cf *config.Config) {
 			}
 		}()
 		bot.BotAuth(cf)
+	}()
+
+	// 24 soat kirmaganlarga eslatma (T-05)
+	go func() {
+		defer func() {
+			if rec := recover(); rec != nil {
+				slog.Error("inactive reminder goroutine panicked", "panic", rec, "stack", string(debug.Stack()))
+			}
+		}()
+		services.Push.RunInactiveReminder(ctx, 15*time.Minute)
 	}()
 
 	router := api.NewApi(handlers, rdb, cf)

@@ -183,6 +183,38 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
 	}
 
+	var orderType string
+	if err = tx.QueryRowContext(ctx, `SELECT type FROM orders WHERE id=$1::uuid`, p.OrderId).Scan(&orderType); err != nil {
+		return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to read order"}, nil
+	}
+
+	if orderType == m.OrderTypePremium {
+		// Premium: amaldagi obuna tugagan joydan davom ettiriladi (T-12).
+		_, err = tx.ExecContext(ctx, `
+		INSERT INTO user_subscriptions (user_id, order_id, started_at, ended_at)
+		SELECT
+			o.user_id,
+			o.id,
+			st.started_at,
+			st.started_at + (o.duration || ' months')::interval
+		FROM orders o
+		CROSS JOIN LATERAL (
+			SELECT GREATEST(now(), COALESCE(MAX(s.ended_at), now())) AS started_at
+			FROM user_subscriptions s
+			WHERE s.user_id = o.user_id
+		) st
+		WHERE o.id = $1::uuid
+		ON CONFLICT (order_id) DO NOTHING
+		`, p.OrderId)
+		if err != nil {
+			return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to create subscription"}, nil
+		}
+		if err := tx.Commit(); err != nil {
+			return nil, fmt.Errorf("commit: %w", err)
+		}
+		return &m.CompleteResult{Error: ErrOK, ErrorNote: "Success", MerchantConfirmId: time.Now().Unix()}, nil
+	}
+
 	var ucID string
 
 	err = tx.QueryRowContext(ctx, `

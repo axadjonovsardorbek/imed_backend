@@ -65,7 +65,7 @@ func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfi
 		  <div style="padding:22px 24px 24px 24px;">
 	
 			<div style="display:flex;align-items:center;gap:12px;">
-			  <img src="%s" alt="iMedTeam" height="38" style="display:block;border:0;outline:none;text-decoration:none;" />
+			  <img src="%s" alt="TibMentor" height="38" style="display:block;border:0;outline:none;text-decoration:none;" />
 			  <div>
 				<div style="font-size:18px;font-weight:800;color:#111827;line-height:1.2;">iMedTeam.uz</div>
 				<div style="font-size:13px;color:#6b7280;margin-top:2px;">Kirish uchun tasdiqlash kodi</div>
@@ -233,13 +233,18 @@ func (s *UserService) GetActivities(ctx context.Context, req *m.UserActivityGetL
 func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.RatingResponse, error) {
 	req.Limit = clampLimit(req.Limit)
 
+	if req.By == "" {
+		req.By = m.RatingByActivity
+	}
+
 	res := &m.RatingResponse{
 		Type:  req.Type,
+		By:    req.By,
 		Limit: req.Limit,
 		Items: make([]m.RatingUserItem, 0, req.Limit),
 	}
 
-	key := topCacheKey(string(req.Type), req.Limit)
+	key := topCacheKey(string(req.By)+":"+string(req.Type), req.Limit)
 
 	if s.rdb != nil {
 		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
@@ -259,6 +264,11 @@ func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.R
 				_ = s.rdb.Set(context.Background(), key, b, 30*time.Second).Err()
 			}
 		}
+	}
+
+	// Kesh boshqa foydalanuvchi so'rovidan to'lgan bo'lishi mumkin: is_me qayta hisoblanadi.
+	for i := range res.Items {
+		res.Items[i].IsMe = res.Items[i].UserID == req.UserId
 	}
 
 	if req.UserId != "" {
@@ -284,4 +294,8 @@ func clampLimit(limit int) int {
 
 func topCacheKey(typ string, limit int) string {
 	return fmt.Sprintf("rating:top:%s:%d", typ, limit)
+}
+
+func (s *UserService) TouchLastSeen(ctx context.Context, userID string) error {
+	return s.storage.UserS.TouchLastSeen(ctx, userID)
 }
