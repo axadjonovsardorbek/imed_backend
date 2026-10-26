@@ -147,20 +147,28 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			return
 		}
 
+		courseID, courseName := "", "Premium"
+		if order.CourseId != nil {
+			courseID = *order.CourseId
+		}
+		if order.CourseName != nil {
+			courseName = *order.CourseName
+		}
+
 		var push_event m.PushEvent
 		if code == 0 {
 			push_event = m.PushEvent{
 				Type:       m.EventPaymentSuccess,
 				OrderID:    order.Id,
-				CourseID:   *order.CourseId,
-				CourseName: *order.CourseName,
+				CourseID:   courseID,
+				CourseName: courseName,
 			}
 		} else if code != 0 && code != -4 {
 			push_event = m.PushEvent{
 				Type:       m.EventPaymentFailed,
 				OrderID:    order.Id,
-				CourseID:   *order.CourseId,
-				CourseName: *order.CourseName,
+				CourseID:   courseID,
+				CourseName: courseName,
 			}
 		}
 
@@ -182,7 +190,7 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 			Title:    title,
 			Message:  body,
 			Type:     "selected",
-			CourseId: *order.CourseId,
+			CourseId: courseID,
 			UserId:   *order.UserId,
 		})
 

@@ -102,12 +102,12 @@ type LessonGetListMobileReq struct {
 }
 
 type SourceLessonMobileRes struct {
-	Id          string         `json:"id"`
-	Name        *string        `json:"name"`
-	Type        *string        `json:"type"`
-	Duration    *int           `json:"duration"`
-	OrderNum    *int           `json:"order_num"`
-	IsCompleted bool           `json:"is_completed"`
+	Id          string  `json:"id"`
+	Name        *string `json:"name"`
+	Type        *string `json:"type"`
+	Duration    *int    `json:"duration"`
+	OrderNum    *int    `json:"order_num"`
+	IsCompleted bool    `json:"is_completed"`
 	// Tests eski PDF testlar uchun edi; endi har doim bo'sh qaytadi (eski ilova versiyalari uchun qoldirilgan).
 	Tests        []SourceMobile    `json:"tests"`
 	Documents    []SourceMobile    `json:"documents"`

@@ -434,7 +434,9 @@ func (r *UserRepo) GetById(req *m.ById) (*m.UserRes, error) {
 		created_at,
 		updated_at,
 		first_login_at,
-		last_seen_at
+		last_seen_at,
+		is_ustoz,
+		(SELECT MAX(s.ended_at) FROM user_subscriptions s WHERE s.user_id = users.id AND s.ended_at > now()) AS premium_until
 	FROM
 		users
 	WHERE
@@ -458,11 +460,14 @@ func (r *UserRepo) GetById(req *m.ById) (*m.UserRes, error) {
 		&user.UpdatedAt,
 		&user.FirstLoginAt,
 		&user.LastSeenAt,
+		&user.IsUstoz,
+		&user.PremiumUntil,
 	)
 
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("user not found with id: %s", req.Id)
 	}
+	user.IsPremium = user.PremiumUntil != nil
 
 	if err != nil {
 		return nil, fmt.Errorf("error while getting user by id: %w", err)
@@ -485,7 +490,9 @@ func (r *UserRepo) GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.User
 		created_at,
 		updated_at,
 		first_login_at,
-		last_seen_at
+		last_seen_at,
+		is_ustoz,
+		(SELECT MAX(s.ended_at) FROM user_subscriptions s WHERE s.user_id = users.id AND s.ended_at > now()) AS premium_until
 	FROM
 		users
 	WHERE
@@ -537,7 +544,10 @@ func (r *UserRepo) GetAll(req *m.UserGetListReq) (*m.PaginationResponse, *m.User
 			&user.UpdatedAt,
 			&user.FirstLoginAt,
 			&user.LastSeenAt,
+			&user.IsUstoz,
+			&user.PremiumUntil,
 		)
+		user.IsPremium = user.PremiumUntil != nil
 		if err != nil {
 			return nil, nil, fmt.Errorf("error while scanning user row: %w", err)
 		}

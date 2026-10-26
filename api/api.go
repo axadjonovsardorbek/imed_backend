@@ -84,6 +84,7 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 			user.GET("/rating", h.GetRating)
 			user.GET("/:id", h.GetByIdUser)
 			user.DELETE("/:id/delete", h.DeleteUser)
+			user.PUT("/:id/ustoz", h.SetUserUstoz)
 		}
 
 		web.GET("/admin/:id", h.GetByIdAdmin).Use(mid.NewAuth(enforcer, rdb))
@@ -229,6 +230,12 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 			order.GET("", h.GetAllOrders)
 		}
 
+		premium := web.Group("/premium").Use(mid.NewAuth(enforcer, rdb))
+		{
+			premium.GET("/settings", h.GetPremiumSettings)
+			premium.PUT("/settings", h.UpdatePremiumSettings)
+		}
+
 		test := web.Group("/test").Use(mid.NewAuth(enforcer, rdb))
 		{
 			test.POST("", h.CreateTest)
@@ -345,6 +352,12 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 		order := mobile.Group("/order").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			order.POST("", h.CreateOrder)
+		}
+
+		premium := mobile.Group("/premium").Use(mid.NewAuth(enforcer, rdb), lastSeen)
+		{
+			premium.GET("", h.GetPremiumInfo)
+			premium.POST("/order", h.CreatePremiumOrder)
 		}
 
 		test := mobile.Group("/test").Use(mid.NewAuth(enforcer, rdb), lastSeen)

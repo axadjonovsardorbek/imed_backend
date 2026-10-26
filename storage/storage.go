@@ -211,3 +211,11 @@ type TestI interface {
 	Finish(ctx context.Context, req *m.TestAttemptReq) (*m.TestFinishRes, error)
 	History(ctx context.Context, req *m.TestHistoryReq) (*m.PaginationResponse, error)
 }
+
+type PremiumI interface {
+	GetSettings(ctx context.Context) (*m.PremiumSettings, error)
+	UpdateSettings(ctx context.Context, req *m.PremiumSettings) (*m.Void, error)
+	GetStatus(ctx context.Context, userId string) (*m.AccessStatus, error)
+	CreateOrder(ctx context.Context, req *m.PremiumOrderReq) (*m.OrderCreateRes, error)
+	SetUstoz(ctx context.Context, req *m.UstozReq) (*m.Void, error)
+}

@@ -31,6 +31,7 @@ type Clients struct {
 	User         *service.UserService
 	Push         *service.PushService
 	Test         *service.TestService
+	Premium      *service.PremiumService
 }
 
 func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, pushClient *push.Client, s3Svc *s3.S3Service) (*Clients, error) {
@@ -38,6 +39,7 @@ func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, p
 	return &Clients{
 		Push:         pushSvc,
 		Test:         service.NewTestService(conn),
+		Premium:      service.NewPremiumService(conn, rdb),
 		Admin:        service.NewAdminService(conn),
 		About:        service.NewAboutService(conn, rdb),
 		Banner:       service.NewBannerService(conn, rdb, pushSvc),

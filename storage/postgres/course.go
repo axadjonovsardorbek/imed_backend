@@ -747,14 +747,25 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		  c.total_videos       AS videos,
 		  c.total_duration     AS duration,
 	  
-		  EXISTS (
-			SELECT 1
-			FROM user_courses uc
-			WHERE uc.user_id = $2
-			  AND uc.course_id = c.id
-			  AND uc.deleted_at = 0
-			  AND uc.started_at <= NOW()
-			  AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+		  (
+			EXISTS (
+			  SELECT 1
+			  FROM user_courses uc
+			  WHERE uc.user_id = $2
+			    AND uc.course_id = c.id
+			    AND uc.deleted_at = 0
+			    AND uc.started_at <= NOW()
+			    AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
+			)
+			-- T-12: faol premium barcha kurslarni ochadi
+			OR EXISTS (
+			  SELECT 1 FROM user_subscriptions us
+			  WHERE us.user_id = $2 AND us.started_at <= NOW() AND us.ended_at > NOW()
+			)
+			-- T-16: ustozga barcha kurslar doimiy ochiq
+			OR EXISTS (
+			  SELECT 1 FROM users u WHERE u.id = $2 AND u.is_ustoz
+			)
 		  ) AS has_access
 		FROM courses c
 		LEFT JOIN teachers t ON t.id = c.teacher_id

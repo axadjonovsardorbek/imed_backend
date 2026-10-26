@@ -18,6 +18,9 @@ p, admin, /web/auth/password/refresh, PUT
 p, admin, /web/user, GET
 p, admin, /web/user/:id, GET
 p, admin, /web/user/:id/delete, DELETE
+p, admin, /web/user/:id/ustoz, PUT
+p, admin, /web/premium/settings, GET
+p, admin, /web/premium/settings, PUT
 p, admin, /web/user/rating, GET
 p, admin, /web/user/get/profile, GET
 p, admin, /web/user/update/profile, PUT
@@ -130,6 +133,8 @@ p, user, /mobile/user/delete/profile, DELETE
 p, user, /mobile/user/activity, POST
 p, user, /mobile/user/activity, GET
 p, user, /mobile/user/rating, GET
+p, user, /mobile/premium, GET
+p, user, /mobile/premium/order, POST
 p, user, /mobile/user/test-history, GET
 p, user, /mobile/test/:id, GET
 p, user, /mobile/test/:id/start, POST
