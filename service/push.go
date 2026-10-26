@@ -7,7 +7,7 @@ import (
 	"imed/internal/push"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
-
+	"log/slog"
 )
 
 type PushService struct {
@@ -90,9 +90,6 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 				event.Body, _ = helper.PickFromJSONStr(event.MessageJSON, lang)
 			}
 
-
-
-
 			if lang == "ru" {
 				msg = m.BuildRuPushMessage(event)
 			} else if lang == "en" {
@@ -103,7 +100,7 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 
 			err := s.push.SendToTopic(ctx, topic, msg.Title, msg.Body, msg.Data)
 			if err != nil {
-				fmt.Printf("Failed to send push to topic %s: %v\n", topic, err)
+				slog.Error("push to topic failed", "topic", topic, "err", err)
 			}
 		}
 		return nil
@@ -111,7 +108,7 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 
 	tokens, err := s.ResolveTokens(ctx, target)
 	if err != nil {
-		fmt.Println("Failed to resolve tokens:", err)
+		slog.Error("resolve push tokens failed", "err", err)
 		return err
 	}
 
@@ -126,7 +123,6 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 
 	msg := m.BuildUzPushMessage(event)
 
-
 	for _, part := range chunkStrings(tokens, 500) {
 		res, err := s.push.SendToManyTokens(ctx, part, msg.Title, msg.Body, msg.Data)
 		if len(res.InvalidTokens) > 0 {
@@ -138,4 +134,3 @@ func (s *PushService) SendPush(ctx context.Context, target m.PushTarget, event m
 	}
 	return nil
 }
-

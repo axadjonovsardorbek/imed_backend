@@ -8,7 +8,7 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type DashboardService struct {
@@ -24,7 +24,7 @@ func (s *DashboardService) GetDashboard(ctx context.Context, req *m.GetDashboard
 	key := fmt.Sprintf("dashboard:type=%s:day=%s:from=%s:to=%s", req.Type, req.Day, req.From, req.To)
 
 	if s.rdb != nil {
-		b, err := s.rdb.Get(key).Bytes()
+		b, err := s.rdb.Get(context.Background(), key).Bytes()
 		if err == nil && len(b) > 0 {
 			var cached m.DashboardRes
 			if err := json.Unmarshal(b, &cached); err == nil {
@@ -40,7 +40,7 @@ func (s *DashboardService) GetDashboard(ctx context.Context, req *m.GetDashboard
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 300*time.Second).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 300*time.Second).Err()
 		}
 	}
 

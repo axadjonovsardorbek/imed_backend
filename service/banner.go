@@ -8,10 +8,10 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
 	"log/slog"
-)
 
+	"github.com/redis/go-redis/v9"
+)
 
 type BannerService struct {
 	storage st.Storage
@@ -26,7 +26,7 @@ func NewBannerService(storage *st.Storage, rdb *redis.Client, push *PushService)
 func (s *BannerService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("banner:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "banner:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -39,7 +39,7 @@ func (s *BannerService) Create(ctx context.Context, req *m.BannerCreateReq) (*m.
 		return nil, err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Incr("banner:version").Err()
+		_ = s.rdb.Incr(context.Background(), "banner:version").Err()
 	}
 
 	bannerTitleJSON := `{"uz": "Yangi banner qo'shildi 🔥", "ru": "Добавлен новый баннер 🔥", "en": "New banner added 🔥"}`
@@ -58,7 +58,7 @@ func (s *BannerService) Update(ctx context.Context, req *m.BannerUpdateReq) (*m.
 		return nil, err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Incr("banner:version").Err()
+		_ = s.rdb.Incr(context.Background(), "banner:version").Err()
 	}
 
 	bannerTitleJSON := `{"uz": "Banner yangilandi 🔄", "ru": "Баннер обновлен 🔄", "en": "Banner updated 🔄"}`
@@ -67,7 +67,6 @@ func (s *BannerService) Update(ctx context.Context, req *m.BannerUpdateReq) (*m.
 		TitleJSON:   bannerTitleJSON,
 		MessageJSON: req.Title,
 	})
-
 
 	return res, nil
 }
@@ -78,7 +77,7 @@ func (s *BannerService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 		return nil, err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Incr("banner:version").Err()
+		_ = s.rdb.Incr(context.Background(), "banner:version").Err()
 	}
 	return res, nil
 }
@@ -102,7 +101,7 @@ func (s *BannerService) GetAll(ctx context.Context, req *m.BannerGetListReq) (*m
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				slog.Info("Cache Hit", "service", "banner", "key", key)
@@ -120,7 +119,7 @@ func (s *BannerService) GetAll(ctx context.Context, req *m.BannerGetListReq) (*m
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -133,7 +132,7 @@ func (s *BannerService) GetAllMobile(ctx context.Context, req *m.BannerGetListMo
 	key := fmt.Sprintf("banner:mobile:list:v%s", version)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				slog.Info("Cache Hit (Mobile)", "service", "banner", "key", key)
@@ -151,7 +150,7 @@ func (s *BannerService) GetAllMobile(ctx context.Context, req *m.BannerGetListMo
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 

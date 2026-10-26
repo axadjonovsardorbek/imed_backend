@@ -12,8 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis"
 	"log/slog"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type SourceService struct {
@@ -30,7 +31,7 @@ func NewSourceService(storage *st.Storage, rdb *redis.Client, push *PushService,
 func (s *SourceService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("source:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "source:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -45,7 +46,7 @@ func (s *SourceService) Create(ctx context.Context, req *m.SourceCreateReq) (*m.
 
 	// 🔥 cache invalidation
 	if s.rdb != nil {
-		_ = s.rdb.Incr("source:version").Err()
+		_ = s.rdb.Incr(context.Background(), "source:version").Err()
 	}
 
 	// GetLessonCourseInfo lessons.id kutadi — source id emas!
@@ -116,7 +117,7 @@ func (s *SourceService) GetAll(ctx context.Context, req *m.SourceGetListReq) (*m
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -131,7 +132,7 @@ func (s *SourceService) GetAll(ctx context.Context, req *m.SourceGetListReq) (*m
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -156,7 +157,7 @@ func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("source:version").Err()
+		_ = s.rdb.Incr(context.Background(), "source:version").Err()
 	}
 
 	info, infoErr := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: req.LessonId})
@@ -207,7 +208,6 @@ func (s *SourceService) Update(ctx context.Context, req *m.SourceUpdateReq) (*m.
 	return res, nil
 }
 
-
 func (s *SourceService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	res, err := s.storage.SourceS.Delete(req)
 	if err != nil {
@@ -215,7 +215,7 @@ func (s *SourceService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("source:version").Err()
+		_ = s.rdb.Incr(context.Background(), "source:version").Err()
 	}
 
 	return res, nil
@@ -321,6 +321,6 @@ func (s *SourceService) ProcessYouTubeVideo(sourceID, urlJSON, videoURLJSON stri
 
 	// Cache invalidation again after update
 	if s.rdb != nil {
-		_ = s.rdb.Incr("source:version").Err()
+		_ = s.rdb.Incr(context.Background(), "source:version").Err()
 	}
 }

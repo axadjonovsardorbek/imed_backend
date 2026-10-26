@@ -8,7 +8,7 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type TariffService struct {
@@ -23,7 +23,7 @@ func NewTariffService(storage *st.Storage, rdb *redis.Client) *TariffService {
 func (s *TariffService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("tariff:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "tariff:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -37,7 +37,7 @@ func (s *TariffService) Create(ctx context.Context, req *m.TariffCreateReq) (*m.
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("tariff:version").Err()
+		_ = s.rdb.Incr(context.Background(), "tariff:version").Err()
 	}
 
 	return res, nil
@@ -58,7 +58,7 @@ func (s *TariffService) GetAll(ctx context.Context, req *m.TariffGetListReq) (*m
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -73,7 +73,7 @@ func (s *TariffService) GetAll(ctx context.Context, req *m.TariffGetListReq) (*m
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -87,7 +87,7 @@ func (s *TariffService) Update(ctx context.Context, req *m.TariffUpdateReq) (*m.
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("tariff:version").Err()
+		_ = s.rdb.Incr(context.Background(), "tariff:version").Err()
 	}
 
 	return res, nil
@@ -100,7 +100,7 @@ func (s *TariffService) Delete(ctx context.Context, req *m.ById) (*m.Void, error
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("tariff:version").Err()
+		_ = s.rdb.Incr(context.Background(), "tariff:version").Err()
 	}
 
 	return res, nil

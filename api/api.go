@@ -10,7 +10,7 @@ import (
 	"imed/internal/config"
 
 	"github.com/casbin/casbin/v2"
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 
 	_ "imed/api/docs"
 
@@ -29,7 +29,13 @@ import (
 // @name Authorization
 func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engine {
 	gin.SetMode(cf.GIN_MODE)
-	router := gin.Default()
+
+	// gin.Default() o'rniga qo'lda yig'ish: Recovery saqlanadi (panic serverni
+	// o'ldirmasligi uchun majburiy), gin.Logger() esa sampling'li slog bilan
+	// almashtiriladi.
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(mid.Logger())
 
 	enforcer, err := casbin.NewEnforcer("./api/casbin/model.conf", "./api/casbin/policy.csv")
 	if err != nil {

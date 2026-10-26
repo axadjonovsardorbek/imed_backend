@@ -92,7 +92,6 @@ func validateAppRouteCreate(req models.AppRouteCreateReq) error {
 
 func claimData(c *gin.Context, data string) string {
 	claims, exists := c.Get("claims")
-	fmt.Println("claims", claims)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		smssender(c, errors.New("error: Unauthorized"), 401)

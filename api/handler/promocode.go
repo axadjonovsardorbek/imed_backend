@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -64,7 +65,7 @@ func (h *Handler) CreatePromoCode(c *gin.Context) {
 
 		c.JSON(http.StatusBadRequest, gin.H{"message": msg})
 		slog.Error(msg)
-		smssender(c, fmt.Errorf(msg), http.StatusBadRequest)
+		smssender(c, errors.New(msg), http.StatusBadRequest)
 		return
 	}
 
@@ -233,7 +234,7 @@ func (h *Handler) UpdatePromoCode(c *gin.Context) {
 
 		c.JSON(http.StatusBadRequest, gin.H{"message": msg})
 		slog.Error(msg)
-		smssender(c, fmt.Errorf(msg), http.StatusBadRequest)
+		smssender(c, errors.New(msg), http.StatusBadRequest)
 		return
 	}
 

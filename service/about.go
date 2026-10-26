@@ -8,7 +8,7 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type AboutService struct {
@@ -33,7 +33,7 @@ func (s *AboutService) GetAll(ctx context.Context, req *m.AboutGetListReq) (*m.P
 	// 	req.Title, req.Filter.Page, req.Filter.Limit)
 
 	// if s.rdb != nil {
-	// 	if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+	// 	if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 	// 		_ = json.Unmarshal(b, &res)
 	// 	}
 	// }
@@ -46,7 +46,7 @@ func (s *AboutService) GetAll(ctx context.Context, req *m.AboutGetListReq) (*m.P
 
 	// 	if s.rdb != nil {
 	// 		if b, err := json.Marshal(res); err == nil {
-	// 			_ = s.rdb.Set(key, b, 60*time.Second).Err()
+	// 			_ = s.rdb.Set(context.Background(), key, b, 60*time.Second).Err()
 	// 		}
 	// 	}
 
@@ -71,7 +71,7 @@ func (s *AboutService) GetAllMobile(ctx context.Context, req *m.AboutGetListMobi
 		req.Title, req.Language)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			_ = json.Unmarshal(b, &res)
 		}
 	}
@@ -84,7 +84,7 @@ func (s *AboutService) GetAllMobile(ctx context.Context, req *m.AboutGetListMobi
 
 		if s.rdb != nil {
 			if b, err := json.Marshal(res); err == nil {
-				_ = s.rdb.Set(key, b, 60*time.Second).Err()
+				_ = s.rdb.Set(context.Background(), key, b, 60*time.Second).Err()
 			}
 		}
 

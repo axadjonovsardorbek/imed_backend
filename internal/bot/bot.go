@@ -1,15 +1,17 @@
 package bot
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"strings"
 	"time"
 
 	"imed/internal/config"
 
-	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/redis/go-redis/v9"
 )
 
 func BotAuth(config *config.Config) {
@@ -24,7 +26,7 @@ func BotAuth(config *config.Config) {
 
 	bot, err := tgbotapi.NewBotAPI(config.NEW_BOT_TOKEN)
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("telegram bot init failed", "err", err)
 		log.Panic(err)
 	}
 
@@ -105,7 +107,7 @@ func BotAuth(config *config.Config) {
 
 			phone_number := NormalizePhone(phone)
 			// Bosqich 3: Tasdiqlash kodi yaratish
-			otp, err := rdb.Get(phone_number).Result()
+			otp, err := rdb.Get(context.Background(), phone_number).Result()
 
 			if err == redis.Nil {
 				msg := tgbotapi.NewMessage(chatID,
@@ -125,9 +127,7 @@ func BotAuth(config *config.Config) {
 				}
 				continue
 			}
-			fmt.Println("-------------------------------")
-			fmt.Println("Generated OTP:", otp)
-			fmt.Println("-------------------------------")
+			// OTP kodi ataylab loglanmaydi — u bilan hisobga kirish mumkin.
 
 			// Bosqich 4: Kodingni bot orqali foydalanuvchiga yuborish
 			text := fmt.Sprintf(`
@@ -155,7 +155,7 @@ func BotAuth(config *config.Config) {
 				log.Println("telegram send error:", err)
 			}
 
-			rdb.Set(fmt.Sprintf("tg:%s", phone_number), name, time.Minute*5)
+			rdb.Set(context.Background(), fmt.Sprintf("tg:%s", phone_number), name, time.Minute*5)
 		}
 	}
 }

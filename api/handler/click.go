@@ -202,38 +202,37 @@ func VerifyComplete(secret string,
 func (h *Handler) ClickPrepare(c *gin.Context) {
 	req, raw, err := parseClickForm(c)
 
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE REQ:", req)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE RAW:", raw)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE ERR:", err)
-	fmt.Println("----------------------------------")
+	// req va raw to'liq loglanmaydi: ikkalasida ham sign_string (Click imzosi) bor.
+	// Diagnostika uchun faqat sirsiz maydonlar qoldirilgan.
+	slog.Info("click prepare received",
+		"click_trans_id", req.ClickTransID,
+		"service_id", req.ServiceID,
+		"merchant_trans_id", req.MerchantTransID,
+		"amount", req.AmountStr,
+		"action", req.Action,
+		"err", err,
+	)
 
 	if err != nil {
 		smssender(c, err, 400)
-		fmt.Println("Check api 1")
 		slog.Error("click prepare parse error", "err", err)
 		c.JSON(200, clickResp{Error: ErrBadRequest, ErrorNote: "Error in request from click"})
 		return
 	}
 
 	if req.Action != 0 {
-		fmt.Println("Check api 2")
 		c.JSON(200, clickResp{Error: ErrActionNotFound, ErrorNote: "Action not found"})
 		return
 	}
 
 	// service_id check
 	if req.ServiceID != h.Cfg.CLICK_SERVICE_ID {
-		fmt.Println("Check api 3")
 		c.JSON(200, clickResp{Error: ErrBadRequest, ErrorNote: "service_id mismatch"})
 		return
 	}
 
 	// merchant_trans_id = order_id (UUID)
 	if !isUUID(req.MerchantTransID) {
-		fmt.Println("Check api 4")
 		c.JSON(200, clickResp{Error: ErrOrderNotExist, ErrorNote: "Order not found"})
 		return
 	}
@@ -255,7 +254,6 @@ func (h *Handler) ClickPrepare(c *gin.Context) {
 			"amount", req.AmountStr,
 			"sign_time", req.SignTime,
 		)
-		fmt.Println("Check api 5")
 		c.JSON(200, clickResp{Error: ErrSignFailed, ErrorNote: "SIGN CHECK FAILED!"})
 		return
 	}
@@ -278,7 +276,6 @@ func (h *Handler) ClickPrepare(c *gin.Context) {
 		MetaPatchJSON:     patchJSON,
 	})
 	if err != nil {
-		fmt.Println("Check api 6")
 		slog.Error("click prepare repo error", "err", err)
 		c.JSON(200, clickResp{Error: ErrFailedUpdate, ErrorNote: "Failed to update"})
 		return
@@ -296,35 +293,34 @@ func (h *Handler) ClickPrepare(c *gin.Context) {
 // POST /click/complete (action=1)
 func (h *Handler) ClickComplete(c *gin.Context) {
 	req, raw, err := parseClickForm(c)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK COMPLETE REQ:", req)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK COMPLETE RAW:", raw)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK COMPLETE ERR:", err)
-	fmt.Println("----------------------------------")
+	// Prepare'dagi kabi: sign_string loglanmaydi.
+	slog.Info("click complete received",
+		"click_trans_id", req.ClickTransID,
+		"service_id", req.ServiceID,
+		"merchant_trans_id", req.MerchantTransID,
+		"merchant_prepare_id", req.MerchantPrepareID,
+		"amount", req.AmountStr,
+		"action", req.Action,
+		"err", err,
+	)
 	if err != nil {
 		smssender(c, err, 400)
-		fmt.Println("Check api 7")
 		slog.Error("click complete parse error", "err", err)
 		c.JSON(200, clickResp{Error: ErrBadRequest, ErrorNote: "Error in request from click"})
 		return
 	}
 
 	if req.Action != 1 {
-		fmt.Println("Check api 8")
 		c.JSON(200, clickResp{Error: ErrActionNotFound, ErrorNote: "Action not found"})
 		return
 	}
 
 	if req.ServiceID != h.Cfg.CLICK_SERVICE_ID {
-		fmt.Println("Check api 9")
 		c.JSON(200, clickResp{Error: ErrBadRequest, ErrorNote: "service_id mismatch"})
 		return
 	}
 
 	if !isUUID(req.MerchantTransID) {
-		fmt.Println("Check api 10")
 		c.JSON(200, clickResp{Error: ErrOrderNotExist, ErrorNote: "Order not found"})
 		return
 	}
@@ -348,7 +344,6 @@ func (h *Handler) ClickComplete(c *gin.Context) {
 			"amount", req.AmountStr,
 			"sign_time", req.SignTime,
 		)
-		fmt.Println("Check api 11")
 		c.JSON(200, clickResp{Error: ErrSignFailed, ErrorNote: "SIGN CHECK FAILED!"})
 		return
 	}
@@ -367,7 +362,6 @@ func (h *Handler) ClickComplete(c *gin.Context) {
 		MetaPatchJSON:     patchJSON,
 	})
 	if err != nil {
-		fmt.Println("Check api 12")
 		slog.Error("click complete repo error", "err", err)
 		c.JSON(200, clickResp{Error: ErrFailedUpdate, ErrorNote: "Failed to update"})
 		return

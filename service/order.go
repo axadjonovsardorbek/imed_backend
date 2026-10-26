@@ -7,9 +7,10 @@ import (
 	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+	"log/slog"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type OrderService struct {
@@ -25,7 +26,7 @@ func NewOrderService(storage *st.Storage, rdb *redis.Client, push *PushService) 
 func (s *OrderService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("order:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "order:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -51,7 +52,7 @@ func (s *OrderService) Create(ctx context.Context, req *m.OrderCreateReq) (*m.Or
 
 	// 🔥 cache invalidation
 	if s.rdb != nil {
-		_ = s.rdb.Incr("order:version").Err()
+		_ = s.rdb.Incr(context.Background(), "order:version").Err()
 	}
 
 	return res, nil
@@ -86,7 +87,7 @@ func (s *OrderService) GetAll(ctx context.Context, req *m.OrderGetListReq) (*m.P
 		req.Filter.Limit,
 	)
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -102,7 +103,7 @@ func (s *OrderService) GetAll(ctx context.Context, req *m.OrderGetListReq) (*m.P
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -115,18 +116,17 @@ func (s *OrderService) GetPayURL(ctx context.Context, req *m.ById) (*m.PayURLRes
 
 func (s *OrderService) ApplyPrepare(ctx context.Context, req *m.ApplyPrepareParams) (*m.PrepareResult, error) {
 	res, err := s.storage.OrderS.ApplyPrepare(req)
-	fmt.Println("ApplyPrepare result:", res, "error:", err)
-	fmt.Println("Request details:", req)
-	fmt.Println("Response details:", res)
+	// req to'liq chop etilmaydi: MetaPatchJSON ichida Click imzosi bor
+	// (baytlar ko'rinishida bo'lsa ham o'qib olinadi).
+	slog.Info("click apply prepare", "order_id", req.OrderId, "result", res, "err", err)
 	return res, err
 }
 func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompleteParams) (*m.CompleteResult, error) {
 
 	res, err := s.storage.OrderS.ApplyComplete(req)
 
-	fmt.Println("ApplyComplete result:", res, "error:", err)
-	fmt.Println("Request details:", req)
-	fmt.Println("Response details:", res)
+	// ApplyPrepare'dagi kabi: req to'liq chop etilmaydi.
+	slog.Info("click apply complete", "order_id", req.OrderId, "result", res, "err", err)
 
 	orderID := req.OrderId
 	code := res.Error
@@ -134,7 +134,7 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 	go func(orderID string, code int) {
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Println("push goroutine panic:", r)
+				slog.Error("push goroutine panicked", "panic", r)
 			}
 		}()
 
@@ -143,7 +143,7 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 
 		order, err2 := s.storage.OrderS.GetById(&m.ById{Id: orderID})
 		if err2 != nil || order == nil || *order.UserId == "" {
-			fmt.Println("push skipped, order fetch error:", err2)
+			slog.Error("push skipped, order fetch failed", "err", err2)
 			return
 		}
 
@@ -172,7 +172,7 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 		)
 
 		if err != nil {
-			fmt.Println("Failed to send push:", err)
+			slog.Error("send push failed", "err", err)
 		}
 
 		msg := m.BuildUzPushMessage(push_event)
@@ -187,19 +187,21 @@ func (s *OrderService) ApplyComplete(ctx context.Context, req *m.ApplyCompletePa
 		})
 
 		if err != nil {
-			fmt.Println("Failed to create notification:", err)
+			slog.Error("create notification failed", "err", err)
 		}
 
-		fmt.Println("Push event sent:", push_event)
-		fmt.Println("Push message:", msg)
-		fmt.Println("Order ID:", orderID, "Payment code:", code)
-		fmt.Println("Notification created with ID:", ntf.Id)
+		slog.Info("order push sent",
+			"order_id", orderID,
+			"payment_code", code,
+			"event", push_event,
+			"notification_id", ntf.Id,
+		)
 
 		if err := s.push.SendPush(pushCtx,
 			push_target,
 			push_event,
 		); err != nil {
-			fmt.Println("push send error:", err)
+			slog.Error("push send failed", "err", err)
 		}
 
 	}(orderID, code)

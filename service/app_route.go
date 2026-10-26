@@ -5,7 +5,7 @@ import (
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type AppRouteService struct {

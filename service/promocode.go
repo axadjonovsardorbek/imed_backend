@@ -8,7 +8,7 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type PromoCodeService struct {
@@ -23,7 +23,7 @@ func NewPromoCodeService(storage *st.Storage, rdb *redis.Client) *PromoCodeServi
 func (s *PromoCodeService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("promocode:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "promocode:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -37,7 +37,7 @@ func (s *PromoCodeService) Create(ctx context.Context, req *m.PromoCodeCreateReq
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("promocode:version").Err()
+		_ = s.rdb.Incr(context.Background(), "promocode:version").Err()
 	}
 
 	return res, nil
@@ -62,7 +62,7 @@ func (s *PromoCodeService) GetAll(ctx context.Context, req *m.PromoCodeGetListRe
 	var res *m.PaginationResponse
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -77,7 +77,7 @@ func (s *PromoCodeService) GetAll(ctx context.Context, req *m.PromoCodeGetListRe
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -90,7 +90,7 @@ func (s *PromoCodeService) Update(ctx context.Context, req *m.PromoCodeUpdateReq
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("promocode:version").Err()
+		_ = s.rdb.Incr(context.Background(), "promocode:version").Err()
 	}
 
 	return res, nil
@@ -102,7 +102,7 @@ func (s *PromoCodeService) Delete(ctx context.Context, req *m.ById) (*m.Void, er
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("promocode:version").Err()
+		_ = s.rdb.Incr(context.Background(), "promocode:version").Err()
 	}
 
 	return res, nil
@@ -128,7 +128,7 @@ func (s *PromoCodeService) GetAllUserPromo(ctx context.Context, req *m.PromoRede
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -143,7 +143,7 @@ func (s *PromoCodeService) GetAllUserPromo(ctx context.Context, req *m.PromoRede
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 

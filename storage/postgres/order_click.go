@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	m "imed/pkg/models"
+	"log/slog"
 	"time"
 )
 
@@ -43,36 +44,27 @@ func (r *OrderRepo) ApplyPrepare(p *m.ApplyPrepareParams) (*m.PrepareResult, err
 		FOR UPDATE
 	`, p.OrderId).Scan(&amount, &status, &existingPrepare, &metaOld)
 
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE ORDER META OLD:", string(metaOld))
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE ORDER META PATCH:", string(p.MetaPatchJSON))
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE PARAMS:", p)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE EXISTING PREPARE:", existingPrepare)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE STATUS:", status)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE AMOUNT:", amount)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK PREPARE PARAM AMOUNT:", p.Amount)
-	fmt.Println("----------------------------------")
+	// meta, MetaPatchJSON va p loglanmaydi: ular ichida click_prepare_raw,
+	// ya'ni Click imzosi (sign_string) bor.
+	slog.Info("click prepare order state",
+		"order_id", p.OrderId,
+		"click_trans_id", p.ClickTransId,
+		"existing_prepare", existingPrepare.Int64,
+		"status", status,
+		"db_amount", amount,
+		"req_amount", p.Amount,
+	)
 
 	if err != nil {
-		fmt.Println("CHeck 1")
 		return &m.PrepareResult{Error: ErrOrderNotExist, ErrorNote: "Order not found"}, nil
 	}
 	if amount != p.Amount {
-		fmt.Println("CHeck 2")
 		return &m.PrepareResult{Error: ErrIncorrectAmount, ErrorNote: "Incorrect parameter amount"}, nil
 	}
 	if status == "PAID" {
-		fmt.Println("CHeck 2")
 		return &m.PrepareResult{Error: ErrAlreadyPaid, ErrorNote: "Already paid", MerchantPrepareId: existingPrepare.Int64}, nil
 	}
 	if status == "CANCELLED" {
-		fmt.Println("CHeck 4")
 		return &m.PrepareResult{Error: ErrCancelled, ErrorNote: "Transaction cancelled", MerchantPrepareId: existingPrepare.Int64}, nil
 	}
 
@@ -87,10 +79,8 @@ func (r *OrderRepo) ApplyPrepare(p *m.ApplyPrepareParams) (*m.PrepareResult, err
 	// idempotent prepare
 	if existingPrepare.Valid {
 		if err := tx.Commit(); err != nil {
-			fmt.Println("CHeck 5")
 			return nil, fmt.Errorf("commit: %w", err)
 		}
-		fmt.Println("CHeck 6")
 		return &m.PrepareResult{Error: ErrOK, ErrorNote: "Success", MerchantPrepareId: existingPrepare.Int64}, nil
 	}
 
@@ -104,12 +94,10 @@ func (r *OrderRepo) ApplyPrepare(p *m.ApplyPrepareParams) (*m.PrepareResult, err
 		WHERE id=$1::uuid
 	`, p.OrderId, p.ClickTransId, p.ClickPaydocId, p.MerchantPrepareId)
 	if err != nil {
-		fmt.Println("CHeck 7")
 		return &m.PrepareResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println("CHeck 8")
 		return nil, fmt.Errorf("commit: %w", err)
 	}
 
@@ -137,19 +125,18 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		FOR UPDATE
 	`, p.OrderId).Scan(&status, &prepare, &paidAt)
 
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK COMPLETE PARAMS:", p)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK COMPLETE PREPARE IN DB:", prepare)
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK COMPLETE STATUS IN DB:", status)
+	// p loglanmaydi: MetaPatchJSON ichida Click imzosi bor.
+	slog.Info("click complete order state",
+		"order_id", p.OrderId,
+		"click_trans_id", p.ClickTransId,
+		"db_prepare", prepare.Int64,
+		"status", status,
+	)
 
 	if err != nil {
-		fmt.Println("Check complete 1")
 		return &m.CompleteResult{Error: ErrOrderNotExist, ErrorNote: "Order not found"}, nil
 	}
 	if !prepare.Valid || prepare.Int64 != p.MerchantPrepareId {
-		fmt.Println("Check complete 2")
 		return &m.CompleteResult{Error: ErrTransNotExist, ErrorNote: "Transaction does not exist"}, nil
 	}
 
@@ -161,10 +148,6 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		WHERE id=$1::uuid
 	`, p.OrderId, string(p.MetaPatchJSON))
 
-	fmt.Println("----------------------------------")
-	fmt.Println("CLICK COMPLETE ORDER META PATCH:", string(p.MetaPatchJSON))
-	fmt.Println("----------------------------------")
-
 	// idempotent
 	if status == "PAID" {
 		conf := int64(0)
@@ -172,7 +155,6 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 			conf = paidAt.Time.Unix()
 		}
 		_ = tx.Commit()
-		fmt.Println("Check complete 3")
 		return &m.CompleteResult{Error: ErrOK, ErrorNote: "Success", MerchantConfirmId: conf}, nil
 	}
 
@@ -182,11 +164,9 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 			WHERE id=$1::uuid
 		`, p.OrderId)
 		if err != nil {
-			fmt.Println("Check complete 4")
 			return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
 		}
 		_ = tx.Commit()
-		fmt.Println("Check complete 5")
 		return &m.CompleteResult{Error: ErrCancelled, ErrorNote: "Transaction cancelled", MerchantConfirmId: 0}, nil
 	}
 
@@ -200,7 +180,6 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 		WHERE id=$1::uuid
 	`, p.OrderId, p.ClickTransId)
 	if err != nil {
-		fmt.Println("Check complete 6")
 		return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to update"}, nil
 	}
 
@@ -234,13 +213,12 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 	`, p.OrderId).Scan(&ucID)
 
 	if err == sql.ErrNoRows {
-		fmt.Println("No user course created, it may already exist")
+		slog.Info("no user course created, it may already exist", "order_id", p.OrderId)
 	} else if err != nil {
 		return &m.CompleteResult{Error: ErrFailedUpdate, ErrorNote: "Failed to create user course"}, nil
 	}
 
 	if err := tx.Commit(); err != nil {
-		fmt.Println("Check complete 7")
 		return nil, fmt.Errorf("commit: %w", err)
 	}
 

@@ -9,8 +9,9 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
 	"log/slog"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type CourseService struct {
@@ -26,7 +27,7 @@ func NewCourseService(storage *st.Storage, push *PushService, rdb *redis.Client)
 func (s *CourseService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("course:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "course:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -40,7 +41,7 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("course:version").Err()
+		_ = s.rdb.Incr(context.Background(), "course:version").Err()
 	}
 
 	courseNameUz, _ := helper.PickFromJSONStr(req.Name, "uz")
@@ -58,7 +59,7 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 	)
 
 	if err != nil {
-		fmt.Println("Failed to send push:", err)
+		slog.Error("send push failed", "err", err)
 	}
 
 	msg := m.BuildUzPushMessage(push_event)
@@ -72,12 +73,10 @@ func (s *CourseService) Create(ctx context.Context, req *m.CourseCreateReq) (*m.
 	})
 
 	if err != nil {
-		fmt.Println("Failed to create notification:", err)
+		slog.Error("create notification failed", "err", err)
 	}
 
-	fmt.Println("Push event sent:", push_event)
-	fmt.Println("Push message:", msg)
-	fmt.Println("Notification created with ID:", ntf.Id)
+	slog.Info("course push sent", "event", push_event, "notification_id", ntf.Id)
 
 	return res, nil
 }
@@ -99,7 +98,7 @@ func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				slog.Info("Cache Hit", "service", "course", "key", key)
@@ -117,7 +116,7 @@ func (s *CourseService) GetAll(ctx context.Context, req *m.CourseGetListReq) (*m
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -130,7 +129,7 @@ func (s *CourseService) Update(ctx context.Context, req *m.CourseUpdateReq) (*m.
 		return nil, err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Incr("course:version").Err()
+		_ = s.rdb.Incr(context.Background(), "course:version").Err()
 	}
 
 	info, err := s.storage.CourseS.GetById(&m.ById{Id: req.Id})
@@ -160,14 +159,13 @@ func (s *CourseService) Update(ctx context.Context, req *m.CourseUpdateReq) (*m.
 	return res, nil
 }
 
-
 func (s *CourseService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	res, err := s.storage.CourseS.Delete(req)
 	if err != nil {
 		return nil, err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Incr("course:version").Err()
+		_ = s.rdb.Incr(context.Background(), "course:version").Err()
 	}
 	return res, nil
 }
@@ -177,7 +175,7 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 	if req.StartedAt == "" || req.EndedAt == "" {
 		tariff, err := s.storage.TariffS.GetById(&m.ById{Id: req.TariffId})
 		if err != nil {
-			fmt.Println("Error getting tariff by ID:", err)
+			slog.Error("get tariff by id failed", "err", err)
 			return nil, err
 		}
 		start, end := helper.GetStartEndDate(*tariff.Duration)
@@ -185,10 +183,10 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 		req.EndedAt = end
 	}
 
-	fmt.Println("Buying course with details:", req)
+	slog.Info("buying course", "user_id", req.UserId, "course_id", req.CourseId)
 	res, err := s.storage.CourseS.BuyCourse(req)
 	if err != nil {
-		fmt.Println("Error buying course:", err)
+		slog.Error("buy course failed", "err", err)
 		return nil, err
 	}
 
@@ -206,7 +204,7 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 	)
 
 	if err != nil {
-		fmt.Println("Failed to send push:", err)
+		slog.Error("send push failed", "err", err)
 	}
 
 	msg := m.BuildUzPushMessage(push_event)
@@ -222,13 +220,10 @@ func (s *CourseService) BuyCourse(ctx context.Context, req *m.UserCourseCreateRe
 	})
 
 	if err != nil {
-		fmt.Println("Failed to create notification:", err)
+		slog.Error("create notification failed", "err", err)
 	}
 
-	fmt.Println("Push event sent:", push_event)
-	fmt.Println("Push message:", msg)
-	fmt.Println("Course bought successfully for user:", req.UserId)
-	// fmt.Println("Notification created with ID:", ntf.Id)
+	slog.Info("course bought", "user_id", req.UserId, "event", push_event)
 
 	return res, nil
 }
@@ -263,7 +258,7 @@ func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMo
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				slog.Info("Cache Hit (Mobile)", "service", "course", "key", key)
@@ -281,7 +276,7 @@ func (s *CourseService) GetAllMobile(ctx context.Context, req *m.CourseGetListMo
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 

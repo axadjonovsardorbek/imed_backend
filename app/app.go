@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"runtime/debug"
 
 	"imed/api"
 	"imed/api/handler"
@@ -16,7 +17,7 @@ import (
 	"imed/pkg/s3"
 	"imed/storage/postgres"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 func Run(cf *config.Config) {
@@ -28,7 +29,7 @@ func Run(cf *config.Config) {
 		Addr: rAddr,
 	})
 
-	_, err := rdb.Ping().Result()
+	_, err := rdb.Ping(context.Background()).Result()
 	if err != nil {
 		slog.Error("Failed to connect redis:", "err", err)
 		return
@@ -39,6 +40,7 @@ func Run(cf *config.Config) {
 
 	if err != nil {
 		slog.Error("Failed to connect postgres:", "err", err)
+		return
 	}
 	defer conn.Db.Close()
 	slog.Info("Postgres storage connected successfully")
@@ -72,7 +74,16 @@ func Run(cf *config.Config) {
 
 	handlers := handler.NewHandler(*services, minioClient, cf, s3Client)
 
-	go bot.BotAuth(cf)
+	// Bot alohida goroutine'da ishlaydi: undagi panic butun serverni o'ldirmasligi
+	// uchun recover qilinadi (bot to'xtaydi, API ishlashda davom etadi).
+	go func() {
+		defer func() {
+			if rec := recover(); rec != nil {
+				slog.Error("bot goroutine panicked", "panic", rec, "stack", string(debug.Stack()))
+			}
+		}()
+		bot.BotAuth(cf)
+	}()
 
 	router := api.NewApi(handlers, rdb, cf)
 	log.Println("Server is running on port ", cf)

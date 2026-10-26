@@ -10,8 +10,8 @@ import (
 	"imed/api/token"
 
 	"github.com/casbin/casbin/v2"
-	"github.com/go-redis/redis"
 	"github.com/golang-jwt/jwt"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/gin-gonic/gin"
 )
@@ -66,7 +66,7 @@ func NewAuth(enforcer *casbin.Enforcer, rdb *redis.Client) gin.HandlerFunc {
 		// }
 		//
 		// redisKey := "user_session:" + claims["user_id"].(string)
-		// storedSessionID, err := rdb.Get(redisKey).Result()
+		// storedSessionID, err := rdb.Get(context.Background(), redisKey).Result()
 		//
 		// if ((err == redis.Nil || storedSessionID == "") && tokenSessionID == "") || tokenRole == "admin" {
 		// 	ctx.Set("claims", claims)

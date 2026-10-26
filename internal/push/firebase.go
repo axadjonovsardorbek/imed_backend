@@ -3,6 +3,7 @@ package push
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
@@ -17,12 +18,12 @@ type Client struct {
 func NewClientFromServiceAccountFile(ctx context.Context, serviceAccountPath string) (*Client, error) {
 	app, err := firebase.NewApp(ctx, nil, option.WithCredentialsFile(serviceAccountPath))
 	if err != nil {
-		fmt.Println("Error initializing firebase app:", err)
+		slog.Error("firebase app init failed", "err", err)
 		return nil, fmt.Errorf("firebase.NewApp: %w", err)
 	}
 	msg, err := app.Messaging(ctx)
 	if err != nil {
-		fmt.Println("Error initializing firebase messaging client:", err)
+		slog.Error("firebase messaging init failed", "err", err)
 		return nil, fmt.Errorf("app.Messaging: %w", err)
 	}
 	return &Client{msg: msg}, nil
@@ -64,7 +65,7 @@ type MulticastResult struct {
 // Batching (500) bilan yuboradi. Invalid tokenlarni qaytaradi.
 func (c *Client) SendToManyTokens(ctx context.Context, tokens []string, title, body string, data map[string]string) (MulticastResult, error) {
 
-	fmt.Println("Sending push to tokens count:", len(tokens))
+	slog.Info("sending push", "tokens", len(tokens))
 
 	if c == nil || c.msg == nil {
 		return MulticastResult{}, fmt.Errorf("push client not initialized")
@@ -123,7 +124,12 @@ func (c *Client) SendToManyTokens(ctx context.Context, tokens []string, title, b
 		}
 	}
 
-	fmt.Println("Multicast push result - Total:", res.Total, "Successes:", res.Successes, "Failures:", res.Failures, "InvalidTokens:", len(res.InvalidTokens))
+	slog.Info("multicast push result",
+		"total", res.Total,
+		"successes", res.Successes,
+		"failures", res.Failures,
+		"invalid_tokens", len(res.InvalidTokens),
+	)
 
 	return res, nil
 }
@@ -150,4 +156,3 @@ func (c *Client) SendToTopic(ctx context.Context, topic, title, body string, dat
 	}
 	return nil
 }
-

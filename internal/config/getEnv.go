@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -53,16 +53,16 @@ type Config struct {
 	BREVO_LOGIN  string
 	BREVO_KEY    string
 
-	S3_ACCESS_KEY string
-	S3_SECRET_KEY string
-	S3_ENDPOINT   string
+	S3_ACCESS_KEY  string
+	S3_SECRET_KEY  string
+	S3_ENDPOINT    string
 	S3_BUCKET_NAME string
 	S3_DOMAIN      string
 }
 
 func Load() Config {
 	if err := godotenv.Load(); err != nil {
-		fmt.Println("No .env file found")
+		slog.Warn("no .env file found, falling back to environment and defaults")
 	}
 
 	config := Config{}

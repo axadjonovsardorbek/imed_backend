@@ -8,8 +8,8 @@ import (
 	"imed/internal/config"
 	"imed/storage"
 
-	"github.com/go-redis/redis"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 )
 
 type Storage struct {

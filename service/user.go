@@ -9,10 +9,11 @@ import (
 	"imed/internal/helper"
 	m "imed/pkg/models"
 	st "imed/storage/postgres"
+	"log/slog"
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type UserService struct {
@@ -27,23 +28,21 @@ func NewUserService(storage *st.Storage, rdb *redis.Client) *UserService {
 func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfirmationCodeReq) (*m.Void, error) {
 	otp := helper.GenerateOtp()
 	cfg := config.Load()
-	fmt.Println("-------------------------------")
-	fmt.Println("Generated OTP:", otp)
-	fmt.Println("-------------------------------")
+
+	// OTP kodi ataylab loglanmaydi: log ko'ra oladigan kishi u bilan istalgan
+	// hisobga kira oladi. Faqat kod berilgani qayd etiladi.
+	slog.Info("otp issued", "type", req.Type)
 
 	if req.Type == "telegram" {
-		s.rdb.Set(req.Identifier, otp, 5*time.Minute)
-		fmt.Printf("Generated OTP for Telegram user %s: %s\n", req.Identifier, otp)
+		s.rdb.Set(context.Background(), req.Identifier, otp, 5*time.Minute)
 		return &m.Void{}, nil
 	} else if req.Type == "email" {
 		req.Identifier = strings.ToLower(req.Identifier)
 		if req.Identifier == "samandarahadjonov@gmail.com" {
 			otp = "111111"
-			fmt.Printf("Generated OTP for email %s: %s\n", req.Identifier, otp)
-			s.rdb.Set(req.Identifier, otp, 5*time.Minute)
+			s.rdb.Set(context.Background(), req.Identifier, otp, 5*time.Minute)
 		} else if req.Identifier != "" && req.Identifier != "string" {
-			s.rdb.Set(req.Identifier, otp, 5*time.Minute)
-			fmt.Printf("Generated OTP for email %s: %s\n", req.Identifier, otp)
+			s.rdb.Set(context.Background(), req.Identifier, otp, 5*time.Minute)
 		} else {
 			return nil, errors.New("email is required")
 		}
@@ -151,7 +150,7 @@ func (s *UserService) SendConfirmationCode(ctx context.Context, req *m.SendConfi
 func (s *UserService) Confirmation(ctx context.Context, req *m.ConfirmationReq) (*m.TokenRes, error) {
 
 	if req.Identifier != "" && req.Identifier != "string" {
-		storedOtp, err := s.rdb.Get(req.Identifier).Result()
+		storedOtp, err := s.rdb.Get(context.Background(), req.Identifier).Result()
 
 		if err == redis.Nil {
 			return nil, errors.New("verification code is invalid or expired")
@@ -170,22 +169,22 @@ func (s *UserService) Confirmation(ctx context.Context, req *m.ConfirmationReq) 
 				return nil, err
 			}
 
-			err = s.rdb.Del(req.Identifier).Err()
+			err = s.rdb.Del(context.Background(), req.Identifier).Err()
 			if err != nil {
-				fmt.Printf("Failed to delete OTP from Redis for identifier %s: %v\n", req.Identifier, err)
+				slog.Warn("delete otp from redis failed", "type", req.Type, "err", err)
 			}
 
 			return res, nil
 		} else if req.Type == "telegram" {
-			name, err := s.rdb.Get(fmt.Sprintf("tg:%s", req.Identifier)).Result()
+			name, err := s.rdb.Get(context.Background(), fmt.Sprintf("tg:%s", req.Identifier)).Result()
 			res, err := s.storage.UserS.TelegramLogin(&m.TelegramLoginReq{Phone: req.Identifier, Name: name})
 			if err != nil {
 				return nil, err
 			}
 
-			err = s.rdb.Del(req.Identifier).Err()
+			err = s.rdb.Del(context.Background(), req.Identifier).Err()
 			if err != nil {
-				fmt.Printf("Failed to delete OTP from Redis for identifier %s: %v\n", req.Identifier, err)
+				slog.Warn("delete otp from redis failed", "type", req.Type, "err", err)
 			}
 
 			return res, nil
@@ -243,7 +242,7 @@ func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.R
 	key := topCacheKey(string(req.Type), req.Limit)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			_ = json.Unmarshal(b, &res.Items)
 		}
 	}
@@ -257,7 +256,7 @@ func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.R
 
 		if s.rdb != nil {
 			if b, err := json.Marshal(items); err == nil {
-				_ = s.rdb.Set(key, b, 30*time.Second).Err()
+				_ = s.rdb.Set(context.Background(), key, b, 30*time.Second).Err()
 			}
 		}
 	}
@@ -270,7 +269,6 @@ func (s *UserService) GetRating(ctx context.Context, req *m.RatingRequest) (*m.R
 		res.Me = me
 	}
 
-	fmt.Println("RATING SERVICE RETURNING")
 	return res, nil
 }
 

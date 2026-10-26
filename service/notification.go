@@ -9,7 +9,7 @@ import (
 
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type NotificationService struct {
@@ -25,7 +25,7 @@ func NewNotificationService(storage *st.Storage, rdb *redis.Client, push *PushSe
 func (s *NotificationService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("notification:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "notification:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -41,9 +41,8 @@ func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCre
 
 	// 🔥 cache invalidation
 	if s.rdb != nil {
-		_ = s.rdb.Incr("notification:version").Err()
+		_ = s.rdb.Incr(context.Background(), "notification:version").Err()
 	}
-
 
 	push_target := m.PushTarget{Type: m.TargetAllUsers}
 	push_event := m.PushEvent{
@@ -65,7 +64,6 @@ func (s *NotificationService) Create(ctx context.Context, req *m.NotificationCre
 			}
 		}
 	}
-
 
 	_ = s.push.SendPush(ctx, push_target, push_event)
 
@@ -90,7 +88,7 @@ func (s *NotificationService) GetAll(ctx context.Context, req *m.NotificationGet
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -105,7 +103,7 @@ func (s *NotificationService) GetAll(ctx context.Context, req *m.NotificationGet
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -119,7 +117,7 @@ func (s *NotificationService) Update(ctx context.Context, req *m.MasterNotificat
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("notification:version").Err()
+		_ = s.rdb.Incr(context.Background(), "notification:version").Err()
 	}
 
 	return res, nil
@@ -132,7 +130,7 @@ func (s *NotificationService) Delete(ctx context.Context, req *m.ById) (*m.Void,
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("notification:version").Err()
+		_ = s.rdb.Incr(context.Background(), "notification:version").Err()
 	}
 
 	return res, nil
@@ -153,7 +151,7 @@ func (s *NotificationService) UserNotifications(ctx context.Context, req *m.Noti
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -168,7 +166,7 @@ func (s *NotificationService) UserNotifications(ctx context.Context, req *m.Noti
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 

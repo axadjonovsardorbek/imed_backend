@@ -8,7 +8,7 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type TeacherService struct {
@@ -23,7 +23,7 @@ func NewTeacherService(storage *st.Storage, rdb *redis.Client) *TeacherService {
 func (s *TeacherService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("teacher:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "teacher:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -37,7 +37,7 @@ func (s *TeacherService) Create(ctx context.Context, req *m.TeacherCreateReq) (*
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("teacher:version").Err()
+		_ = s.rdb.Incr(context.Background(), "teacher:version").Err()
 	}
 
 	return res, nil
@@ -61,7 +61,7 @@ func (s *TeacherService) GetAll(ctx context.Context, req *m.TeacherGetListReq) (
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil, nil
@@ -76,7 +76,7 @@ func (s *TeacherService) GetAll(ctx context.Context, req *m.TeacherGetListReq) (
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -90,7 +90,7 @@ func (s *TeacherService) Update(ctx context.Context, req *m.TeacherUpdateReq) (*
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("teacher:version").Err()
+		_ = s.rdb.Incr(context.Background(), "teacher:version").Err()
 	}
 
 	return res, nil
@@ -103,7 +103,7 @@ func (s *TeacherService) Delete(ctx context.Context, req *m.ById) (*m.Void, erro
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("teacher:version").Err()
+		_ = s.rdb.Incr(context.Background(), "teacher:version").Err()
 	}
 
 	return res, nil

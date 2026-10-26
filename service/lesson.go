@@ -9,7 +9,7 @@ import (
 	st "imed/storage/postgres"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type LessonService struct {
@@ -25,7 +25,7 @@ func NewLessonService(storage *st.Storage, rdb *redis.Client, push *PushService)
 func (s *LessonService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("lesson:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "lesson:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -39,7 +39,7 @@ func (s *LessonService) Create(ctx context.Context, req *m.LessonCreateReq) (*m.
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("lesson:version").Err()
+		_ = s.rdb.Incr(context.Background(), "lesson:version").Err()
 	}
 
 	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: res.Id})
@@ -87,7 +87,7 @@ func (s *LessonService) GetAll(ctx context.Context, req *m.LessonGetListReq) (*m
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				return &cached, nil
@@ -102,7 +102,7 @@ func (s *LessonService) GetAll(ctx context.Context, req *m.LessonGetListReq) (*m
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -115,7 +115,7 @@ func (s *LessonService) Update(ctx context.Context, req *m.LessonUpdateReq) (*m.
 		return nil, err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Incr("lesson:version").Err()
+		_ = s.rdb.Incr(context.Background(), "lesson:version").Err()
 	}
 
 	info, err := s.storage.LessonS.GetLessonCourseInfo(&m.ById{Id: req.Id})
@@ -145,14 +145,13 @@ func (s *LessonService) Update(ctx context.Context, req *m.LessonUpdateReq) (*m.
 	return res, nil
 }
 
-
 func (s *LessonService) Delete(ctx context.Context, req *m.ById) (*m.Void, error) {
 	res, err := s.storage.LessonS.Delete(req)
 	if err != nil {
 		return nil, err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Incr("lesson:version").Err()
+		_ = s.rdb.Incr(context.Background(), "lesson:version").Err()
 	}
 	return res, nil
 }

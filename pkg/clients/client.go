@@ -7,7 +7,7 @@ import (
 	"imed/service"
 	"imed/storage/postgres"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type Clients struct {

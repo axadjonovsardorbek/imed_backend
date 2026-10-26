@@ -15,9 +15,9 @@ import (
 	"imed/pkg/models"
 	m "imed/pkg/models"
 
-	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -73,7 +73,6 @@ WHERE u.deleted_at = 0
 		return nil, fmt.Errorf("iterate fcm tokens: %w", err)
 	}
 
-	fmt.Println("Resolved FCM tokens:", len(tokens))
 	slog.Info("Resolved FCM tokens", "count", len(tokens))
 
 	return tokens, nil
@@ -204,11 +203,14 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 	)
 
 	if err != nil {
-		fmt.Println("error while checking user existence:", err)
+		slog.Warn("check user existence failed", "err", err)
 	}
 
 	if count == 1 && user_id != "string" {
-		tkn = token.GenerateJWTToken(user_id, "user", r.rdb)
+		tkn, err = token.GenerateJWTToken(user_id, "user", r.rdb)
+		if err != nil {
+			return nil, err
+		}
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -231,7 +233,10 @@ func (r *UserRepo) EmailLogin(req *m.ConfirmationReq) (*m.TokenRes, error) {
 		if err != nil {
 			return nil, err
 		}
-		tkn = token.GenerateJWTToken(id, "user", r.rdb)
+		tkn, err = token.GenerateJWTToken(id, "user", r.rdb)
+		if err != nil {
+			return nil, err
+		}
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -268,11 +273,14 @@ func (r *UserRepo) TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error) {
 	)
 
 	if err != nil {
-		fmt.Println("error while checking user existence:", err)
+		slog.Warn("check user existence failed", "err", err)
 	}
 
 	if count == 1 && user_id != "string" {
-		tkn = token.GenerateJWTToken(user_id, "user", r.rdb)
+		tkn, err = token.GenerateJWTToken(user_id, "user", r.rdb)
+		if err != nil {
+			return nil, err
+		}
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -295,7 +303,10 @@ func (r *UserRepo) TelegramLogin(req *m.TelegramLoginReq) (*m.TokenRes, error) {
 		if err != nil {
 			return nil, err
 		}
-		tkn = token.GenerateJWTToken(id, "user", r.rdb)
+		tkn, err = token.GenerateJWTToken(id, "user", r.rdb)
+		if err != nil {
+			return nil, err
+		}
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
 			RefreshToken: tkn.RefreshToken,
@@ -363,7 +374,10 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 			return nil, fmt.Errorf("error while registering user: %w", err)
 		}
 
-		tkn := token.GenerateJWTToken(id, role, r.rdb)
+		tkn, err := token.GenerateJWTToken(id, role, r.rdb)
+		if err != nil {
+			return nil, err
+		}
 
 		return &m.TokenRes{
 			AccessToken:  tkn.AccessToken,
@@ -394,7 +408,10 @@ func (r *UserRepo) Login(req *m.UserLoginReq) (*m.TokenRes, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	tkn := token.GenerateJWTToken(id, role, r.rdb)
+	tkn, err := token.GenerateJWTToken(id, role, r.rdb)
+	if err != nil {
+		return nil, err
+	}
 
 	return &m.TokenRes{
 		AccessToken:  tkn.AccessToken,
@@ -1105,7 +1122,6 @@ func (r *UserRepo) GetTop(req *m.RatingRequest) ([]m.RatingUserItem, error) {
 	}
 
 	slog.Debug("GetTop rating", "type", req.Type, "limit", req.Limit, "items_count", len(items))
-	fmt.Println("GetTop rating", "type", req.Type, "limit", req.Limit, "items_count", len(items))
 	return items, nil
 }
 
@@ -1154,7 +1170,6 @@ func (r *UserRepo) GetMe(req *m.RatingRequest) (*m.RatingUserItem, error) {
 	it.IsMe = true
 
 	slog.Debug("GetMe rating", "type", req.Type, "user_id", req.UserId, "activity", it.Activity, "rank", it.Rank)
-	fmt.Println("GetMe rating", "type", req.Type, "user_id", req.UserId, "activity", it.Activity, "rank", it.Rank)
 	return &it, nil
 }
 

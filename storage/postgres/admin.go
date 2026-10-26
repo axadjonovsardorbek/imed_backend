@@ -7,7 +7,7 @@ import (
 	"imed/api/token"
 	m "imed/pkg/models"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -57,7 +57,10 @@ func (r *AdminRepo) Login(req *m.LoginReq) (*m.TokenRes, error) {
 		return nil, fmt.Errorf("invalid password: %w", err)
 	}
 
-	tkn := token.GenerateJWTToken(id, "admin", r.rdb)
+	tkn, err := token.GenerateJWTToken(id, "admin", r.rdb)
+	if err != nil {
+		return nil, err
+	}
 
 	return &m.TokenRes{
 		AccessToken:  tkn.AccessToken,

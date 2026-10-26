@@ -10,7 +10,7 @@ import (
 
 	"log/slog"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type SubjectService struct {
@@ -26,7 +26,7 @@ func NewSubjectService(storage *st.Storage, rdb *redis.Client, push *PushService
 func (s *SubjectService) getVersion() string {
 	version := "1"
 	if s.rdb != nil {
-		if v, err := s.rdb.Get("subject:version").Result(); err == nil && v != "" {
+		if v, err := s.rdb.Get(context.Background(), "subject:version").Result(); err == nil && v != "" {
 			version = v
 		}
 	}
@@ -40,7 +40,7 @@ func (s *SubjectService) Create(ctx context.Context, req *m.SubjectCreateReq) (*
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("subject:version").Err()
+		_ = s.rdb.Incr(context.Background(), "subject:version").Err()
 	}
 
 	subjectTitleJSON := `{"uz": "Yangi fan qo'shildi 📖", "ru": "Добавлен новый предмет 📖", "en": "New subject added 📖"}`
@@ -70,7 +70,7 @@ func (s *SubjectService) GetAll(ctx context.Context, req *m.SubjectGetListReq) (
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				slog.Info("Cache Hit", "service", "subject", "key", key)
@@ -88,7 +88,7 @@ func (s *SubjectService) GetAll(ctx context.Context, req *m.SubjectGetListReq) (
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
@@ -102,7 +102,7 @@ func (s *SubjectService) Update(ctx context.Context, req *m.SubjectUpdateReq) (*
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("subject:version").Err()
+		_ = s.rdb.Incr(context.Background(), "subject:version").Err()
 	}
 
 	subjectTitleJSON := `{"uz": "Fan yangilandi 🔄", "ru": "Предмет обновлен 🔄", "en": "Subject updated 🔄"}`
@@ -122,7 +122,7 @@ func (s *SubjectService) Delete(ctx context.Context, req *m.ById) (*m.Void, erro
 	}
 
 	if s.rdb != nil {
-		_ = s.rdb.Incr("subject:version").Err()
+		_ = s.rdb.Incr(context.Background(), "subject:version").Err()
 	}
 
 	return res, nil
@@ -144,7 +144,7 @@ func (s *SubjectService) GetAllMobile(ctx context.Context, req *m.SubjectGetList
 	)
 
 	if s.rdb != nil {
-		if b, err := s.rdb.Get(key).Bytes(); err == nil && len(b) > 0 {
+		if b, err := s.rdb.Get(context.Background(), key).Bytes(); err == nil && len(b) > 0 {
 			var cached m.PaginationResponse
 			if err := json.Unmarshal(b, &cached); err == nil {
 				slog.Info("Cache Hit (Mobile)", "service", "subject", "key", key)
@@ -162,7 +162,7 @@ func (s *SubjectService) GetAllMobile(ctx context.Context, req *m.SubjectGetList
 
 	if s.rdb != nil {
 		if b, err := json.Marshal(res); err == nil {
-			_ = s.rdb.Set(key, b, 5*time.Minute).Err()
+			_ = s.rdb.Set(context.Background(), key, b, 5*time.Minute).Err()
 		}
 	}
 
