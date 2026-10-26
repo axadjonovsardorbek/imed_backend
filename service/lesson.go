@@ -160,6 +160,10 @@ func (s *LessonService) EndLesson(ctx context.Context, req *m.EndUserLessonReq) 
 	return s.storage.LessonS.EndLesson(req)
 }
 func (s *LessonService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.SourceLessonMobileRes, error) {
+	if err := s.storage.LessonS.CheckAccess(ctx, req.Id, req.UserId); err != nil {
+		return nil, err
+	}
+
 	res, err := s.storage.LessonS.GetByIdMobile(req)
 	if err != nil {
 		return nil, err

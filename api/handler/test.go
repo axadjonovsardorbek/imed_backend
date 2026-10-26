@@ -16,6 +16,8 @@ import (
 // testError foydalanuvchi xatolarini (vaqt tugagan, urinish yakunlangan) botga yubormaydi.
 func testError(c *gin.Context, err error) {
 	switch {
+	case errors.Is(err, postgres.ErrNoAccess):
+		c.JSON(http.StatusForbidden, gin.H{"message": err.Error()})
 	case errors.Is(err, postgres.ErrAttemptNotFound):
 		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 	case errors.Is(err, postgres.ErrAttemptFinished),

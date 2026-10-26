@@ -181,9 +181,15 @@ func (s *TestService) ImportTemplate() (*excelize.File, error) {
 // ===== Mobile =====
 
 func (s *TestService) GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.TestMobileRes, error) {
+	if err := s.storage.TestS.CheckAccess(ctx, req.Id, req.UserId); err != nil {
+		return nil, err
+	}
 	return s.storage.TestS.GetByIdMobile(ctx, req)
 }
 func (s *TestService) Start(ctx context.Context, req *m.ByIdMobile) (*m.TestStartRes, error) {
+	if err := s.storage.TestS.CheckAccess(ctx, req.Id, req.UserId); err != nil {
+		return nil, err
+	}
 	return s.storage.TestS.Start(ctx, req)
 }
 func (s *TestService) Answer(ctx context.Context, req *m.TestAnswerReq) (*m.TestAnswerRes, error) {

@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	m "imed/pkg/models"
+	"imed/storage/postgres"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/exp/slog"
@@ -282,6 +284,7 @@ func (h *Handler) EndLesson(c *gin.Context) {
 // @Failure 400 {object} string
 // @Failure 500 {object} string
 // @Security BearerAuth
+// @Failure 403 {object} string "no access to this lesson"
 // @Router /mobile/lesson/{id} [get]
 func (h *Handler) GetByIdMobileLesson(c *gin.Context) {
 	id := c.Param("id")
@@ -297,6 +300,10 @@ func (h *Handler) GetByIdMobileLesson(c *gin.Context) {
 	res, err := h.Clients.Lesson.GetByIdMobile(context.Background(), &m.ByIdMobile{Id: id, UserId: user_id, Language: lang})
 	slog.Info("Lesson details", res)
 
+	if errors.Is(err, postgres.ErrNoAccess) {
+		c.JSON(http.StatusForbidden, gin.H{"message": err.Error()})
+		return
+	}
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
 		slog.Error("Error getting lesson by ID: ", err.Error())

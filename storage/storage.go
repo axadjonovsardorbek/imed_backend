@@ -76,6 +76,7 @@ type LessonI interface {
 	EndLesson(req *m.EndUserLessonReq) (*m.Void, error)
 	GetByIdMobile(req *m.ByIdMobile) (*m.SourceLessonMobileRes, error)
 	// GetAllMobile(req *m.LessonGetListMobileReq) (*m.PaginationResponse, *m.LessonMobileList, error)
+	CheckAccess(ctx context.Context, lessonId, userId string) error
 }
 
 type ContactI interface {
@@ -210,6 +211,7 @@ type TestI interface {
 	Answer(ctx context.Context, req *m.TestAnswerReq) (*m.TestAnswerRes, error)
 	Finish(ctx context.Context, req *m.TestAttemptReq) (*m.TestFinishRes, error)
 	History(ctx context.Context, req *m.TestHistoryReq) (*m.PaginationResponse, error)
+	CheckAccess(ctx context.Context, testId, userId string) error
 }
 
 type PremiumI interface {
