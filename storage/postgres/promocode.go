@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	m "imed/pkg/models"
@@ -475,8 +476,19 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		IsValid: false,
 	}
 
+	isPremium := req.Type == m.OrderTypePremium
+
 	var amount float64
-	err := r.db.QueryRow(`
+	var err error
+	if isPremium {
+		settings, serr := NewPremiumRepo(r.db).GetSettings(context.Background())
+		if serr != nil || settings.Price <= 0 {
+			res.Message = ErrPremiumNotConfigured.Error()
+			return res, ErrPremiumNotConfigured
+		}
+		amount = float64(settings.Price)
+	} else {
+		err = r.db.QueryRow(`
 		SELECT (opt->>'price')::numeric(12,2)
 		FROM courses c
 		CROSS JOIN LATERAL jsonb_array_elements(c.price) AS opt
@@ -485,13 +497,14 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 		  AND (opt->>'tariff_id')::uuid = $2::uuid
 		LIMIT 1
 	`, req.CourseId, req.TariffId).Scan(&amount)
-	if err == sql.ErrNoRows {
-		res.Message = ErrCourseOrTariffNotFound
-		return res, fmt.Errorf(ErrCourseOrTariffNotFound)
-	}
-	if err != nil {
-		res.Message = ErrUnExpected
-		return res, fmt.Errorf(ErrUnExpected)
+		if err == sql.ErrNoRows {
+			res.Message = ErrCourseOrTariffNotFound
+			return res, fmt.Errorf(ErrCourseOrTariffNotFound)
+		}
+		if err != nil {
+			res.Message = ErrUnExpected
+			return res, fmt.Errorf(ErrUnExpected)
+		}
 	}
 
 	// 2) promo
@@ -534,6 +547,11 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 	}
 
 	// 🔥 COURSE MATCH CHECK
+	if pType == "selected" && isPremium {
+		// Muayyan kurslarga bog'langan promokod premiumga qo'llanmaydi.
+		res.Message = ErrPromoNotApplicable
+		return res, fmt.Errorf(ErrPromoNotApplicable)
+	}
 	if pType == "selected" {
 		var exists bool
 

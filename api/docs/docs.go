@@ -9347,6 +9347,10 @@ const docTemplate = `{
                 },
                 "tariff_id": {
                     "type": "string"
+                },
+                "type": {
+                    "description": "\"premium\" bo'lsa course_id/tariff_id kerak emas",
+                    "type": "string"
                 }
             }
         },
