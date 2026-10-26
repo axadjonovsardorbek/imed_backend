@@ -194,3 +194,20 @@ type PromoCodeI interface {
 type DashBoardI interface {
 	GetDashboard(req *m.GetDashboardReq) (*m.DashboardRes, error)
 }
+
+type TestI interface {
+	Create(ctx context.Context, req *m.TestCreateReq) (*m.ById, error)
+	GetById(ctx context.Context, req *m.ById) (*m.TestRes, error)
+	GetAll(ctx context.Context, req *m.TestGetListReq) (*m.PaginationResponse, error)
+	Update(ctx context.Context, req *m.TestUpdateReq) (*m.Void, error)
+	Delete(ctx context.Context, req *m.ById) (*m.Void, error)
+	AddQuestions(ctx context.Context, testId string, questions []m.TestQuestionBody) ([]string, error)
+	UpdateQuestion(ctx context.Context, req *m.TestQuestionReq) (*m.Void, error)
+	DeleteQuestion(ctx context.Context, req *m.ById) (*m.Void, error)
+	GetByIdMobile(ctx context.Context, req *m.ByIdMobile) (*m.TestMobileRes, error)
+	GetByLessonMobile(ctx context.Context, lessonId, userId, lang string) ([]m.TestShortMobile, error)
+	Start(ctx context.Context, req *m.ByIdMobile) (*m.TestStartRes, error)
+	Answer(ctx context.Context, req *m.TestAnswerReq) (*m.TestAnswerRes, error)
+	Finish(ctx context.Context, req *m.TestAttemptReq) (*m.TestFinishRes, error)
+	History(ctx context.Context, req *m.TestHistoryReq) (*m.PaginationResponse, error)
+}

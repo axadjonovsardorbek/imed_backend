@@ -30,12 +30,14 @@ type Clients struct {
 	Dashboard    *service.DashboardService
 	User         *service.UserService
 	Push         *service.PushService
+	Test         *service.TestService
 }
 
 func NewClients(cfg *config.Config, conn *postgres.Storage, rdb *redis.Client, pushClient *push.Client, s3Svc *s3.S3Service) (*Clients, error) {
 	pushSvc := service.NewPushService(conn, pushClient, cfg.AUTO_CONTENT_PUSH)
 	return &Clients{
 		Push:         pushSvc,
+		Test:         service.NewTestService(conn),
 		Admin:        service.NewAdminService(conn),
 		About:        service.NewAboutService(conn, rdb),
 		Banner:       service.NewBannerService(conn, rdb, pushSvc),

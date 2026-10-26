@@ -32,6 +32,7 @@ type Storage struct {
 	PromoCodeS    storage.PromoCodeI
 	DashboardS    storage.DashBoardI
 	UserS         storage.UserI
+	TestS         storage.TestI
 }
 
 func NewPostgresStorage(cf config.Config, rdb *redis.Client) (*Storage, error) {
@@ -70,6 +71,7 @@ func NewPostgresStorage(cf config.Config, rdb *redis.Client) (*Storage, error) {
 	promocode := NewPromoCodeRepo(db)
 	dashboard := NewDashboardRepo(db)
 	user := NewUserRepo(db, rdb)
+	test := NewTestRepo(db)
 
 	return &Storage{
 		Db:            db,
@@ -91,5 +93,6 @@ func NewPostgresStorage(cf config.Config, rdb *redis.Client) (*Storage, error) {
 		PromoCodeS:    promocode,
 		DashboardS:    dashboard,
 		UserS:         user,
+		TestS:         test,
 	}, nil
 }

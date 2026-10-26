@@ -229,6 +229,20 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 			order.GET("", h.GetAllOrders)
 		}
 
+		test := web.Group("/test").Use(mid.NewAuth(enforcer, rdb))
+		{
+			test.POST("", h.CreateTest)
+			test.GET("", h.GetAllTests)
+			test.GET("/import-template", h.TestImportTemplate)
+			test.GET("/:id", h.GetByIdTest)
+			test.PUT("/:id/update", h.UpdateTest)
+			test.DELETE("/:id/delete", h.DeleteTest)
+			test.POST("/:id/question", h.AddTestQuestion)
+			test.POST("/:id/import", h.ImportTestQuestions)
+			test.PUT("/question/:id/update", h.UpdateTestQuestion)
+			test.DELETE("/question/:id/delete", h.DeleteTestQuestion)
+		}
+
 		dashboard := web.Group("/dashboard").Use(mid.NewAuth(enforcer, rdb))
 		{
 			dashboard.GET("", h.GetDashboard)
@@ -255,6 +269,7 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 			user.POST("/activity", h.CreateActivity)
 			user.GET("/activity", h.GetActivityStats)
 			user.GET("/rating", h.GetRating)
+			user.GET("/test-history", h.GetTestHistory)
 		}
 
 		banner := mobile.Group("/banner").Use(mid.NewAuth(enforcer, rdb), lastSeen)
@@ -330,6 +345,14 @@ func NewApi(h *handler.Handler, rdb *redis.Client, cf *config.Config) *gin.Engin
 		order := mobile.Group("/order").Use(mid.NewAuth(enforcer, rdb), lastSeen)
 		{
 			order.POST("", h.CreateOrder)
+		}
+
+		test := mobile.Group("/test").Use(mid.NewAuth(enforcer, rdb), lastSeen)
+		{
+			test.GET("/:id", h.GetByIdMobileTest)
+			test.POST("/:id/start", h.StartTest)
+			test.POST("/attempt/:id/answer", h.AnswerTest)
+			test.POST("/attempt/:id/finish", h.FinishTest)
 		}
 
 		promocode := mobile.Group("/promocode").Use(mid.NewAuth(enforcer, rdb), lastSeen)
