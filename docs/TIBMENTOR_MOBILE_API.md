@@ -13,9 +13,10 @@ Bu hujjat TibMentor yangilanishida (TZ T-01…T-17) backendda nima o'zgarganini 
 | T-05 | — | 24 soat kirmagan foydalanuvchiga avtomatik push keladi (`type: inactive_reminder`) |
 | T-06 | Kurs, dars | Faqat kontenti bor dars va modullar qaytadi, darsda `content_types` bor, `audios` va `quizzes` qo'shildi |
 | T-07…T-10 | Test | Ilova ichidagi test: start, answer, finish |
-| T-11, T-12 | Premium | 3 ta paket (Fundamental, Preklinik, Klinik), har biri alohida sotiladi, Click orqali to'lov |
+| T-11 | Kurs, to'lov | Tarif tanlash yo'q; eski tarif to'lovi `426` qaytaradi |
+| T-12 | Premium, kurs | 3 ta paket (Fundamental, Preklinik, Klinik), har biri alohida sotiladi; kursda `package` |
 | T-14 | Reyting | `by=test` parametri qo'shildi, `me` doim keladi |
-| T-15 | Profil | `is_premium`, `premium_until`, `is_ustoz`, test tarixi |
+| T-15 | Profil | Paketlar holati, `is_ustoz`, `tests_count`, test bo'yicha guruhlangan tarix |
 | T-17 | — | Kontent qo'shilganda avtomatik push kelmaydi, faqat admin yuboradi |
 | — | Dars, test | Yopiq darsga kirilsa `403` qaytadi |
 

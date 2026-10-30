@@ -12,7 +12,8 @@ Bu hujjat TibMentor yangilanishida (TZ T-01…T-17) admin panelga qo'shilishi ke
 | T-04 | Foydalanuvchilar | Birinchi kirish va oxirgi faollik ustunlari |
 | T-07, T-08 | Darslar → Testlar | Test yaratish, savol/variant qo'shish, Excel'dan import |
 | T-06 | Manbalar (sources) | `audio` turi qo'shildi |
-| T-11, T-12 | Fanlar, Premium sozlamalari | Fanni paketga biriktirish, har paket narxini kiritish |
+| T-11 | Tariflar | Bo'limni menyudan olib tashlash, yozuvlar arxivda qoladi |
+| T-12 | Fanlar, Premium sozlamalari, Buyurtmalar | Fanni paketga biriktirish, har paket narxi, buyurtmada paket nomi |
 | T-16 | Foydalanuvchilar | "Ustoz" unvonini berish/olish |
 | T-17 | Xabarnomalar | Avtomatik push o'chirildi, xabarni admin o'zi yuboradi |
 
