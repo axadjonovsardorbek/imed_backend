@@ -14,7 +14,10 @@ import (
 	"github.com/google/uuid"
 )
 
-var ErrPremiumNotConfigured = errors.New("premium price is not configured")
+var (
+	ErrPremiumNotConfigured = errors.New("premium price is not configured")
+	ErrInvalidPackage       = errors.New("package must be one of: fundamental, preclinical, clinical")
+)
 
 type PremiumRepo struct {
 	db *sql.DB
@@ -24,69 +27,130 @@ func NewPremiumRepo(db *sql.DB) *PremiumRepo {
 	return &PremiumRepo{db: db}
 }
 
-func (r *PremiumRepo) GetSettings(ctx context.Context) (*m.PremiumSettings, error) {
+func settingsKey(pkg string) string {
+	return "premium:" + pkg
+}
+
+func (r *PremiumRepo) GetSettings(ctx context.Context, pkg string) (*m.PremiumSettings, error) {
+	if !m.IsPremiumPackage(pkg) {
+		return nil, ErrInvalidPackage
+	}
+	res := m.PremiumSettings{Package: pkg, DurationMonths: 1}
+
 	var raw []byte
-	err := r.db.QueryRowContext(ctx, `SELECT value FROM settings WHERE key = 'premium'`).Scan(&raw)
+	err := r.db.QueryRowContext(ctx, `SELECT value FROM settings WHERE key = $1`, settingsKey(pkg)).Scan(&raw)
 	if err == sql.ErrNoRows {
-		return &m.PremiumSettings{DurationMonths: 1}, nil
+		return &res, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error while getting premium settings: %w", err)
 	}
 
-	res := m.PremiumSettings{}
 	if err := json.Unmarshal(raw, &res); err != nil {
 		return nil, err
 	}
+	res.Package = pkg
 	if res.DurationMonths <= 0 {
 		res.DurationMonths = 1
 	}
 	return &res, nil
 }
 
+func (r *PremiumRepo) ListSettings(ctx context.Context) ([]m.PremiumSettings, error) {
+	res := make([]m.PremiumSettings, 0, len(m.PremiumPackages))
+	for _, pkg := range m.PremiumPackages {
+		s, err := r.GetSettings(ctx, pkg)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, *s)
+	}
+	return res, nil
+}
+
 func (r *PremiumRepo) UpdateSettings(ctx context.Context, req *m.PremiumSettings) (*m.Void, error) {
-	raw, _ := json.Marshal(req)
+	if !m.IsPremiumPackage(req.Package) {
+		return nil, ErrInvalidPackage
+	}
+	raw, _ := json.Marshal(map[string]int{"price": req.Price, "duration_months": req.DurationMonths})
 	_, err := r.db.ExecContext(ctx, `
-	INSERT INTO settings (key, value, updated_at) VALUES ('premium', $1, now())
+	INSERT INTO settings (key, value, updated_at) VALUES ($1, $2, now())
 	ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
-	`, string(raw))
+	`, settingsKey(req.Package), string(raw))
 	if err != nil {
 		return nil, fmt.Errorf("error while updating premium settings: %w", err)
 	}
 	return &m.Void{}, nil
 }
 
+// GetStatus har paket bo'yicha faol obuna tugash vaqtini qaytaradi.
+// Eski umumiy ('all') obuna uchala paketni ham qoplaydi.
 func (r *PremiumRepo) GetStatus(ctx context.Context, userId string) (*m.AccessStatus, error) {
-	var (
-		res   m.AccessStatus
-		until sql.NullTime
-	)
-	err := r.db.QueryRowContext(ctx, `
-	SELECT
-		u.is_ustoz,
-		(SELECT MAX(s.ended_at) FROM user_subscriptions s WHERE s.user_id = u.id AND s.ended_at > now())
-	FROM users u
-	WHERE u.id = $1 AND u.deleted_at = 0
-	`, userId).Scan(&res.IsUstoz, &until)
+	res := m.AccessStatus{}
+	err := r.db.QueryRowContext(ctx, `SELECT is_ustoz FROM users WHERE id = $1 AND deleted_at = 0`, userId).Scan(&res.IsUstoz)
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("user not found with id: %s", userId)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error while getting premium status: %w", err)
 	}
-	if until.Valid {
+
+	rows, err := r.db.QueryContext(ctx, `
+	SELECT package, MAX(ended_at)
+	FROM user_subscriptions
+	WHERE user_id = $1 AND ended_at > now()
+	GROUP BY package
+	`, userId)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting premium status: %w", err)
+	}
+	defer rows.Close()
+
+	until := map[string]time.Time{}
+	for rows.Next() {
+		var (
+			pkg string
+			t   time.Time
+		)
+		if err := rows.Scan(&pkg, &t); err != nil {
+			return nil, err
+		}
+		until[pkg] = t
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var latest time.Time
+	for _, pkg := range m.PremiumPackages {
+		t := until[pkg]
+		if all := until[m.PackageAll]; all.After(t) {
+			t = all
+		}
+		ps := m.PackageStatus{Package: pkg}
+		if !t.IsZero() {
+			ps.IsActive = true
+			v := t.Format(time.RFC3339)
+			ps.Until = &v
+			if t.After(latest) {
+				latest = t
+			}
+		}
+		res.Packages = append(res.Packages, ps)
+	}
+	if !latest.IsZero() {
 		res.IsPremium = true
-		v := until.Time.Format(time.RFC3339)
+		v := latest.Format(time.RFC3339)
 		res.PremiumUntil = &v
 	}
 	return &res, nil
 }
 
-// CreateOrder bitta oylik premium uchun Click buyurtma yaratadi (T-12).
+// CreateOrder tanlangan premium paket uchun Click buyurtma yaratadi (T-12).
 func (r *PremiumRepo) CreateOrder(ctx context.Context, req *m.PremiumOrderReq) (res *m.OrderCreateRes, err error) {
 	cfg := config.Load()
 
-	settings, err := r.GetSettings(ctx)
+	settings, err := r.GetSettings(ctx, req.Package)
 	if err != nil {
 		return nil, err
 	}
@@ -120,13 +184,14 @@ func (r *PremiumRepo) CreateOrder(ctx context.Context, req *m.PremiumOrderReq) (
 	FROM orders
 	WHERE user_id = $1
 	  AND type = 'premium'
+	  AND package = $4
 	  AND COALESCE(promo_id::text, '') = $2
 	  AND course_amount = $3
 	  AND status IN ('NEW', 'EXPIRED')
 	  AND created_at >= now() - interval '1 days'
 	ORDER BY created_at DESC
 	LIMIT 1
-	`, req.UserId, req.PromoCodeId, settings.Price).Scan(&existingId, &existingAmount)
+	`, req.UserId, req.PromoCodeId, settings.Price, req.Package).Scan(&existingId, &existingAmount)
 	if existingId != "" && existingAmount > 0 {
 		return &m.OrderCreateRes{Id: existingId, Url: payURL(existingId, existingAmount)}, nil
 	}
@@ -150,9 +215,9 @@ func (r *PremiumRepo) CreateOrder(ctx context.Context, req *m.PremiumOrderReq) (
 	id := uuid.NewString()
 	_, err = tx.ExecContext(ctx, `
 	INSERT INTO orders (
-		id, user_id, type, duration, amount, promo_id, discount_amount, course_amount, meta
-	) VALUES ($1, $2, 'premium', $3, $4, $5, $6, $7, '{"created_from": "api"}'::jsonb)
-	`, id, req.UserId, settings.DurationMonths, total, promoID, discount, price)
+		id, user_id, type, package, duration, amount, promo_id, discount_amount, course_amount, meta
+	) VALUES ($1, $2, 'premium', $8, $3, $4, $5, $6, $7, '{"created_from": "api"}'::jsonb)
+	`, id, req.UserId, settings.DurationMonths, total, promoID, discount, price, req.Package)
 	if err != nil {
 		return nil, fmt.Errorf("error while creating premium order: %w", err)
 	}

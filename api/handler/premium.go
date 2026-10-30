@@ -13,15 +13,15 @@ import (
 )
 
 // GetPremiumSettings godoc
-// @Summary Get premium settings
+// @Summary Get price and duration of every premium package
 // @Tags premium
 // @Produce json
-// @Success 200 {object} models.PremiumSettings
+// @Success 200 {array} models.PremiumSettings
 // @Failure 400 {object} string
 // @Security BearerAuth
 // @Router /web/premium/settings [get]
 func (h *Handler) GetPremiumSettings(c *gin.Context) {
-	res, err := h.Clients.Premium.GetSettings(context.Background())
+	res, err := h.Clients.Premium.ListSettings(context.Background())
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
 		smssender(c, err, http.StatusBadRequest)
@@ -31,8 +31,8 @@ func (h *Handler) GetPremiumSettings(c *gin.Context) {
 }
 
 // UpdatePremiumSettings godoc
-// @Summary Update premium price and duration
-// @Description Price 0 disables buying premium
+// @Summary Update price and duration of one premium package
+// @Description package: fundamental, preclinical, clinical. Price 0 disables buying that package
 // @Tags premium
 // @Accept json
 // @Produce json
@@ -103,12 +103,12 @@ func (h *Handler) GetPremiumInfo(c *gin.Context) {
 }
 
 // CreatePremiumOrder godoc
-// @Summary Buy monthly premium via Click
-// @Description Paying again extends the active subscription
+// @Summary Buy a premium package via Click
+// @Description package: fundamental, preclinical, clinical. Paying again extends the active subscription of that package
 // @Tags premium
 // @Accept json
 // @Produce json
-// @Param body body models.PremiumOrderBody false "Optional promocode"
+// @Param body body models.PremiumOrderBody true "Package and optional promocode"
 // @Success 200 {object} string
 // @Failure 400 {object} string
 // @Security BearerAuth
@@ -119,17 +119,15 @@ func (h *Handler) CreatePremiumOrder(c *gin.Context) {
 		return
 	}
 	body := m.PremiumOrderBody{}
-	if c.Request.ContentLength > 0 {
-		if err := c.BindJSON(&body); err != nil {
-			c.JSON(400, gin.H{"message": err.Error()})
-			return
-		}
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(400, gin.H{"message": err.Error()})
+		return
 	}
 
-	res, err := h.Clients.Premium.CreateOrder(context.Background(), &m.PremiumOrderReq{UserId: userId, PromoCodeId: body.PromoCodeId})
+	res, err := h.Clients.Premium.CreateOrder(context.Background(), &m.PremiumOrderReq{UserId: userId, Package: body.Package, PromoCodeId: body.PromoCodeId})
 	if err != nil {
 		c.JSON(400, gin.H{"message": err.Error()})
-		if !errors.Is(err, postgres.ErrPremiumNotConfigured) {
+		if !errors.Is(err, postgres.ErrPremiumNotConfigured) && !errors.Is(err, postgres.ErrInvalidPackage) {
 			slog.Error("Error creating premium order: ", err)
 			smssender(c, err, http.StatusBadRequest)
 		}

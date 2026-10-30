@@ -1335,7 +1335,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Paying again extends the active subscription",
+                "description": "package: fundamental, preclinical, clinical. Paying again extends the active subscription of that package",
                 "consumes": [
                     "application/json"
                 ],
@@ -1345,12 +1345,13 @@ const docTemplate = `{
                 "tags": [
                     "premium"
                 ],
-                "summary": "Buy monthly premium via Click",
+                "summary": "Buy a premium package via Click",
                 "parameters": [
                     {
-                        "description": "Optional promocode",
+                        "description": "Package and optional promocode",
                         "name": "body",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.PremiumOrderBody"
                         }
@@ -5545,12 +5546,15 @@ const docTemplate = `{
                 "tags": [
                     "premium"
                 ],
-                "summary": "Get premium settings",
+                "summary": "Get price and duration of every premium package",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.PremiumSettings"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.PremiumSettings"
+                            }
                         }
                     },
                     "400": {
@@ -5567,7 +5571,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Price 0 disables buying premium",
+                "description": "package: fundamental, preclinical, clinical. Price 0 disables buying that package",
                 "consumes": [
                     "application/json"
                 ],
@@ -5577,7 +5581,7 @@ const docTemplate = `{
                 "tags": [
                     "premium"
                 ],
-                "summary": "Update premium price and duration",
+                "summary": "Update price and duration of one premium package",
                 "parameters": [
                     {
                         "description": "Premium settings",
@@ -9241,6 +9245,9 @@ const docTemplate = `{
                 "order_type": {
                     "type": "string"
                 },
+                "package": {
+                    "type": "string"
+                },
                 "paid_at": {
                     "type": "string"
                 },
@@ -9300,27 +9307,50 @@ const docTemplate = `{
         "models.PremiumInfoRes": {
             "type": "object",
             "properties": {
-                "duration_months": {
-                    "type": "integer"
-                },
                 "is_premium": {
                     "type": "boolean"
                 },
                 "is_ustoz": {
                     "type": "boolean"
                 },
+                "packages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PremiumPackageInfo"
+                    }
+                },
                 "premium_until": {
                     "type": "string"
-                },
-                "price": {
-                    "type": "integer"
                 }
             }
         },
         "models.PremiumOrderBody": {
             "type": "object",
             "properties": {
+                "package": {
+                    "type": "string"
+                },
                 "promocode_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PremiumPackageInfo": {
+            "type": "object",
+            "properties": {
+                "duration_months": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "package": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "until": {
                     "type": "string"
                 }
             }
@@ -9330,6 +9360,9 @@ const docTemplate = `{
             "properties": {
                 "duration_months": {
                     "type": "integer"
+                },
+                "package": {
+                    "type": "string"
                 },
                 "price": {
                     "type": "integer"
@@ -9342,6 +9375,9 @@ const docTemplate = `{
                 "course_id": {
                     "type": "string"
                 },
+                "package": {
+                    "type": "string"
+                },
                 "promocode": {
                     "type": "string"
                 },
@@ -9349,7 +9385,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "description": "\"premium\" bo'lsa course_id/tariff_id kerak emas",
+                    "description": "\"premium\" bo'lsa course_id/tariff_id kerak emas, package kerak",
                     "type": "string"
                 }
             }
@@ -9907,6 +9943,10 @@ const docTemplate = `{
                 },
                 "order_num": {
                     "type": "integer"
+                },
+                "package": {
+                    "description": "fundamental, preclinical, clinical yoki bo'sh",
+                    "type": "string"
                 }
             }
         },
@@ -9956,6 +9996,9 @@ const docTemplate = `{
                 "order_num": {
                     "type": "integer"
                 },
+                "package": {
+                    "type": "string"
+                },
                 "total_courses": {
                     "type": "integer"
                 },
@@ -9985,6 +10028,9 @@ const docTemplate = `{
                 "order_num": {
                     "type": "integer"
                 },
+                "package": {
+                    "type": "string"
+                },
                 "total_courses": {
                     "type": "integer"
                 },
@@ -10007,6 +10053,10 @@ const docTemplate = `{
                 },
                 "order_num": {
                     "type": "integer"
+                },
+                "package": {
+                    "description": "fundamental, preclinical, clinical yoki bo'sh",
+                    "type": "string"
                 }
             }
         },

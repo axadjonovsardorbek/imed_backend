@@ -10,7 +10,7 @@ import (
 var ErrNoAccess = errors.New("no access to this lesson")
 
 // lessonAccessSQL $1 — dars, $2 — foydalanuvchi. Kurs sahifasidagi has_access bilan bir xil qoida:
-// ochiq dars YOKI faol kurs obunasi YOKI faol premium YOKI ustoz.
+// ochiq dars YOKI faol kurs obunasi YOKI kurs fani paketiga (yoki eski umumiy) faol premium YOKI ustoz.
 const lessonAccessSQL = `
 SELECT
 	COALESCE(l.is_public, FALSE)
@@ -25,6 +25,9 @@ SELECT
 	OR EXISTS (
 		SELECT 1 FROM user_subscriptions us
 		WHERE us.user_id = $2 AND us.started_at <= NOW() AND us.ended_at > NOW()
+		  AND (us.package = 'all' OR us.package = (
+			SELECT sb.package FROM courses c JOIN subjects sb ON sb.id = c.subject_id WHERE c.id = md.course_id
+		  ))
 	)
 	OR EXISTS (SELECT 1 FROM users u WHERE u.id = $2 AND u.is_ustoz)
 FROM lessons l

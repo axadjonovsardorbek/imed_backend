@@ -757,10 +757,11 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 			    AND uc.started_at <= NOW()
 			    AND (uc.ended_at IS NULL OR uc.ended_at > NOW())
 			)
-			-- T-12: faol premium barcha kurslarni ochadi
+			-- T-12: kurs fani paketidagi (yoki eski umumiy) faol premium kursni ochadi
 			OR EXISTS (
 			  SELECT 1 FROM user_subscriptions us
 			  WHERE us.user_id = $2 AND us.started_at <= NOW() AND us.ended_at > NOW()
+			    AND (us.package = 'all' OR us.package = (SELECT sb.package FROM subjects sb WHERE sb.id = c.subject_id))
 			)
 			-- T-16: ustozga barcha kurslar doimiy ochiq
 			OR EXISTS (

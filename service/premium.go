@@ -19,8 +19,8 @@ func NewPremiumService(storage *st.Storage, rdb *redis.Client) *PremiumService {
 	return &PremiumService{storage: *storage, rdb: rdb}
 }
 
-func (s *PremiumService) GetSettings(ctx context.Context) (*m.PremiumSettings, error) {
-	return s.storage.PremiumS.GetSettings(ctx)
+func (s *PremiumService) ListSettings(ctx context.Context) ([]m.PremiumSettings, error) {
+	return s.storage.PremiumS.ListSettings(ctx)
 }
 
 func (s *PremiumService) UpdateSettings(ctx context.Context, req *m.PremiumSettings) (*m.Void, error) {
@@ -34,7 +34,7 @@ func (s *PremiumService) UpdateSettings(ctx context.Context, req *m.PremiumSetti
 }
 
 func (s *PremiumService) GetInfo(ctx context.Context, userId string) (*m.PremiumInfoRes, error) {
-	settings, err := s.storage.PremiumS.GetSettings(ctx)
+	settings, err := s.storage.PremiumS.ListSettings(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +42,26 @@ func (s *PremiumService) GetInfo(ctx context.Context, userId string) (*m.Premium
 	if err != nil {
 		return nil, err
 	}
-	return &m.PremiumInfoRes{PremiumSettings: *settings, AccessStatus: *status}, nil
+
+	res := &m.PremiumInfoRes{IsPremium: status.IsPremium, PremiumUntil: status.PremiumUntil, IsUstoz: status.IsUstoz}
+	for i, st := range settings {
+		info := m.PremiumPackageInfo{Package: st.Package, Price: st.Price, DurationMonths: st.DurationMonths}
+		// ListSettings va GetStatus paketlarni bir xil tartibda qaytaradi.
+		if i < len(status.Packages) {
+			info.IsActive = status.Packages[i].IsActive
+			info.Until = status.Packages[i].Until
+		}
+		res.Packages = append(res.Packages, info)
+	}
+	return res, nil
 }
 
 func (s *PremiumService) CreateOrder(ctx context.Context, req *m.PremiumOrderReq) (*m.OrderCreateRes, error) {
 	if req.PromoCodeId == "string" {
 		req.PromoCodeId = ""
+	}
+	if !m.IsPremiumPackage(req.Package) {
+		return nil, st.ErrInvalidPackage
 	}
 	res, err := s.storage.PremiumS.CreateOrder(ctx, req)
 	if err != nil {

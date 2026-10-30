@@ -948,6 +948,8 @@ definitions:
         type: string
       order_type:
         type: string
+      package:
+        type: string
       paid_at:
         type: string
       payment_type:
@@ -987,26 +989,43 @@ definitions:
     type: object
   models.PremiumInfoRes:
     properties:
-      duration_months:
-        type: integer
       is_premium:
         type: boolean
       is_ustoz:
         type: boolean
+      packages:
+        items:
+          $ref: '#/definitions/models.PremiumPackageInfo'
+        type: array
       premium_until:
         type: string
-      price:
-        type: integer
     type: object
   models.PremiumOrderBody:
     properties:
+      package:
+        type: string
       promocode_id:
+        type: string
+    type: object
+  models.PremiumPackageInfo:
+    properties:
+      duration_months:
+        type: integer
+      is_active:
+        type: boolean
+      package:
+        type: string
+      price:
+        type: integer
+      until:
         type: string
     type: object
   models.PremiumSettings:
     properties:
       duration_months:
         type: integer
+      package:
+        type: string
       price:
         type: integer
     type: object
@@ -1014,12 +1033,14 @@ definitions:
     properties:
       course_id:
         type: string
+      package:
+        type: string
       promocode:
         type: string
       tariff_id:
         type: string
       type:
-        description: '"premium" bo''lsa course_id/tariff_id kerak emas'
+        description: '"premium" bo''lsa course_id/tariff_id kerak emas, package kerak'
         type: string
     type: object
   models.PromoCodeCreateReq:
@@ -1391,6 +1412,9 @@ definitions:
         type: object
       order_num:
         type: integer
+      package:
+        description: fundamental, preclinical, clinical yoki bo'sh
+        type: string
     type: object
   models.SubjectList:
     properties:
@@ -1422,6 +1446,8 @@ definitions:
         type: string
       order_num:
         type: integer
+      package:
+        type: string
       total_courses:
         type: integer
       updated_at:
@@ -1441,6 +1467,8 @@ definitions:
         type: object
       order_num:
         type: integer
+      package:
+        type: string
       total_courses:
         type: integer
       updated_at:
@@ -1456,6 +1484,9 @@ definitions:
         type: object
       order_num:
         type: integer
+      package:
+        description: fundamental, preclinical, clinical yoki bo'sh
+        type: string
     type: object
   models.TariffCreateReq:
     properties:
@@ -2815,11 +2846,13 @@ paths:
     post:
       consumes:
       - application/json
-      description: Paying again extends the active subscription
+      description: 'package: fundamental, preclinical, clinical. Paying again extends
+        the active subscription of that package'
       parameters:
-      - description: Optional promocode
+      - description: Package and optional promocode
         in: body
         name: body
+        required: true
         schema:
           $ref: '#/definitions/models.PremiumOrderBody'
       produces:
@@ -2835,7 +2868,7 @@ paths:
             type: string
       security:
       - BearerAuth: []
-      summary: Buy monthly premium via Click
+      summary: Buy a premium package via Click
       tags:
       - premium
   /mobile/promocode/check:
@@ -5489,20 +5522,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.PremiumSettings'
+            items:
+              $ref: '#/definitions/models.PremiumSettings'
+            type: array
         "400":
           description: Bad Request
           schema:
             type: string
       security:
       - BearerAuth: []
-      summary: Get premium settings
+      summary: Get price and duration of every premium package
       tags:
       - premium
     put:
       consumes:
       - application/json
-      description: Price 0 disables buying premium
+      description: 'package: fundamental, preclinical, clinical. Price 0 disables
+        buying that package'
       parameters:
       - description: Premium settings
         in: body
@@ -5523,7 +5559,7 @@ paths:
             type: string
       security:
       - BearerAuth: []
-      summary: Update premium price and duration
+      summary: Update price and duration of one premium package
       tags:
       - premium
   /web/promocode:

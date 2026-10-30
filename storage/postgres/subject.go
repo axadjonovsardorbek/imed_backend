@@ -28,8 +28,9 @@ func (r *SubjectRepo) Create(req *m.SubjectCreateReq) (*m.ById, error) {
 		id,
 		name,
 		image_url,
-		order_num
-	) VALUES ($1, $2, $3, $4)
+		order_num,
+		package
+	) VALUES ($1, $2, $3, $4, NULLIF($5, ''))
 	`
 
 	_, err := r.db.Exec(query,
@@ -37,6 +38,7 @@ func (r *SubjectRepo) Create(req *m.SubjectCreateReq) (*m.ById, error) {
 		req.Name,
 		req.ImageUrl,
 		req.OrderNum,
+		req.Package,
 	)
 
 	if err != nil {
@@ -52,6 +54,7 @@ func (r *SubjectRepo) GetById(req *m.ById) (*m.SubjectRes, error) {
 		name,
 		image_url,
 		order_num,
+		package,
 		total_courses,
 		created_at,
 		updated_at
@@ -73,6 +76,7 @@ func (r *SubjectRepo) GetById(req *m.ById) (*m.SubjectRes, error) {
 		&nameJSON,
 		&subject.ImageUrl,
 		&subject.OrderNum,
+		&subject.Package,
 		&subject.TotalCourses,
 		&subject.CreatedAt,
 		&subject.UpdatedAt,
@@ -98,6 +102,7 @@ func (r *SubjectRepo) GetAll(req *m.SubjectGetListReq) (*m.PaginationResponse, *
 		name,
 		image_url,
 		order_num,
+		package,
 		total_courses,
 		created_at,
 		updated_at
@@ -138,6 +143,7 @@ func (r *SubjectRepo) GetAll(req *m.SubjectGetListReq) (*m.PaginationResponse, *
 			&nameJSON,
 			&subject.ImageUrl,
 			&subject.OrderNum,
+			&subject.Package,
 			&subject.TotalCourses,
 			&subject.CreatedAt,
 			&subject.UpdatedAt,
@@ -176,6 +182,9 @@ func (r *SubjectRepo) Update(req *m.SubjectUpdateReq) (*m.Void, error) {
 
 	conditions = append(conditions, " order_num = $"+strconv.Itoa(len(args)+1))
 	args = append(args, req.OrderNum)
+
+	conditions = append(conditions, " package = NULLIF($"+strconv.Itoa(len(args)+1)+", '')")
+	args = append(args, req.Package)
 
 	if len(conditions) == 0 {
 		return nil, fmt.Errorf("no fields to update")
@@ -233,6 +242,7 @@ func (r *SubjectRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SubjectMobileRes, err
 		name->> $1,
 		image_url,
 		order_num,
+		package,
 		total_courses,
 		created_at,
 		updated_at
@@ -252,6 +262,7 @@ func (r *SubjectRepo) GetByIdMobile(req *m.ByIdMobile) (*m.SubjectMobileRes, err
 		&subject.Name,
 		&subject.ImageUrl,
 		&subject.OrderNum,
+		&subject.Package,
 		&subject.TotalCourses,
 		&subject.CreatedAt,
 		&subject.UpdatedAt,
@@ -275,6 +286,7 @@ func (r *SubjectRepo) GetAllMobile(req *m.SubjectGetListMobileReq) (*m.Paginatio
 		name->> $1,
 		image_url,
 		order_num,
+		package,
 		total_courses,
 		created_at,
 		updated_at
@@ -313,6 +325,7 @@ func (r *SubjectRepo) GetAllMobile(req *m.SubjectGetListMobileReq) (*m.Paginatio
 			&subject.Name,
 			&subject.ImageUrl,
 			&subject.OrderNum,
+			&subject.Package,
 			&subject.TotalCourses,
 			&subject.CreatedAt,
 			&subject.UpdatedAt,

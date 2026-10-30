@@ -45,6 +45,11 @@ func (h *Handler) CreateSubject(c *gin.Context) {
 	req.Name = string(nameJSON)
 	req.OrderNum = body.OrderNum
 	req.ImageUrl = body.ImageUrl
+	req.Package = body.Package
+	if req.Package != "" && !m.IsPremiumPackage(req.Package) {
+		c.JSON(400, gin.H{"message": "package must be one of: fundamental, preclinical, clinical"})
+		return
+	}
 
 	slog.Info("Create subject", "Subject", req)
 	res, err := h.Clients.Subject.Create(context.Background(), &req)
@@ -172,6 +177,11 @@ func (h *Handler) UpdateSubject(c *gin.Context) {
 	req.Name = string(nameJSON)
 	req.OrderNum = body.OrderNum
 	req.ImageUrl = body.ImageUrl
+	req.Package = body.Package
+	if req.Package != "" && !m.IsPremiumPackage(req.Package) {
+		c.JSON(400, gin.H{"message": "package must be one of: fundamental, preclinical, clinical"})
+		return
+	}
 
 	slog.Info("Update Subject", req)
 	_, err = h.Clients.Subject.Update(context.Background(), &req)

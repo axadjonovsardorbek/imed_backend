@@ -12,7 +12,7 @@ Bu hujjat TibMentor yangilanishida (TZ T-01…T-17) admin panelga qo'shilishi ke
 | T-04 | Foydalanuvchilar | Birinchi kirish va oxirgi faollik ustunlari |
 | T-07, T-08 | Darslar → Testlar | Test yaratish, savol/variant qo'shish, Excel'dan import |
 | T-06 | Manbalar (sources) | `audio` turi qo'shildi |
-| T-11, T-12 | Premium sozlamalari | Oylik narxni kiritish |
+| T-11, T-12 | Fanlar, Premium sozlamalari | Fanni paketga biriktirish, har paket narxini kiritish |
 | T-16 | Foydalanuvchilar | "Ustoz" unvonini berish/olish |
 | T-17 | Xabarnomalar | Avtomatik push o'chirildi, xabarni admin o'zi yuboradi |
 
@@ -163,28 +163,62 @@ Fayl formati: **birinchi qator sarlavha**, keyingi har bir qator bitta savol.
 
 Mobil ilova faqat kontenti bor bo'limlarni ko'rsatadi: darsda kontent yo'q bo'lsa, u ilovada umuman chiqmaydi.
 
-## 4. Premium sozlamalari (T-11, T-12)
+## 4. Premium paketlari (T-11, T-12)
+
+Premium 3 ta paketga bo'lingan, har biri alohida sotiladi:
+
+| `package` | Nomi |
+|-----------|------|
+| `fundamental` | Fundamental fanlar |
+| `preclinical` | Preklinik fanlar |
+| `clinical` | Klinik fanlar |
+
+### 4.1 Fanni paketga biriktirish
+
+`POST /web/subject` va `PUT /web/subject/:id/update` body'siga `package` maydoni qo'shildi:
+
+```json
+{ "name": {"uz": "Anatomiya"}, "image_url": "…", "order_num": 1, "package": "fundamental" }
+```
+
+- Paket bo'yicha premium sotib olgan foydalanuvchiga shu fandagi **barcha kurslar** ochiladi.
+- Bo'sh (`""`) yuborilsa, fan hech qaysi paketga kirmaydi: uning kurslarini faqat alohida sotib olish yoki ustoz orqali ochish mumkin.
+- Tahrirlashda `package` har doim yuboriladi: yubormaslik fanni paketdan chiqaradi.
+- `GET /web/subject` va `GET /web/subject/:id` javobida ham `package` bor. Fanlar jadvaliga ustun sifatida qo'shing.
+
+### 4.2 Narx va muddat
 
 | Amal | So'rov |
 |------|--------|
 | Ko'rish | `GET /web/premium/settings` |
 | O'zgartirish | `PUT /web/premium/settings` |
 
-Ikkalasida ham format bir xil:
+`GET` uchala paketni qaytaradi:
 
 ```json
-{ "price": 50000, "duration_months": 1 }
+[
+  { "package": "fundamental", "price": 50000, "duration_months": 1 },
+  { "package": "preclinical", "price": 60000, "duration_months": 1 },
+  { "package": "clinical",    "price": 70000, "duration_months": 1 }
+]
 ```
 
-- `price` so'mda. **0 bo'lsa, foydalanuvchilar premium sotib ola olmaydi.** Ishga tushirishdan oldin narx qo'yilishi shart.
+`PUT` bitta paketni o'zgartiradi:
+
+```json
+{ "package": "fundamental", "price": 50000, "duration_months": 1 }
+```
+
+- `price` so'mda. **0 bo'lsa, shu paketni sotib olib bo'lmaydi.** Ishga tushirishdan oldin uchala paketga narx qo'yilishi shart.
 - `duration_months`: bitta to'lov necha oy beradi (standart 1).
 - Narx o'zgarsa, yangi buyurtmalarga ta'sir qiladi. Allaqachon to'langanlar o'zgarmaydi.
+- Paketlarga bo'linishdan oldin umumiy premium sotib olganlar muddati tugaguncha barcha kurslardan foydalanadi.
 
 ### Buyurtmalar
 
 `GET /web/order` va `GET /web/order/:id` javobida yangi maydon bor: `order_type` (`course` yoki `premium`).
 
-- Premium buyurtmada `course_id`, `course_name`, `tariff_id`, `tariff_name` **`null`** bo'ladi. Jadvalda "Premium" deb ko'rsating.
+- Premium buyurtmada `course_id`, `course_name`, `tariff_id`, `tariff_name` **`null`** bo'ladi, o'rniga `package` keladi. Jadvalda "Premium: <paket nomi>" deb ko'rsating.
 - Promokod premium uchun ham ishlaydi, lekin faqat "barcha kurslar" (`type: all`) turidagisi. Muayyan kurslarga bog'langan promokod premiumga qo'llanmaydi.
 
 ### Tariflar

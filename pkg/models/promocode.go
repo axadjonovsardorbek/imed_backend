@@ -93,6 +93,7 @@ type PromoCodeCheckRes struct {
 
 type PromoCodeCheckReq struct {
 	Type      string `json:"type"` // "premium" yoki bo'sh (kurs)
+	Package   string `json:"package"`
 	PromoCode string `json:"promocode"`
 	CourseId  string `json:"course_id"`
 	UserId    string `json:"user_id"`
@@ -100,7 +101,8 @@ type PromoCodeCheckReq struct {
 }
 
 type PromoCodeCheckBody struct {
-	Type      string `json:"type"` // "premium" bo'lsa course_id/tariff_id kerak emas
+	Type      string `json:"type"` // "premium" bo'lsa course_id/tariff_id kerak emas, package kerak
+	Package   string `json:"package"`
 	PromoCode string `json:"promocode"`
 	CourseId  string `json:"course_id"`
 	TariffId  string `json:"tariff_id"`

@@ -321,6 +321,7 @@ func (h *Handler) CheckPromoCode(c *gin.Context) {
 	req.CourseId = body.CourseId
 	req.TariffId = body.TariffId
 	req.Type = body.Type
+	req.Package = body.Package
 
 	slog.Info("Check promocode", "PromoCode", req)
 	res, err := h.Clients.PromoCode.Check(context.Background(), &req)

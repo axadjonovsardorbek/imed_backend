@@ -481,7 +481,11 @@ func (r *PromoCodeRepo) Check(req *m.PromoCodeCheckReq) (*m.PromoCodeCheckRes, e
 	var amount float64
 	var err error
 	if isPremium {
-		settings, serr := NewPremiumRepo(r.db).GetSettings(context.Background())
+		if !m.IsPremiumPackage(req.Package) {
+			res.Message = ErrInvalidPackage.Error()
+			return res, ErrInvalidPackage
+		}
+		settings, serr := NewPremiumRepo(r.db).GetSettings(context.Background(), req.Package)
 		if serr != nil || settings.Price <= 0 {
 			res.Message = ErrPremiumNotConfigured.Error()
 			return res, ErrPremiumNotConfigured

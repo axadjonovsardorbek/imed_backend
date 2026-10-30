@@ -189,19 +189,21 @@ func (r *OrderRepo) ApplyComplete(p *m.ApplyCompleteParams) (*m.CompleteResult, 
 	}
 
 	if orderType == m.OrderTypePremium {
-		// Premium: amaldagi obuna tugagan joydan davom ettiriladi (T-12).
+		// Premium: shu paketdagi amaldagi obuna tugagan joydan davom ettiriladi (T-12).
+		// Paketsiz eski buyurtma 'all' bo'lib yoziladi.
 		_, err = tx.ExecContext(ctx, `
-		INSERT INTO user_subscriptions (user_id, order_id, started_at, ended_at)
+		INSERT INTO user_subscriptions (user_id, order_id, package, started_at, ended_at)
 		SELECT
 			o.user_id,
 			o.id,
+			COALESCE(o.package, 'all'),
 			st.started_at,
 			st.started_at + (o.duration || ' months')::interval
 		FROM orders o
 		CROSS JOIN LATERAL (
 			SELECT GREATEST(now(), COALESCE(MAX(s.ended_at), now())) AS started_at
 			FROM user_subscriptions s
-			WHERE s.user_id = o.user_id
+			WHERE s.user_id = o.user_id AND s.package = COALESCE(o.package, 'all')
 		) st
 		WHERE o.id = $1::uuid
 		ON CONFLICT (order_id) DO NOTHING

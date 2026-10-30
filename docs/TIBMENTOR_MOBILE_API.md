@@ -13,7 +13,7 @@ Bu hujjat TibMentor yangilanishida (TZ T-01…T-17) backendda nima o'zgarganini 
 | T-05 | — | 24 soat kirmagan foydalanuvchiga avtomatik push keladi (`type: inactive_reminder`) |
 | T-06 | Kurs, dars | Faqat kontenti bor dars va modullar qaytadi, darsda `content_types` bor, `audios` va `quizzes` qo'shildi |
 | T-07…T-10 | Test | Ilova ichidagi test: start, answer, finish |
-| T-11, T-12 | Premium | Bitta oylik Premium, Click orqali to'lov |
+| T-11, T-12 | Premium | 3 ta paket (Fundamental, Preklinik, Klinik), har biri alohida sotiladi, Click orqali to'lov |
 | T-14 | Reyting | `by=test` parametri qo'shildi, `me` doim keladi |
 | T-15 | Profil | `is_premium`, `premium_until`, `is_ustoz`, test tarixi |
 | T-17 | — | Kontent qo'shilganda avtomatik push kelmaydi, faqat admin yuboradi |
@@ -29,7 +29,7 @@ Yangi endpointlar avtomatik ravishda foydalanuvchining "oxirgi faollik" vaqtini 
 
 - Kontenti yo'q darslar va darssiz modullar **qaytmaydi**. Bo'sh bo'lim ko'rsatmang.
 - Har bir darsda `content_types` bor: shu darsda nima borligi.
-- `has_access` endi `true` bo'ladi, agar foydalanuvchi kursni sotib olgan **yoki** premium faol **yoki** ustoz bo'lsa.
+- `has_access` endi `true` bo'ladi, agar foydalanuvchi kursni sotib olgan **yoki** kurs fani tegishli paketda premium faol **yoki** ustoz bo'lsa.
 - `tests` soni endi ilova ichidagi testlar soni (eski PDF testlar hisoblanmaydi).
 
 ```json
@@ -199,7 +199,7 @@ POST /mobile/test/attempt/:aid/finish   → percent, next_lesson_id
 ```
 
 - `is_ustoz: true` bo'lsa, "Ustoz" belgisini ko'rsating.
-- `is_premium` va `premium_until` bilan Premium holati va tugash sanasini ko'rsating.
+- `is_premium` kamida bitta paket faol ekanini, `premium_until` eng kech tugash sanasini bildiradi. Paketma-paket holat `GET /mobile/premium` da.
 
 ### Test natijalari tarixi
 
@@ -219,28 +219,46 @@ POST /mobile/test/attempt/:aid/finish   → percent, next_lesson_id
 
 ## 5. Premium (T-11, T-12)
 
-Alohida 1, 3, 6, 12 oylik tariflar endi ishlatilmaydi. Tarif tanlash ekranini olib tashlang, uning o'rniga **PREMIUM** tugmasi qo'yiladi.
+Alohida 1, 3, 6, 12 oylik tariflar endi ishlatilmaydi. Premium **3 ta paketga** bo'lingan, har biri alohida sotib olinadi:
+
+| `package` | Nomi | Nimani ochadi |
+|-----------|------|---------------|
+| `fundamental` | Fundamental fanlar | Shu paketga biriktirilgan fanlarning barcha kurslari |
+| `preclinical` | Preklinik fanlar | 〃 |
+| `clinical` | Klinik fanlar | 〃 |
+
+Qaysi fan qaysi paketda ekanini admin belgilaydi. `GET /mobile/subject` javobidagi har bir fanda `package` maydoni bor (`null` bo'lsa, fan hech qaysi paketda emas).
 
 ### 5.1 Narx va holat
 
 `GET /mobile/premium`
 
 ```json
-{ "price": 50000, "duration_months": 1, "is_premium": false, "premium_until": null, "is_ustoz": false }
+{
+  "is_premium": true,
+  "premium_until": "2026-11-26T13:00:00+05:00",
+  "is_ustoz": false,
+  "packages": [
+    { "package": "fundamental", "price": 50000, "duration_months": 1, "is_active": true,  "until": "2026-11-26T13:00:00+05:00" },
+    { "package": "preclinical", "price": 60000, "duration_months": 1, "is_active": false, "until": null },
+    { "package": "clinical",    "price": 70000, "duration_months": 1, "is_active": false, "until": null }
+  ]
+}
 ```
 
-- `price` so'mda.
-- `price: 0` bo'lsa, admin hali narx qo'ymagan. Sotib olish tugmasini yashiring.
+- `price` so'mda. `price: 0` bo'lsa, admin bu paketga hali narx qo'ymagan: sotib olish tugmasini yashiring.
+- `is_premium` kamida bitta paket faol ekanini bildiradi.
+- Paketlarga bo'linishdan oldin umumiy premium sotib olganlarda muddati tugaguncha **uchala paket ham** `is_active: true` bo'ladi.
 
 ### 5.2 Sotib olish
 
 `POST /mobile/premium/order`
 
 ```json
-{ "promocode_id": "…" }
+{ "package": "fundamental", "promocode_id": "…" }
 ```
 
-Body ixtiyoriy, promokodsiz bo'sh yuborish mumkin.
+`package` majburiy, `promocode_id` ixtiyoriy.
 
 ```json
 { "message": "order created successfully", "order_id": "…", "url": "https://my.click.uz/services/pay?..." }
@@ -249,19 +267,23 @@ Body ixtiyoriy, promokodsiz bo'sh yuborish mumkin.
 - `url` ni Click'da oching.
 - To'lov o'tgach, `GET /mobile/premium` ni qayta chaqirib holatni yangilang.
 - Push ham keladi: `payment_success`.
-- Premium faol paytda yana to'lansa, muddat **uzaytiriladi** (tugash sanasiga +1 oy).
-- Premium **barcha kurslarni** ochadi.
-- Promokod premium narxiga qo'llanadi. Faqat "barcha kurslar" turidagi promokod premiumga ishlaydi.
+- Paket faol paytda yana to'lansa, **shu paket** muddati uzaytiriladi (tugash sanasiga +1 oy). Boshqa paketlarga ta'sir qilmaydi.
+- Promokod paket narxiga qo'llanadi. Faqat "barcha kurslar" turidagi promokod premiumga ishlaydi.
 
-**Promokodni tekshirish:** `POST /mobile/promocode/check`, body'da `type: "premium"`. Bu holda `course_id` va `tariff_id` kerak emas.
+**Promokodni tekshirish:** `POST /mobile/promocode/check`, body'da `type: "premium"` va `package`. Bu holda `course_id` va `tariff_id` kerak emas.
 
 ```json
-{ "type": "premium", "promocode": "BAHOR10" }
+{ "type": "premium", "package": "fundamental", "promocode": "BAHOR10" }
 ```
 
 Javob avvalgidek: `is_valid`, `total_amount`, `discount_amount` va boshqalar. Promokod tekshiruvdan o'tsa, uning `promocode_id` qiymatini `POST /mobile/premium/order` ga yuboring.
 
-Xato: `400 {"message": "premium price is not configured"}`, narx qo'yilmagan.
+Xatolar (`400`):
+
+| `message` | Ma'nosi |
+|-----------|---------|
+| `premium price is not configured` | Bu paketga narx qo'yilmagan |
+| `package must be one of: fundamental, preclinical, clinical` | `package` noto'g'ri yoki yuborilmagan |
 
 ## 6. Reyting (T-14)
 
