@@ -210,7 +210,8 @@ type TestI interface {
 	Start(ctx context.Context, req *m.ByIdMobile) (*m.TestStartRes, error)
 	Answer(ctx context.Context, req *m.TestAnswerReq) (*m.TestAnswerRes, error)
 	Finish(ctx context.Context, req *m.TestAttemptReq) (*m.TestFinishRes, error)
-	History(ctx context.Context, req *m.TestHistoryReq) (*m.PaginationResponse, error)
+	History(ctx context.Context, req *m.TestHistoryReq) (*m.TestHistoryRes, error)
+	CountTakenTests(ctx context.Context, userId string) (int, error)
 	CheckAccess(ctx context.Context, testId, userId string) error
 }
 

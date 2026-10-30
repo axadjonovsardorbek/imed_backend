@@ -31,6 +31,7 @@ Yangi endpointlar avtomatik ravishda foydalanuvchining "oxirgi faollik" vaqtini 
 - Har bir darsda `content_types` bor: shu darsda nima borligi.
 - `has_access` endi `true` bo'ladi, agar foydalanuvchi kursni sotib olgan **yoki** kurs fani tegishli paketda premium faol **yoki** ustoz bo'lsa.
 - `tests` soni endi ilova ichidagi testlar soni (eski PDF testlar hisoblanmaydi).
+- `package`: kursni qaysi premium paket ochadi (`fundamental`, `preclinical`, `clinical` yoki `null`). `has_access: false` bo'lsa tugma: «♛ <paket nomi> Premiumini olish», bosilganda Premium ekrani shu paket tanlangan holda ochiladi.
 
 ```json
 {
@@ -194,28 +195,44 @@ POST /mobile/test/attempt/:aid/finish   → percent, next_lesson_id
   "premium_until": "2026-11-26T13:00:00+05:00",
   "is_ustoz": false,
   "first_login_at": "…",
-  "last_seen_at": "…"
+  "last_seen_at": "…",
+  "tests_count": 12,
+  "packages": [
+    { "package": "fundamental", "is_active": true,  "until": "2026-11-29T13:00:00+05:00" },
+    { "package": "preclinical", "is_active": false, "until": null },
+    { "package": "clinical",    "is_active": false, "until": null }
+  ]
 }
 ```
 
 - `is_ustoz: true` bo'lsa, "Ustoz" belgisini ko'rsating.
-- `is_premium` kamida bitta paket faol ekanini, `premium_until` eng kech tugash sanasini bildiradi. Paketma-paket holat `GET /mobile/premium` da.
+- Premium kartochkasi: `is_ustoz: true` bo'lsa «Ustoz — doimiy kirish», tugmasiz. Aks holda `packages` dagi har bir faol paket uchun alohida qator («Premium: <paket> · DD.MM.YYYY gacha» + «Uzaytirish»). Hech biri faol bo'lmasa «Premium yo'q» + «Premium olish».
+- `tests_count`: «Test natijalari» bandi yonidagi son (kamida bir marta yakunlangan testlar).
 
 ### Test natijalari tarixi
 
 `GET /mobile/user/test-history?page=1&limit=10`
 
+Urinishlar **test bo'yicha guruhlangan**: har test bitta qator, eng yangisi yuqorida.
+
 ```json
 {
+  "summary": { "tests_count": 12, "average_percent": 84, "best_percent": 96 },
   "total": 12, "page": 1, "limit": 10, "total_pages": 2, "has_next": true, "has_previous": false,
   "data": [
     {
-      "attempt_id": "…", "test_id": "…", "test_title": "1-test", "lesson_id": "…",
-      "correct_count": 17, "total_count": 20, "percent": 85, "finished_at": "…"
+      "test_id": "…", "test_title": "Osteologiya", "lesson_id": "…",
+      "course_id": "…", "course_name": "Anatomiya",
+      "best_percent": 96, "attempts": 2,
+      "last_attempt_id": "…", "last_finished_at": "2026-10-12T10:00:00+05:00"
     }
   ]
 }
 ```
+
+- `summary`: yuqoridagi ko'rsatkichlar. `average_percent` har testning eng yaxshi natijasi bo'yicha o'rtacha.
+- Qatorda: foiz doirasi `best_percent`, ostida `course_name · sana · attempts urinish`.
+- Bosilganda natija ekrani (T-10): `POST /mobile/test/attempt/{last_attempt_id}/finish` yakunlangan urinish natijasini qayta qaytaradi.
 
 ## 5. Premium (T-11, T-12)
 
@@ -284,6 +301,10 @@ Xatolar (`400`):
 |-----------|---------|
 | `premium price is not configured` | Bu paketga narx qo'yilmagan |
 | `package must be one of: fundamental, preclinical, clinical` | `package` noto'g'ri yoki yuborilmagan |
+
+### 5.3 Eski tarif to'lovi (T-11)
+
+`POST /mobile/order` (kurs + tarif bo'yicha to'lov) yopilgandan keyin `426 {"message": "tariff sales are closed, please update the app"}` qaytaradi. Eski ilova versiyasida bu holatda «Ilovani yangilang» ko'rsatiladi. Yangi ilova bu endpointni chaqirmaydi.
 
 ## 6. Reyting (T-14)
 

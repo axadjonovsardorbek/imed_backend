@@ -627,22 +627,52 @@ func (r *TestRepo) GetByLessonMobile(ctx context.Context, lessonId, userId, lang
 	return list, rows.Err()
 }
 
-func (r *TestRepo) History(ctx context.Context, req *m.TestHistoryReq) (*m.PaginationResponse, error) {
+func (r *TestRepo) History(ctx context.Context, req *m.TestHistoryReq) (*m.TestHistoryRes, error) {
+	res := &m.TestHistoryRes{}
+
+	// Umumiy ko'rsatkichlar har testning eng yaxshi natijasi bo'yicha, reyting (by=test) bilan bir xil.
+	err := r.db.QueryRowContext(ctx, `
+	SELECT COUNT(*), COALESCE(ROUND(AVG(best), 2), 0)::float8, COALESCE(MAX(best), 0)::float8
+	FROM (
+		SELECT MAX(percent) AS best
+		FROM user_test_attempts
+		WHERE user_id = $1 AND finished_at IS NOT NULL
+		GROUP BY test_id
+	) b
+	`, req.UserId).Scan(&res.Summary.TestsCount, &res.Summary.AveragePercent, &res.Summary.BestPercent)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting test history summary: %w", err)
+	}
+
 	rows, err := r.db.QueryContext(ctx, `
+	WITH g AS (
+		SELECT
+			test_id,
+			MAX(percent) AS best,
+			COUNT(*) AS attempts,
+			MAX(finished_at) AS last_at,
+			(ARRAY_AGG(id ORDER BY finished_at DESC))[1] AS last_id
+		FROM user_test_attempts
+		WHERE user_id = $1 AND finished_at IS NOT NULL
+		GROUP BY test_id
+	)
 	SELECT
-		COUNT(a.id) OVER(),
-		a.id,
-		a.test_id,
+		COUNT(*) OVER(),
+		g.test_id,
 		COALESCE(t.title ->> $2, ''),
 		t.lesson_id,
-		a.correct_count,
-		a.total_count,
-		a.percent::float8,
-		a.finished_at
-	FROM user_test_attempts a
-	JOIN tests t ON t.id = a.test_id
-	WHERE a.user_id = $1 AND a.finished_at IS NOT NULL
-	ORDER BY a.finished_at DESC
+		c.id,
+		COALESCE(c.name ->> $2, ''),
+		g.best::float8,
+		g.attempts,
+		g.last_id,
+		g.last_at
+	FROM g
+	JOIN tests t ON t.id = g.test_id
+	JOIN lessons l ON l.id = t.lesson_id
+	JOIN modules md ON md.id = l.module_id
+	JOIN courses c ON c.id = md.course_id
+	ORDER BY g.last_at DESC
 	LIMIT $3 OFFSET $4
 	`, req.UserId, req.Language, req.Filter.Limit, req.Filter.Page)
 	if err != nil {
@@ -656,12 +686,28 @@ func (r *TestRepo) History(ctx context.Context, req *m.TestHistoryReq) (*m.Pagin
 	)
 	for rows.Next() {
 		var it m.TestHistoryItem
-		if err := rows.Scan(&total, &it.AttemptId, &it.TestId, &it.TestTitle, &it.LessonId, &it.CorrectCount, &it.TotalCount, &it.Percent, &it.FinishedAt); err != nil {
+		if err := rows.Scan(&total, &it.TestId, &it.TestTitle, &it.LessonId, &it.CourseId, &it.CourseName,
+			&it.BestPercent, &it.Attempts, &it.LastAttemptId, &it.LastFinishedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, it)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
-	res := m.NewPaginationResponse(req.Filter, total, items)
-	return &res, nil
+	res.PaginationResponse = m.NewPaginationResponse(req.Filter, total, items)
+	return res, nil
+}
+
+// CountTakenTests foydalanuvchi kamida bir marta yakunlagan testlar soni.
+func (r *TestRepo) CountTakenTests(ctx context.Context, userId string) (int, error) {
+	var n int
+	err := r.db.QueryRowContext(ctx, `
+	SELECT COUNT(DISTINCT test_id) FROM user_test_attempts WHERE user_id = $1 AND finished_at IS NOT NULL
+	`, userId).Scan(&n)
+	if err != nil {
+		return 0, fmt.Errorf("error while counting taken tests: %w", err)
+	}
+	return n, nil
 }

@@ -731,6 +731,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		  ) AS price,
 		  c.is_public 		   AS is_public,
 		  c.can_buy            AS can_buy,
+		  (SELECT sb.package FROM subjects sb WHERE sb.id = c.subject_id) AS package,
 	  
 		  c.total_lessons      AS lessons,
 		  c.total_sources      AS total_sources,
@@ -846,6 +847,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		cb.price,
 		cb.is_public,
 		cb.can_buy,
+		cb.package,
 	  
 		cb.tests,
 		cb.documents,
@@ -873,6 +875,7 @@ func (r *CourseRepo) GetByIdMobile(req *m.ByIdMobile) (*m.MobileCourseRes, error
 		&res.Price,
 		&res.IsPublic,
 		&res.CanBuy,
+		&res.Package,
 		&res.Tests,
 		&res.Documents,
 		&res.Duration,

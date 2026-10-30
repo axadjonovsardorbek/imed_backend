@@ -828,6 +828,9 @@ definitions:
         type: array
       name:
         type: string
+      package:
+        description: kursni ochadigan premium paket (T-12)
+        type: string
       price:
         items:
           $ref: '#/definitions/models.CoursePriceOption'
@@ -971,21 +974,14 @@ definitions:
       user_phone:
         type: string
     type: object
-  models.PaginationResponse:
+  models.PackageStatus:
     properties:
-      data: {}
-      has_next:
+      is_active:
         type: boolean
-      has_previous:
-        type: boolean
-      limit:
-        type: integer
-      page:
-        type: integer
-      total:
-        type: integer
-      total_pages:
-        type: integer
+      package:
+        type: string
+      until:
+        type: string
     type: object
   models.PremiumInfoRes:
     properties:
@@ -1618,6 +1614,33 @@ definitions:
       total_count:
         type: integer
     type: object
+  models.TestHistoryRes:
+    properties:
+      data: {}
+      has_next:
+        type: boolean
+      has_previous:
+        type: boolean
+      limit:
+        type: integer
+      page:
+        type: integer
+      summary:
+        $ref: '#/definitions/models.TestHistorySummary'
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  models.TestHistorySummary:
+    properties:
+      average_percent:
+        type: number
+      best_percent:
+        type: number
+      tests_count:
+        type: integer
+    type: object
   models.TestImportRes:
     properties:
       imported:
@@ -1989,10 +2012,18 @@ definitions:
         type: string
       name:
         type: string
+      packages:
+        description: Packages va TestsCount faqat bitta foydalanuvchi so'ralganda
+          to'ldiriladi (T-15).
+        items:
+          $ref: '#/definitions/models.PackageStatus'
+        type: array
       phone_number:
         type: string
       premium_until:
         type: string
+      tests_count:
+        type: integer
       updated_at:
         type: string
     type: object
@@ -2815,6 +2846,10 @@ paths:
           description: Bad Request
           schema:
             type: string
+        "426":
+          description: Tariff sales are closed, app must be updated to buy Premium
+          schema:
+            type: string
         "500":
           description: Internal Server Error
           schema:
@@ -3348,10 +3383,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.PaginationResponse'
+            $ref: '#/definitions/models.TestHistoryRes'
       security:
       - BearerAuth: []
-      summary: User test results history
+      summary: User test results history, grouped by test (best percent, attempts)
+        with summary
       tags:
       - test
   /mobile/user/update/profile:

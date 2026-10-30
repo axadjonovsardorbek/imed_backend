@@ -206,7 +206,24 @@ func (s *UserService) Login(ctx context.Context, req *m.UserLoginReq) (*m.TokenR
 	return s.storage.UserS.Login(req)
 }
 func (s *UserService) GetById(ctx context.Context, req *m.ById) (*m.UserRes, error) {
-	return s.storage.UserS.GetById(req)
+	user, err := s.storage.UserS.GetById(req)
+	if err != nil {
+		return nil, err
+	}
+
+	status, err := s.storage.PremiumS.GetStatus(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	user.Packages = status.Packages
+
+	count, err := s.storage.TestS.CountTakenTests(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	user.TestsCount = &count
+
+	return user, nil
 }
 func (s *UserService) GetAll(ctx context.Context, req *m.UserGetListReq) (*m.PaginationResponse, *m.UserList, error) {
 

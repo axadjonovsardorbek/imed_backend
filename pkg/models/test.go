@@ -164,13 +164,26 @@ type TestHistoryReq struct {
 	Filter   Pagination
 }
 
+// TestHistoryItem bitta test bo'yicha foydalanuvchining barcha urinishlari jamlanmasi (T-15).
 type TestHistoryItem struct {
-	AttemptId    string  `json:"attempt_id"`
-	TestId       string  `json:"test_id"`
-	TestTitle    string  `json:"test_title"`
-	LessonId     string  `json:"lesson_id"`
-	CorrectCount int     `json:"correct_count"`
-	TotalCount   int     `json:"total_count"`
-	Percent      float64 `json:"percent"`
-	FinishedAt   string  `json:"finished_at"`
+	TestId         string  `json:"test_id"`
+	TestTitle      string  `json:"test_title"`
+	LessonId       string  `json:"lesson_id"`
+	CourseId       string  `json:"course_id"`
+	CourseName     string  `json:"course_name"`
+	BestPercent    float64 `json:"best_percent"`
+	Attempts       int     `json:"attempts"`
+	LastAttemptId  string  `json:"last_attempt_id"`
+	LastFinishedAt string  `json:"last_finished_at"`
+}
+
+type TestHistorySummary struct {
+	TestsCount     int     `json:"tests_count"`
+	AveragePercent float64 `json:"average_percent"`
+	BestPercent    float64 `json:"best_percent"`
+}
+
+type TestHistoryRes struct {
+	Summary TestHistorySummary `json:"summary"`
+	PaginationResponse
 }

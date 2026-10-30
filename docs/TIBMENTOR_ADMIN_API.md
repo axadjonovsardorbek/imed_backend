@@ -221,9 +221,12 @@ Premium 3 ta paketga bo'lingan, har biri alohida sotiladi:
 - Premium buyurtmada `course_id`, `course_name`, `tariff_id`, `tariff_name` **`null`** bo'ladi, o'rniga `package` keladi. Jadvalda "Premium: <paket nomi>" deb ko'rsating.
 - Promokod premium uchun ham ishlaydi, lekin faqat "barcha kurslar" (`type: all`) turidagisi. Muayyan kurslarga bog'langan promokod premiumga qo'llanmaydi.
 
-### Tariflar
+### Tariflar (T-11)
 
-Eski 1/3/6/12 oylik tariflar va kurs narxlari **o'chirilmadi**. Ilgari sotib olganlar muddati tugaguncha kursdan foydalanadi. Yangi sotuv mobil ilovada faqat Premium orqali bo'ladi.
+- Chap menyudagi «Tariflar» bo'limi va Asosiy sahifadagi «Tariflar» kartochkasini olib tashlang.
+- Tarif yozuvlari **o'chirilmaydi**: o'tgan buyurtmalar ularga bog'langan va «Buyurtmalar» da avvalgidek ko'rinadi.
+- Ilgari tarif bilan sotib olganlar muddati tugaguncha kursdan foydalanadi.
+- Yopilgandan keyin `POST /web/tariff` `403` qaytaradi, mobil ilovadan tarif bo'yicha to'lov qabul qilinmaydi.
 
 ## 5. Xabarnomalar (T-17)
 

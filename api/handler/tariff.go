@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"imed/internal/config"
 	m "imed/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,10 @@ import (
 // @Security BearerAuth
 // @Router /web/tariff [post]
 func (h *Handler) CreateTariff(c *gin.Context) {
+	if config.Load().TARIFF_SALES_CLOSED {
+		c.JSON(http.StatusForbidden, gin.H{"message": "tariffs are archived, use premium packages"})
+		return
+	}
 	req := m.TariffCreateReq{}
 	err := c.BindJSON(&req)
 	if err != nil {

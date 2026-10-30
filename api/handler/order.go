@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"imed/internal/config"
 	m "imed/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +21,15 @@ import (
 // @Param order body models.OrderCreateBody true "Order Details"
 // @Success 200 {object} string
 // @Failure 400 {object} string
+// @Failure 426 {object} string "Tariff sales are closed, app must be updated to buy Premium"
 // @Failure 500 {object} string
 // @Security BearerAuth
 // @Router /mobile/order [post]
 func (h *Handler) CreateOrder(c *gin.Context) {
+	if config.Load().TARIFF_SALES_CLOSED {
+		c.JSON(http.StatusUpgradeRequired, gin.H{"message": ErrTariffSalesClosed})
+		return
+	}
 	req := m.OrderCreateReq{}
 	body := m.OrderCreateBody{}
 	err := c.BindJSON(&body)
@@ -202,3 +208,6 @@ func (h *Handler) GetAllOrders(c *gin.Context) {
 
 	c.JSON(200, res)
 }
+
+// ErrTariffSalesClosed eski ilova versiyasi tarif bo'yicha to'lov so'raganda qaytadi (T-11).
+const ErrTariffSalesClosed = "tariff sales are closed, please update the app"

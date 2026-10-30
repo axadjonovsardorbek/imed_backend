@@ -44,6 +44,9 @@ type UserRes struct {
 	IsUstoz      bool    `json:"is_ustoz"`
 	IsPremium    bool    `json:"is_premium"`
 	PremiumUntil *string `json:"premium_until"`
+	// Packages va TestsCount faqat bitta foydalanuvchi so'ralganda to'ldiriladi (T-15).
+	Packages   []PackageStatus `json:"packages,omitempty"`
+	TestsCount *int            `json:"tests_count,omitempty"`
 }
 
 // InactiveUser 24 soatdan beri kirmagan va eslatma olmagan foydalanuvchi (T-05).

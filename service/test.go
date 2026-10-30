@@ -198,6 +198,6 @@ func (s *TestService) Answer(ctx context.Context, req *m.TestAnswerReq) (*m.Test
 func (s *TestService) Finish(ctx context.Context, req *m.TestAttemptReq) (*m.TestFinishRes, error) {
 	return s.storage.TestS.Finish(ctx, req)
 }
-func (s *TestService) History(ctx context.Context, req *m.TestHistoryReq) (*m.PaginationResponse, error) {
+func (s *TestService) History(ctx context.Context, req *m.TestHistoryReq) (*m.TestHistoryRes, error) {
 	return s.storage.TestS.History(ctx, req)
 }

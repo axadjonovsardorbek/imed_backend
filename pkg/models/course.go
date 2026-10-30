@@ -220,6 +220,7 @@ type MobileCourseRes struct {
 	TeacherName *string                 `json:"teacher_name"`
 	HasAccess   bool                    `json:"has_access"`
 	CanBuy      bool                    `json:"can_buy"`
+	Package     *string                 `json:"package"` // kursni ochadigan premium paket (T-12)
 	Price       PriceField              `json:"price"`
 	Tests       int                     `json:"tests"`
 	Documents   int                     `json:"documents"`

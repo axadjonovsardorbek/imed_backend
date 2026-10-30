@@ -1289,6 +1289,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "426": {
+                        "description": "Tariff sales are closed, app must be updated to buy Premium",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -2094,7 +2100,7 @@ const docTemplate = `{
                 "tags": [
                     "test"
                 ],
-                "summary": "User test results history",
+                "summary": "User test results history, grouped by test (best percent, attempts) with summary",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2119,7 +2125,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.PaginationResponse"
+                            "$ref": "#/definitions/models.TestHistoryRes"
                         }
                     }
                 }
@@ -9061,6 +9067,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "package": {
+                    "description": "kursni ochadigan premium paket (T-12)",
+                    "type": "string"
+                },
                 "price": {
                     "type": "array",
                     "items": {
@@ -9280,27 +9290,17 @@ const docTemplate = `{
                 }
             }
         },
-        "models.PaginationResponse": {
+        "models.PackageStatus": {
             "type": "object",
             "properties": {
-                "data": {},
-                "has_next": {
+                "is_active": {
                     "type": "boolean"
                 },
-                "has_previous": {
-                    "type": "boolean"
+                "package": {
+                    "type": "string"
                 },
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                },
-                "total_pages": {
-                    "type": "integer"
+                "until": {
+                    "type": "string"
                 }
             }
         },
@@ -10261,6 +10261,47 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TestHistoryRes": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "has_next": {
+                    "type": "boolean"
+                },
+                "has_previous": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "summary": {
+                    "$ref": "#/definitions/models.TestHistorySummary"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TestHistorySummary": {
+            "type": "object",
+            "properties": {
+                "average_percent": {
+                    "type": "number"
+                },
+                "best_percent": {
+                    "type": "number"
+                },
+                "tests_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.TestImportRes": {
             "type": "object",
             "properties": {
@@ -10829,11 +10870,21 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "packages": {
+                    "description": "Packages va TestsCount faqat bitta foydalanuvchi so'ralganda to'ldiriladi (T-15).",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PackageStatus"
+                    }
+                },
                 "phone_number": {
                     "type": "string"
                 },
                 "premium_until": {
                     "type": "string"
+                },
+                "tests_count": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"

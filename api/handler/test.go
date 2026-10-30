@@ -409,13 +409,13 @@ func (h *Handler) FinishTest(c *gin.Context) {
 }
 
 // GetTestHistory godoc
-// @Summary User test results history
+// @Summary User test results history, grouped by test (best percent, attempts) with summary
 // @Tags test
 // @Produce json
 // @Param limit query int false "Limit"
 // @Param page query int false "Page"
 // @Param Accept-Language header string false "uz | ru | en"
-// @Success 200 {object} models.PaginationResponse
+// @Success 200 {object} models.TestHistoryRes
 // @Security BearerAuth
 // @Router /mobile/user/test-history [get]
 func (h *Handler) GetTestHistory(c *gin.Context) {
